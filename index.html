@@ -1,39 +1,15 @@
 <!doctype html5>
 <html>
 <head>
-	<title>All piskels</title>
+	<title>Piskel - animating pixels since 2012</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-	<script type="text/javascript">
-	(function () {
-		var loadAllPiskelIds = function (frameId) {
-			var xhr = new XMLHttpRequest();
-			// TODO: Change frameId to framesheetId on the backend
-			xhr.open('GET', 'http://2.piskel-app.appspot.com/all?l=' + frameId, true);
-			xhr.responseType = 'text';
-
-			xhr.onload = function(e) {
-				var ul = document.createElement("UL");
-				var innerHTML = "";
-				eval("var responseObject = " + this.responseText);
-				var keys = responseObject.keys;
-				var baseUrl = "http://juliandescottes.github.com/piskel/?frameId=";
-				if (keys) {
-					for (var i = 0 ; i < keys.length ; i++) {
-						var key = keys[i];
-
-						innerHTML += "<li><a target='_blank' href='"+baseUrl+key+"'>"+key+"</a></li>" 
-					}
-				}
-				ul.innerHTML = innerHTML;
-				document.body.appendChild(ul);
-			};
-
-			xhr.send();
-    };
-
-    loadAllPiskelIds();
-	})();
-	</script>
+  <div class="centered-container">
+    <a class="logo" href=""><img src="piskel-logo.png"/></a>
+    <ul id="main-piskel-list" class="piskel-list"></ul>
+    <span class="centered-medium-button" id="load-more"><button onclick="loadMore()">Load more piskels</button></span>
+  </div>
+	<script type="text/javascript" src="website-script.js"></script>
 </body>
 </html>
