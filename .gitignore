@@ -12,9 +12,6 @@ npm-debug.log
 # git stackdumps
 *.stackdump
 
-# builds
-build
-
 # compiled files
 *.pyc
 
