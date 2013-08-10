@@ -92,7 +92,7 @@ ul {
 }
 
 .link-login[href="/logout"]{
-	background-image: url('/resources/logout.svg');
+	background-image: url('/static/resources/logout.svg');
 	background-size: 1.5em;
 	background-position: 52px 18px;
 	background-repeat: no-repeat;
@@ -251,7 +251,7 @@ ul {
 .animated-preview-widget {
 	display : block;
 	background-color: white;
-	background-image : url('/resources/animated-preview-checker-background.png');
+	background-image : url('/static/resources/animated-preview-checker-background.png');
 }
 
 /******************/

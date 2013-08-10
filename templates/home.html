@@ -4,14 +4,14 @@
 {% block title %}Piskel - Home{% endblock %}
 
 {% block css %}
-	<link rel="stylesheet" type="text/css" href="/css/piskel-app-home.css"/>
+	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css"/>
 {% endblock %}
 {% block main %} 
 	<div class="piskel-carousel">
 		<div class="piskel-preview-container">
 			<h3 class="background-title">Public repository</h3>
 			{% for id in showcase_piskels %}
-				<img class="piskel-preview" src="/resources/sleepy-guy.gif"/>
+				<img class="piskel-preview" src="/static/resources/sleepy-guy.gif"/>
 			{% endfor %}
 		</div>
 	</div>

@@ -3,14 +3,14 @@
 <head>
 	<meta charset="UTF-8">
 	<title>{% block title %} title {% endblock %}</title>
-	<link rel="shortcut icon" type="image/png" href="/resources/favicon.png"/>
-	<link rel="stylesheet" type="text/css" href="/css/piskel-app.css"/>
+	<link rel="shortcut icon" type="image/png" href="/static/resources/favicon.png"/>
+	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app.css"/>
 	{% block css %}{% endblock %}
 </head>
 <body>
-	<script type="text/javascript" src="/js/piskel-utils.js"></script>
-	<script type="text/javascript" src="/js/piskel-image-scale.js"></script>
-	<script type="text/javascript" src="/js/piskel-animated-preview.js"></script>
+	<script type="text/javascript" src="/static/js/piskel-utils.js"></script>
+	<script type="text/javascript" src="/static/js/piskel-image-scale.js"></script>
+	<script type="text/javascript" src="/static/js/piskel-animated-preview.js"></script>
 	{% block js %}{% endblock %}
 	<div class="wrap">
 		{% include "nav.html" %}

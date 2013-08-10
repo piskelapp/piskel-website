@@ -72,14 +72,14 @@
   color: #888;
   transition: color 0.3s;
 
-  background-image: url('/resources/iconmonstr-globe-4-icon.svg');
+  background-image: url('/static/resources/iconmonstr-globe-4-icon.svg');
   background-size: 4em;
   background-repeat: no-repeat;
   background-position: 122% 14px;
 }
 
 .card-container-private .card-info-container {
-  background-image: url('/resources/iconmonstr-lock-3-icon.svg');
+  background-image: url('/static/resources/iconmonstr-lock-3-icon.svg');
 }
 
 .card-container:hover .card-info-container {

@@ -9,28 +9,27 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /css
-  static_dir: css
-
-- url: /resources/(.*\.svg)
-  static_files: resources/\1
-  upload: resources/(.*\.svg)
+- url: /static/resources/(.*\.svg)
+  static_files: static/resources/\1
+  upload: static/resources/(.*\.svg)
   mime_type: image/svg+xml
 
-- url: /resources/(.*\.png)
-  static_files: resources/\1
-  upload: resources/(.*\.png)
+- url: /static/resources/(.*\.png)
+  static_files: static/resources/\1
+  upload: static/resources/(.*\.png)
   mime_type: image/png
 
-- url: /resources
-  static_dir: resources
+- url: /static
+  static_dir: static
 
-- url: /js
-  static_dir: js
+- url: /p/(.*\.png)
+  static_files: static/editor/\1
+  upload: static/editor/(.*\.png)
+  mime_type: image/png
 
 - url: /p/(.*\.(?:html|css|js|png|gif))
-  static_files: editor/\1
-  upload: editor/(.*\.(html|css|js|png|gif))
+  static_files: static/editor/\1
+  upload: static/editor/(.*\.(html|css|js|png|gif))
 
 - url: /.*
   script: main.app
