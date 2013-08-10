@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "partial/macros.html" import render_animated_preview %}
+
+{% block title %}Piskel - {{ piskel.name }} - History{% endblock %}
+
+{% block css %}
+	<link rel="stylesheet" type="text/css" href="/css/piskel-app-piskel.css"/>
+	<link rel="stylesheet" type="text/css" href="/css/piskel-app-piskel-history.css"/>
+{% endblock %}
+
+{#	DATA:
+		user
+		session
+		is_logged_in
+		is_author
+		owner
+		piskel_id
+		piskel
+		framesheets
+#}
+
+{% block main %}
+
+	<div class="piskel-container">
+		<a href="/p/{{piskel.key}}/view" title="Back to piskel page" class="piskel-preview-container inset-container">
+			{{ render_animated_preview(piskel.framesheet_key, 512, piskel.fps) }}
+		</a>
+		<div class="piskel-history-container">
+			<div style="width:600px">
+				<div><h2 class="piskel-name">{{ piskel.name }}</h2><h3 class="piskel-name"> - Version history</h3>
+				by
+				<a href="/user/{{ owner.key.id() }}"><img 
+					title="view more from {{ owner.name }}"
+					class="small-user-avatar piskel-owner" 
+					src="{{ owner.avatar_url }}"/></a>
+				</div>
+				<ul class="history-framesheets-list">
+					{% for f in framesheets %}
+						<li class="history-framesheet">
+							<div class="history-framesheet-thumbnail  inset-container">
+							{{ render_animated_preview(f.key(), 128, f.fps) }}
+							</div>
+							<ul class="history-details-list">
+								<li class="history-detail"><b {% if loop.first %}class="pskl-important"{% endif %}>Version {{framesheets|length - loop.index0}}</b> - created on {{ f.date.strftime("%B %d %Y at %H:%m") }}</li>
+								<li class="history-detail  history-detail-small"><span class="pskl-counter history-counter pskl-important">{{f.frames}}</span> frames</li>
+								<li class="history-detail  history-detail-small"><span class="pskl-counter history-counter">{{f.fps}}</span> frames per second</li> 
+								{% if not loop.first %}
+								<li class="history-detail display-hover">
+									<a      class="piskel-button" href="/p/{{piskel.key}}/rollback/{{f.key()}}">Clone as current frame</a>
+								</li>
+								{% endif %}
+							</ul>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+	</div>
+{% endblock %}

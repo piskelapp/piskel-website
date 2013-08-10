@@ -1,0 +1,40 @@
+.piskel-preview-container {
+	vertical-align: middle;
+	display: inline-block;
+}
+
+.piskel-carousel {
+	margin : 20px 0;
+	text-align : center;
+}
+
+.piskel-carousel h3{
+	text-align : left;
+	margin : 10px 20px;
+}
+
+.preview-separator {
+	width: 994px;
+	border: 1px solid grey;
+	border-bottom-width: 0px;
+}
+
+.media-container {
+	overflow : hidden;
+}
+
+.media-container .media-image {
+	float:left;
+}
+
+.media-container .media-body {
+	overflow : hidden;
+}
+
+.piskel-preview {
+	height : 300px;
+	width : 300px;
+	border : 1px solid grey;
+	margin:0 20px;
+	display : inline-block;
+}

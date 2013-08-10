@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "partial/macros.html" import render_animated_preview %}
+
+{% block title %}Piskel - Home{% endblock %}
+
+{% block css %}
+	<link rel="stylesheet" type="text/css" href="/css/piskel-app-home.css"/>
+{% endblock %}
+{% block main %} 
+	<div class="piskel-carousel">
+		<div class="piskel-preview-container">
+			<h3 class="background-title">Public repository</h3>
+			{% for id in showcase_piskels %}
+				<img class="piskel-preview" src="/resources/sleepy-guy.gif"/>
+			{% endfor %}
+		</div>
+	</div>
+
+	<hr class="preview-separator"/>
+
+	{% if is_logged_in %}
+	<div class="piskel-carousel">
+		<div class="piskel-preview-container">
+			<h3 class="background-title">Your latest piskels</h3>
+			{% for piskel in user_piskels %}
+				<a class="piskel-preview" href="/p/{{ piskel.key }}/view">
+					{{ render_animated_preview(piskel.framesheet_key, 300, piskel.fps) }}
+				</a>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+{% endblock %}

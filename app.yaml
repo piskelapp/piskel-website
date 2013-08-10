@@ -1,0 +1,46 @@
+application: piskel-app
+version: alpha
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /css
+  static_dir: css
+
+- url: /resources/(.*\.svg)
+  static_files: resources/\1
+  upload: resources/(.*\.svg)
+  mime_type: image/svg+xml
+
+- url: /resources/(.*\.png)
+  static_files: resources/\1
+  upload: resources/(.*\.png)
+  mime_type: image/png
+
+- url: /resources
+  static_dir: resources
+
+- url: /js
+  static_dir: js
+
+- url: /p/(.*\.(?:html|css|js|png|gif))
+  static_files: editor/\1
+  upload: editor/(.*\.(html|css|js|png|gif))
+
+- url: /.*
+  script: main.app
+
+libraries:
+- name: webapp2
+  version: "2.5.1"
+
+- name: jinja2
+  version: "2.6"
+
+- name: lxml
+  version: "latest"

@@ -1,0 +1,47 @@
+.history-counter {
+	line-height: 1.4rem;
+	font-size: 1.2rem;
+	margin-right:3px;
+}
+
+.history-framesheets-list {
+	overflow:auto;
+	height:438px;
+}
+
+.history-framesheet {
+	margin:5px 0;
+	overflow:hidden;
+}
+
+.history-details-list {
+	float:left;
+	padding:10px;
+}
+
+.history-detail:not(:first-child) {
+	margin:5px 0;
+}
+
+.history-detail-small {
+	font-size: 0.8rem;
+}
+
+.history-framesheet-thumbnail {
+	float:left;
+	width:128px;
+	position:relative;
+}
+
+.piskel-history-container {
+	overflow:hidden;
+}
+
+.display-hover {
+	opacity : 0;
+	transition : opacity 0.3s;
+}
+
+*:hover > .display-hover {
+	opacity : 1;
+};

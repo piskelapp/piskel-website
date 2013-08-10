@@ -1,0 +1,18 @@
+<form class="piskel-edit" id="piskel-edit" action="/p/{{piskel.key}}/updateinfo" method="POST">
+	<div>
+		<label for="name">Name</label>
+		<input type="text" value="{{piskel.name}}" name="name"/>
+	</div>
+	<div>
+		<label for="description">Description</label>
+		<textarea name="description" cols="30" rows="3">{% if piskel.description %}{{piskel.description}}{% endif %}</textarea>
+	</div>
+	<div>
+		<label for="name">Public</label>
+		<input type="checkbox" name="public" {% if not piskel.private %}checked{% endif %}/>
+	</div>
+	<div>
+		<button class="piskel-button" onclick="pskl.website.hideEditForm();return false;">Cancel</button>
+		<input class="piskel-button piskel-button-save" type="Submit" value="Save"/>
+	</div>
+</form>

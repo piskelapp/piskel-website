@@ -1,0 +1,109 @@
+.card-container{
+  padding : 0;
+  background : white;
+  float : left;
+  position:relative;
+
+  margin : 0 10px 10px 0;
+  height : 260px;
+  width : 192px;
+
+  border-radius : 2px;
+  border-bottom: 1px solid #3a3a3a;
+  overflow:hidden;
+}
+
+.card-preview-container {
+  position:relative;
+}
+
+.card-preview-container .card-preview-link {
+  overflow:hidden;
+  display:block;
+}
+
+.card-preview-container .card-preview-link::before {
+  display: block;
+  content: '';
+
+  position: absolute;
+  width: 100%;
+
+  height: 100%;
+  -moz-box-shadow: inset 0 0 3px 0 rgba(0,0,0,0.7);
+  box-shadow: inset 0 0 3px 0 rgba(0,0,0,0.7);
+}
+.card-preview-actions {
+  position:absolute;
+  bottom:0;
+  overflow:hidden;
+  background-color:rgba(0,0,0,0.5);
+  width:100%;
+  
+  height : 0;
+  transition : height 0.3s;
+}
+
+.card-container:hover .card-preview-actions {
+  height:24px;
+}
+
+.card-preview-action {
+  color:white;
+  text-decoration:none;
+  font-size:0.6rem;
+  margin-left:8px;
+  line-height:24px;
+}
+
+.card-preview-action:hover {
+  text-decoration:underline;
+}
+
+.card-preview-action.right {
+  float:right;
+  margin-right:8px
+}
+
+.card-info-container {
+  padding: 5px;
+  height:58px;
+  cursor: default;
+  color: #888;
+  transition: color 0.3s;
+
+  background-image: url('/resources/iconmonstr-globe-4-icon.svg');
+  background-size: 4em;
+  background-repeat: no-repeat;
+  background-position: 122% 14px;
+}
+
+.card-container-private .card-info-container {
+  background-image: url('/resources/iconmonstr-lock-3-icon.svg');
+}
+
+.card-container:hover .card-info-container {
+  color:black;
+}
+
+.card-info-name {
+  height: 20px;
+  overflow: hidden;
+  margin: 0;
+}
+
+.card-info-name a {
+  text-decoration:none;
+  color: inherit;
+}
+
+.card-info-meta {
+  font-size : 0.7rem;
+  opacity:0.8;
+  margin : 10px 3px;
+}
+
+.card-info-meta .counter{
+  font-weight : bold;
+  font-size : 0.8rem;
+}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "partial/macros.html" import render_animated_preview %}
+
+{% block title %}Piskel - {{ piskel.name }}{% endblock %}
+
+{% block css %}
+	<link rel="stylesheet" type="text/css" href="/css/piskel-app-piskel.css"/>
+{% endblock %}
+
+{% block js %}
+	{% if is_author %}
+		<script type="text/javascript" src="/js/piskel-details-page.js"></script>
+	{% endif %}
+{% endblock %}
+    
+{% block main %}
+
+	<div class="piskel-container">
+		<div class="piskel-preview-container inset-container">
+			{% if is_author %}{% include "piskel/piskel-details-edit.html" %}{% endif %}
+			{{ render_animated_preview(piskel.framesheet_key, 512, piskel.fps) }}
+			
+		</div>
+		<div class="piskel-info-container">
+			<div style="min-width:500px">
+			<h2 class="piskel-name">{{ piskel.name }}</h2>
+			by
+			<a href="/user/{{ owner.key.id() }}"><img 
+				title="{{ owner.name }}"
+				class="small-user-avatar piskel-owner" 
+				src="{{ owner.avatar_url }}"/></a>
+			<div class="piskel-meta">
+				<h4 class="piskel-meta-title">Sharing</h4>
+				This piskel is <span class="piskel-privacy">{% if not piskel.private %}public{% else %}private{% endif %}</span>
+			</div>
+			<div class="piskel-meta">
+				{% if piskel.description %}
+					<h4 class="piskel-meta-title">Description</h4>
+					<span class="piskel-description">{{piskel.description}}</span>
+				{% else %}
+					<i>No description</i>
+				{% endif %}
+			</div>
+			<div class="piskel-meta"><i>No tags</i></div>
+			<div class="piskel-meta">
+				<h4 class="piskel-meta-title">History</h4>
+				<a      class="piskel-button" href="/p/{{piskel.key}}/history">Browse</a>
+				{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}
+				
+			</div>
+			{% if is_logged_in %}
+				<div class="piskel-meta">
+					<h4 class="piskel-meta-title">Actions</h4>
+					{% if is_author %}
+						{% if piskel.deleted %}
+							<button class="piskel-button piskel-button-dangerous" onclick="pskl.website.confirmDestroy('{{piskel.key}}','{{session.user_id}}');">Destroy</button>
+							<a      class="piskel-button piskel-button-important" href="/p/{{ piskel.key }}/restore?callback_url=/p/{{piskel.key}}/view">Restore</a>
+						{% else %}
+							<a      class="piskel-button piskel-button-dangerous" href="/p/{{ piskel.key }}/delete?callback_url=/p/{{piskel.key}}/view">Delete</a>
+							<button class="piskel-button piskel-button-important" style="color:gold" onclick="pskl.website.showEditForm();return false;">Update info</button>
+							<a      class="piskel-button" href="/p/{{piskel.key}}/edit" target="_blank">Editor</a>
+							<a      class="piskel-button" href="/p/{{piskel.key}}/clone">Clone</a>
+						{% endif %}
+					{% else %}
+						<a class="piskel-button" href="/p/{{piskel.key}}/clone" target="_blank">Clone</a>
+					{% endif %}
+				</div>
+			{% endif %}
+		</div>
+		</div>
+	</div>
+
+	{% if is_author %}
+	
+	{% endif %}
+{% endblock %}

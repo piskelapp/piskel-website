@@ -1,0 +1,139 @@
+.piskel-container {
+	padding: 40px 0 0 40px;
+}
+
+.piskel-meta {
+	margin-bottom : 20px;
+}
+
+.piskel-name {
+	display:inline-block; 
+	margin-right:10px;
+	color:#FAFAFA;
+}
+
+.piskel-description {
+	color : #FAFAFA;
+}
+
+.piskel-meta-title {
+	font-style: italic;
+	margin : 5px 0 10px 0;
+	font-weight: normal;
+	color:#AAA;
+}
+
+.piskel-meta-title::after{
+	display: block;
+	border-bottom: 1px solid #4a4a4a;
+	border-top: 1px solid #666;
+	content: "";
+	margin-top: 5px;
+}
+
+.piskel-privacy {
+	color : #FAFAFA;
+	font-weight: bold;
+}
+
+.piskel-info-container {
+	overflow: hidden;
+	-moz-box-sizing : border-box;
+	box-sizing : border-box;
+}
+
+.piskel-preview-container {
+	width:512px;
+	float:left;
+	margin-right : 40px;
+	position:relative;
+	overflow: inherit;
+}
+
+.piskel-preview-container::before
+{
+	border-radius: 0;
+	-moz-box-shadow:inset 0 0 6px 0 rgba(0,0,0,0.7);
+	box-shadow:inset 0 0 6px 0 rgba(0,0,0,0.7);
+}
+
+.piskel-owner {
+	margin: 0 10px;
+	transition : border-color 0.3s;
+}
+
+.piskel-owner:hover {
+	margin: 0 10px;
+	border-color : #FAFAFA;
+}
+
+.piskel-preview-container canvas, .piskel-preview-container img{ 
+	z-index : 50;
+	position: relative;
+}
+
+.piskel-edit {
+	-moz-box-sizing : border-box;
+	box-sizing : border-box;
+	
+	position: absolute;
+	overflow: hidden;
+	
+	left: 0;
+	top: 0;
+	width : 512px;
+	height: 512px;
+	padding : 20px;
+	
+	background: #2d2d2d;
+	
+	transition: left 0.3s;
+}
+
+.piskel-edit.show {
+	left: 512px;
+}
+
+.piskel-edit>div {
+	margin-bottom: 10px;
+}
+
+.piskel-edit label{
+	vertical-align: top;
+	width : 120px;
+	display:inline-block;
+}
+
+.piskel-edit input[type="text"], textarea {
+	-moz-box-sizing : border-box;
+	box-sizing: border-box;
+	background: #F2F2F2;
+	color: #2d2d2d;
+	border: 1px solid #111;
+	border-radius: 3px;
+	font-family: inherit;
+}
+
+.piskel-edit input[type="text"]{
+	width: 347px;
+	height: 30px;
+	padding: 0 5px;
+	font-size: 1rem;
+	font-weight: bold;
+}
+
+.piskel-edit textarea{
+	width: 347px;
+	padding: 5px;
+	font-size: 0.8rem;
+	font-weight: bold;
+}
+.piskel-edit .piskel-button {
+	width:100px;
+	margin-left: 10px;
+	float: right;
+}
+
+.piskel-button-save {
+	color:gold;
+}

@@ -1,0 +1,110 @@
+.main-container {
+	margin : 40px 0 0 40px;
+}
+
+.main-container > div {
+	margin-bottom : 10px;
+}
+
+.user-card {
+	width: 300px;
+	float : left;
+}
+
+.user-avatar-container {
+	display : inline-block;
+	position : relative;
+} 
+
+.user-avatar {
+	vertical-align: middle;
+}
+
+.user-avatar-big {
+	width: 256px;
+	height :256px;
+}
+
+.user-info-container {
+	margin-top : 10px;
+}
+
+.user-info-header {
+	font-size : 1.5rem;
+	font-weight : bold;
+	margin: 0;
+}
+
+.user-info-details {
+	margin-top : 10px;
+	font-size : 0.8rem;
+}
+
+.user-info-details > li{
+	margin-top : 10px;
+	margin-left: 5px;
+}
+
+.user-piskels {
+	overflow:hidden;
+	position : relative;
+	min-height: 256px;
+}
+
+.user-piskels-grid {
+	overflow:hidden;
+	margin-left: 100px;
+}
+
+.user-piskels-menu-wrapper {
+	height: 100%;
+	position: absolute;
+	padding-bottom: 5px;
+	-moz-box-sizing: border-box;
+	box-sizing : border-box;
+	width: 100px;
+}
+
+.user-piskels-menu {
+	height: 100%;
+	text-align: right;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	margin-right: 10px;
+	padding-right: 10px;	
+	padding-top: 10px;	
+	border-right : 1px solid #888;
+}
+
+.user-piskels-menu-item {
+	margin: 0 0 20px 0;
+	font-size: 1.2em;
+	cursor : pointer;
+}
+
+.user-piskels-menu-item a {
+		color : #AAA;
+		transition : color 0.3s;
+}
+
+.user-piskels-menu-item:hover a{
+	color : white;
+	border-right: 3px solid white;
+	padding-right: 9px;
+	margin-right: -12px;
+	text-decoration: none;
+}
+
+.user-piskels-menu-item.selected a {
+	color: gold;
+	border-right: 3px solid gold;
+	padding-right: 9px;
+	margin-right: -12px;
+}
+
+.user-info-counter {
+	margin-right: 3px;
+
+	line-height: 1.4rem;
+	font-size: 1.2rem;
+}

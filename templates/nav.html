@@ -1,0 +1,14 @@
+<div class="navigation">
+	<a class="link anchor-left  piskel-logo" href="/"><img src="/resources/logo_transparent.png" /></a>
+	<a class="piskel-button  create-piskel-button  anchor-left" href="/p/create" target="_blank">Create <span class="create-piskel-icon">+</span></a>
+	{% if is_logged_in %}
+		<a class="link link-login anchor-right" href="/logout">logout</a>
+		<a class="link link-login link-highlight anchor-right" href="/user/{{ session.user_id }}">
+			<img 
+				class="small-user-avatar small-circle-user-avatar" 
+				src="{{ user.avatar_url }}"
+			/>{{ user.name }}</a>
+	{% else %}
+		<a class="link link-login link-highlight anchor-right" href="/auth/google">login</a>
+  {% endif %}
+</div>

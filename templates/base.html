@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>{% block title %} title {% endblock %}</title>
+	<link rel="shortcut icon" type="image/png" href="/resources/favicon.png"/>
+	<link rel="stylesheet" type="text/css" href="/css/piskel-app.css"/>
+	{% block css %}{% endblock %}
+</head>
+<body>
+	<script type="text/javascript" src="/js/piskel-utils.js"></script>
+	<script type="text/javascript" src="/js/piskel-image-scale.js"></script>
+	<script type="text/javascript" src="/js/piskel-animated-preview.js"></script>
+	{% block js %}{% endblock %}
+	<div class="wrap">
+		{% include "nav.html" %}
+		<div class="main">
+			{% block main %} main {% endblock %}
+		</div>
+	</div>
+	{% include "footer.html" %}
+</body>
+</html>
