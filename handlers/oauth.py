@@ -94,7 +94,6 @@ class AuthHandler(BaseHandler, SimpleAuthHandler):
           self.auth.set_session(self.auth.store.user_to_dict(user))
 
     # Go to the profile page
-    logging.info(">>>>>>>>>>>>>>>>>>>>>> USER : %s", self.session_user)
     self.redirect_to('user-page', user_id=self.session_user['user_id'])
 
   def logout(self):
