@@ -11776,1715 +11776,144 @@ $.widget("ui.sortable", $.ui.mouse, {
   }
 
 }(window.jQuery);
-;/**
-* This class lets you encode animated GIF files
-* Base class :  http://www.java2s.com/Code/Java/2D-Graphics-GUI/AnimatedGifEncoder.htm
-* @author Kevin Weiner (original Java version - kweiner@fmsware.com)
-* @author Thibault Imbert (AS3 version - bytearray.org)
-* @version 0.1 AS3 implementation
-*/
-
-
-	//import flash.utils.ByteArray;
-	//import flash.display.BitmapData;
-	//import flash.display.Bitmap;
-	//import org.bytearray.gif.encoder.NeuQuant
-	//import flash.net.URLRequestHeader;
-	//import flash.net.URLRequestMethod;
-	//import flash.net.URLRequest;
-	//import flash.net.navigateToURL;
-	
-	GIFEncoder = function()
-	{
-	    for(var i = 0, chr = {}; i < 256; i++)
-        chr[i] = String.fromCharCode(i);
-        
-      function ByteArray(){
-        this.bin = [];
-      }
-
-      ByteArray.prototype.getData = function(){
-        
-	      for(var v = '', l = this.bin.length, i = 0; i < l; i++)
-          v += chr[this.bin[i]];
-        return v;
-      }
-      ByteArray.prototype.writeByte = function(val){
-        this.bin.push(val);
-      }
-      ByteArray.prototype.writeUTFBytes = function(string){
-        for(var l = string.length, i = 0; i < l; i++)
-          this.writeByte(string.charCodeAt(i));
-      }
-      ByteArray.prototype.writeBytes = function(array, offset, length){
-        for(var l = length || array.length, i = offset||0; i < l; i++)
-          this.writeByte(array[i]);
-      }
-	
-	    var exports = {};
-		/*private*/ var width/*int*/ // image size
-  		/*private*/ var height/*int*/;
-	    /*private*/ var transparent/***/ = null; // transparent color if given
-	    /*private*/ var transIndex/*int*/; // transparent index in color table
-	    /*private*/ var repeat/*int*/ = -1; // no repeat
-	    /*private*/ var delay/*int*/ = 0; // frame delay (hundredths)
-	    /*private*/ var started/*Boolean*/ = false; // ready to output frames
-	    /*private*/ var out/*ByteArray*/;
-	    /*private*/ var image/*Bitmap*/; // current frame
-	    /*private*/ var pixels/*ByteArray*/; // BGR byte array from frame
-	    /*private*/ var indexedPixels/*ByteArray*/ // converted frame indexed to palette
-	    /*private*/ var colorDepth/*int*/; // number of bit planes
-	    /*private*/ var colorTab/*ByteArray*/; // RGB palette
-	    /*private*/ var usedEntry/*Array*/ = new Array; // active palette entries
-	    /*private*/ var palSize/*int*/ = 7; // color table size (bits-1)
-	    /*private*/ var dispose/*int*/ = -1; // disposal code (-1 = use default)
-	    /*private*/ var closeStream/*Boolean*/ = false; // close stream when finished
-	    /*private*/ var firstFrame/*Boolean*/ = true;
-	    /*private*/ var sizeSet/*Boolean*/ = false; // if false, get size from first frame
-	    /*private*/ var sample/*int*/ = 10; // default sample interval for quantizer
-		
-		/**
-		* Sets the delay time between each frame, or changes it for subsequent frames
-		* (applies to last frame added)
-		* int delay time in milliseconds
-		* @param ms
-		*/
-		
-		var setDelay = exports.setDelay = function setDelay(ms/*int*/)/*void*/
-		{
-			
-			delay = Math.round(ms / 10);
-			
-		}
-		
-		/**
-		* Sets the GIF frame disposal code for the last added frame and any
-		* 
-		* subsequent frames. Default is 0 if no transparent color has been set,
-		* otherwise 2.
-		* @param code
-		* int disposal code.
-		*/
-		
-		var setDispose = exports.setDispose = function setDispose(code/*int*/)/*void*/ 
-		{
-			
-			if (code >= 0) dispose = code;
-			
-		}
-		
-		/**
-		* Sets the number of times the set of GIF frames should be played. Default is
-		* 1; 0 means play indefinitely. Must be invoked before the first image is
-		* added.
-		* 
-		* @param iter
-		* int number of iterations.
-		* @return
-		*/
-		
-		var setRepeat = exports.setRepeat = function setRepeat(iter/*int*/)/*void*/ 
-		{
-			
-			if (iter >= 0) repeat = iter;
-			
-		}
-		
-		/**
-		* Sets the transparent color for the last added frame and any subsequent
-		* frames. Since all colors are subject to modification in the quantization
-		* process, the color in the final palette for each frame closest to the given
-		* color becomes the transparent color for that frame. May be set to null to
-		* indicate no transparent color.
-		* @param
-		* Color to be treated as transparent on display.
-		*/
-		
-		var setTransparent = exports.setTransparent = function setTransparent(c/*Number*/)/*void*/
-		{
-			
-			transparent = c;
-			
-		}
-		
-		/**
-		* The addFrame method takes an incoming BitmapData object to create each frames
-		* @param
-		* BitmapData object to be treated as a GIF's frame
-		*/
-		
-		var addFrame = exports.addFrame = function addFrame(im/*BitmapData*/, is_imageData)/*Boolean*/
-		{
-			
-			if ((im == null) || !started || out == null) 
-			{
-				throw new Error ("Please call start method before calling addFrame");
-				return false;
-			}
-			
-		    var ok/*Boolean*/ = true;
-			
-		    try {
-				if(!is_imageData){
-				  image = im.getImageData(0,0, im.canvas.width, im.canvas.height).data;
-				  if (!sizeSet) setSize(im.canvas.width, im.canvas.height);
-				}else{
-				  image = im;
-				}
-				getImagePixels(); // convert to correct format if necessary
-				analyzePixels(); // build color table & map pixels
-				
-				if (firstFrame) 
-				{
-					writeLSD(); // logical screen descriptior
-					writePalette(); // global color table
-					if (repeat >= 0) 
-					{
-						// use NS app extension to indicate reps
-						writeNetscapeExt();
-					}
-		      }
-			  
-			  writeGraphicCtrlExt(); // write graphic control extension
-		      writeImageDesc(); // image descriptor
-		      if (!firstFrame) writePalette(); // local color table
-		      writePixels(); // encode and write pixel data
-		      firstFrame = false;
-		    } catch (e/*Error*/) {
-		      ok = false;
-		    }
-		    
-			return ok;
-			
-		}
-		
-		/**
-		* Adds final trailer to the GIF stream, if you don't call the finish method
-		* the GIF stream will not be valid.
-		*/
-		
-		var finish = exports.finish = function finish()/*Boolean*/
-		{
-		    if (!started) return false;
-		    var ok/*Boolean*/ = true;
-		    started = false;
-		    try {
-		      out.writeByte(0x3b); // gif trailer
-		    } catch (e/*Error*/) {
-		      ok = false;
-		    }
-	
-		    return ok;
-			
-		}
-		
-		/**
-		* Resets some members so that a new stream can be started.
-		* This method is actually called by the start method
-		*/
-		
-		var reset = function reset ( )/*void*/
-		{
-			
-			// reset for subsequent use
-			transIndex = 0;
-			image = null;
-		    pixels = null;
-		    indexedPixels = null;
-		    colorTab = null;
-		    closeStream = false;
-		    firstFrame = true;
-			
-		}
-
-		/**
-		* * Sets frame rate in frames per second. Equivalent to
-		* <code>setDelay(1000/fps)</code>.
-		* @param fps
-		* float frame rate (frames per second)         
-		*/
-		
-		var setFrameRate = exports.setFrameRate = function setFrameRate(fps/*Number*/)/*void*/ 
-		{
-			
-			if (fps != 0xf) delay = Math.round(100/fps);
-			
-		}
-		
-		/**
-		* Sets quality of color quantization (conversion of images to the maximum 256
-		* colors allowed by the GIF specification). Lower values (minimum = 1)
-		* produce better colors, but slow processing significantly. 10 is the
-		* default, and produces good color mapping at reasonable speeds. Values
-		* greater than 20 do not yield significant improvements in speed.
-		* @param quality
-		* int greater than 0.
-		* @return
-		*/
-		
-		var setQuality = exports.setQuality = function setQuality(quality/*int*/)/*void*/
-		{
-			
-		    if (quality < 1) quality = 1;
-		    sample = quality;
-			
-		}
-		
-		/**
-		* Sets the GIF frame size. The default size is the size of the first frame
-		* added if this method is not invoked.
-		* @param w
-		* int frame width.
-		* @param h
-		* int frame width.
-		*/
-		
-		var setSize = exports.setSize = function setSize(w/*int*/, h/*int*/)/*void*/
-		{
-			
-			if (started && !firstFrame) return;
-		    width = w;
-		    height = h;
-		    if (width < 1)width = 320;
-		    if (height < 1)height = 240;
-		    sizeSet = true
-			
-		}
-		
-		/**
-		* Initiates GIF file creation on the given stream.
-		* @param os
-		* OutputStream on which GIF images are written.
-		* @return false if initial write failed.
-		* 
-		*/
-		
-		var start = exports.start = function start()/*Boolean*/
-		{
-			
-			reset(); 
-		    var ok/*Boolean*/ = true;
-		    closeStream = false;
-		    out = new ByteArray;
-		    try {
-		      out.writeUTFBytes("GIF89a"); // header
-		    } catch (e/*Error*/) {
-		      ok = false;
-		    }
-			
-		    return started = ok;
-			
-		}
-		
-		var cont = exports.cont = function cont()/*Boolean*/
-		{
-			
-		    reset(); 
-		    var ok/*Boolean*/ = true;
-		    closeStream = false;
-		    out = new ByteArray;
-			
-		    return started = ok;
-			
-		}
-		
-		/**
-		* Analyzes image colors and creates color map.
-		*/
-		
-		var analyzePixels = function analyzePixels()/*void*/
-		{
-		    
-			var len/*int*/ = pixels.length;
-		    var nPix/*int*/ = len / 3;
-		    indexedPixels = [];
-		    var nq/*NeuQuant*/ = new NeuQuant(pixels, len, sample);
-		    // initialize quantizer
-		    colorTab = nq.process(); // create reduced palette
-		    // map image pixels to new palette
-		    var k/*int*/ = 0;
-		    for (var j/*int*/ = 0; j < nPix; j++) {
-		      var index/*int*/ = nq.map(pixels[k++] & 0xff, pixels[k++] & 0xff, pixels[k++] & 0xff);
-		      usedEntry[index] = true;
-		      indexedPixels[j] = index;
-		    }
-		    pixels = null;
-		    colorDepth = 8;
-		    palSize = 7;
-		    // get closest match to transparent color if specified
-		    if (transparent != null) {
-		      	transIndex = findClosest(transparent);
-
-			    var r = colorTab[transIndex*3];
-			    var g = colorTab[transIndex*3+1];
-			    var b = colorTab[transIndex*3+2];
-			    var trans_indices = [];
-			    for (var i=0; i<colorTab.length; i+=3)
-			    {
-			        var index = i / 3;
-			        if (!usedEntry[index]) continue;
-			        if (colorTab[i] == r && colorTab[i+1] == g && colorTab[i+2] == b)
-			            trans_indices.push(index);
-			    }
-			    for (var i=0; i<indexedPixels.length; i++) {
-			        if (trans_indices.indexOf(indexedPixels[i]) >= 0) {
-			            indexedPixels[i] = transIndex;
-			        }
-			    }
-		    }
-		}
-		
-		/**
-		* Returns index of palette color closest to c
-		*
-		*/
-		
-		var findClosest = function findClosest(c/*Number*/)/*int*/
-		{
-			
-			if (colorTab == null) return -1;
-		    var r/*int*/ = (c & 0xFF0000) >> 16;
-		    var g/*int*/ = (c & 0x00FF00) >> 8;
-		    var b/*int*/ = (c & 0x0000FF);
-		    var minpos/*int*/ = 0;
-		    var dmin/*int*/ = 256 * 256 * 256;
-		    var len/*int*/ = colorTab.length;
-			
-		    for (var i/*int*/ = 0; i < len;) {
-		      var dr/*int*/ = r - (colorTab[i++] & 0xff);
-		      var dg/*int*/ = g - (colorTab[i++] & 0xff);
-		      var db/*int*/ = b - (colorTab[i] & 0xff);
-		      var d/*int*/ = dr * dr + dg * dg + db * db;
-		      var index/*int*/ = i / 3;
-		      if (usedEntry[index] && (d < dmin)) {
-		        dmin = d;
-		        minpos = index;
-		      }
-		      i++;
-		    }
-		    return minpos;
-			
-		}
-		
-		/**
-		* Extracts image pixels into byte array "pixels
-		*/
-		
-		var getImagePixels = function getImagePixels()/*void*/
-		{
-		    
-		    var w/*int*/ = width;
-		    var h/*int*/ = height;
-		    pixels = [];
-  			var data = image;
-		    var count/*int*/ = 0;
-		    
-		    for ( var i/*int*/ = 0; i < h; i++ )
-		    {
-		    	
-		    	for (var j/*int*/ = 0; j < w; j++ )
-		    	{
-		    		
-	        		var b = (i*w*4)+j*4;
-	        		pixels[count++] = data[b];
-	        		pixels[count++] = data[b+1];
-	        		pixels[count++] = data[b+2];
-		    		
-		    	}
-		    	
-		    }
-		    
-		}
-		
-		/**
-		* Writes Graphic Control Extension
-		*/
-		
-		var writeGraphicCtrlExt = function writeGraphicCtrlExt()/*void*/
-		{
-			out.writeByte(0x21); // extension introducer
-		    out.writeByte(0xf9); // GCE label
-		    out.writeByte(4); // data block size
-		    var transp/*int*/
-		    var disp/*int*/;
-		    if (transparent == null) {
-		      transp = 0;
-		      disp = 0; // dispose = no action
-		    } else {
-		      transp = 1;
-		      disp = 2; // force clear if using transparent color
-		    }
-		    if (dispose >= 0) {
-		      disp = dispose & 7; // user override
-		    }
-		    disp <<= 2;
-		    // packed fields
-		    out.writeByte(0 | // 1:3 reserved
-		        disp | // 4:6 disposal
-		        0 | // 7 user input - 0 = none
-		        transp); // 8 transparency flag
-		
-		    WriteShort(delay); // delay x 1/100 sec
-		    out.writeByte(transIndex); // transparent color index
-		    out.writeByte(0); // block terminator
-			
-		}
-		  
-		/**
-		* Writes Image Descriptor
-		*/
-		
-		var writeImageDesc = function writeImageDesc()/*void*/
-		{
-		  	
-		    out.writeByte(0x2c); // image separator
-		   	WriteShort(0); // image position x,y = 0,0
-		    WriteShort(0);
-		    WriteShort(width); // image size
-		    WriteShort(height);
-
-		    // packed fields
-		    if (firstFrame) {
-		      // no LCT - GCT is used for first (or only) frame
-		      out.writeByte(0);
-		    } else {
-		      // specify normal LCT
-		      out.writeByte(0x80 | // 1 local color table 1=yes
-		          0 | // 2 interlace - 0=no
-		          0 | // 3 sorted - 0=no
-		          0 | // 4-5 reserved
-		          palSize); // 6-8 size of color table
-		    }
-		}
-		
-		/**
-		* Writes Logical Screen Descriptor
-		*/
-		
-		var writeLSD = function writeLSD()/*void*/
-		{
-			
-			// logical screen size
-		    WriteShort(width);
-		    WriteShort(height);
-		    // packed fields
-		    out.writeByte((0x80 | // 1 : global color table flag = 1 (gct used)
-		        0x70 | // 2-4 : color resolution = 7
-		        0x00 | // 5 : gct sort flag = 0
-		        palSize)); // 6-8 : gct size
-		
-		    out.writeByte(0); // background color index
-		    out.writeByte(0); // pixel aspect ratio - assume 1:1
-			
-		}
-		
-		/**
-		* Writes Netscape application extension to define repeat count.
-		*/
-		
-		var writeNetscapeExt = function writeNetscapeExt()/*void*/
-		{
-			
-		    out.writeByte(0x21); // extension introducer
-		    out.writeByte(0xff); // app extension label
-		    out.writeByte(11); // block size
-		    out.writeUTFBytes("NETSCAPE" + "2.0"); // app id + auth code
-		    out.writeByte(3); // sub-block size
-		    out.writeByte(1); // loop sub-block id
-		    WriteShort(repeat); // loop count (extra iterations, 0=repeat forever)
-		    out.writeByte(0); // block terminator
-		
-		}
-		
-		/**
-		* Writes color table
-		*/
-		
-		var writePalette = function writePalette()/*void*/
-		{
-		    out.writeBytes(colorTab);
-		    var n/*int*/ = (3 * 256) - colorTab.length;
-		    for (var i/*int*/ = 0; i < n; i++) out.writeByte(0);
-			
-		}
-		
-		var WriteShort = function WriteShort (pValue/*int*/)/*void*/
-		{  	
-			
-		  	out.writeByte( pValue & 0xFF );
-		  	out.writeByte( (pValue >> 8) & 0xFF);
-			
-		}
-		
-		/**
-		* Encodes and writes pixel data
-		*/
-		
-		var writePixels = function writePixels()/*void*/
-		{
-			
-		    var myencoder/*LZWEncoder*/ = new LZWEncoder(width, height, indexedPixels, colorDepth);
-		    myencoder.encode(out);
-			
-		}
-		
-		/**
-		* retrieves the GIF stream
-		*/
-		var stream = exports.stream = function stream ( )/*ByteArray*/
-		{
-			
-			return out; 
-			
-		}
-		
-		var setProperties = exports.setProperties = function setProperties(has_start, is_first){
-		  started = has_start;
-		  firstFrame = is_first;
-		  //out = new ByteArray; //??
-		}
-		
-		return exports
-		  
+;(function () {
+	var worker = function () {
+		(function(b){function a(b,d){if({}.hasOwnProperty.call(a.cache,b))return a.cache[b];var e=a.resolve(b);if(!e)throw new Error('Failed to resolve module '+b);var c={id:b,require:a,filename:b,exports:{},loaded:!1,parent:d,children:[]};d&&d.children.push(c);var f=b.slice(0,b.lastIndexOf('/')+1);return a.cache[b]=c.exports,e.call(c.exports,c,c.exports,f,b),c.loaded=!0,a.cache[b]=c.exports}a.modules={},a.cache={},a.resolve=function(b){return{}.hasOwnProperty.call(a.modules,b)?a.modules[b]:void 0},a.define=function(b,c){a.modules[b]=c},a.define('/gif.worker.coffee',function(d,e,f,g){var b,c;b=a('/GIFEncoder.js',d),c=function(a){var c,d,e;return c=new b(a.width,a.height),a.index===0?c.writeHeader():c.firstFrame=!1,c.setRepeat(a.repeat),c.setDelay(a.delay),c.setQuality(a.quality),c.addFrame(a.data),a.last&&c.finish(),d=c.stream(),a.data=d.pages,a.cursor=d.cursor,a.pageSize=d.constructor.pageSize,a.canTransfer?(e=function(c){var d;for(var b=0,e=a.data.length;b<e;++b)d=a.data[b],c.push(d.buffer);return c}.call(this,[]),self.postMessage(a,e)):self.postMessage(a)},self.onmessage=function(a){return c(a.data)}}),a.define('/GIFEncoder.js',function(e,h,i,j){function c(){this.page=-1,this.pages=[],this.newPage()}function b(a,b){this.width=~~a,this.height=~~b,this.transparent=null,this.transIndex=0,this.repeat=-1,this.delay=0,this.image=null,this.pixels=null,this.indexedPixels=null,this.colorDepth=null,this.colorTab=null,this.usedEntry=new Array,this.palSize=7,this.dispose=-1,this.firstFrame=!0,this.sample=10,this.out=new c}var f=a('/TypedNeuQuant.js',e),g=a('/LZWEncoder.js',e);c.pageSize=4096,c.charMap={};for(var d=0;d<256;d++)c.charMap[d]=String.fromCharCode(d);c.prototype.newPage=function(){this.pages[++this.page]=new Uint8Array(c.pageSize),this.cursor=0},c.prototype.getData=function(){var d='';for(var a=0;a<this.pages.length;a++)for(var b=0;b<c.pageSize;b++)d+=c.charMap[this.pages[a][b]];return d},c.prototype.writeByte=function(a){this.cursor>=c.pageSize&&this.newPage(),this.pages[this.page][this.cursor++]=a},c.prototype.writeUTFBytes=function(b){for(var c=b.length,a=0;a<c;a++)this.writeByte(b.charCodeAt(a))},c.prototype.writeBytes=function(b,d,e){for(var c=e||b.length,a=d||0;a<c;a++)this.writeByte(b[a])},b.prototype.setDelay=function(a){this.delay=Math.round(a/10)},b.prototype.setFrameRate=function(a){this.delay=Math.round(100/a)},b.prototype.setDispose=function(a){a>=0&&(this.dispose=a)},b.prototype.setRepeat=function(a){this.repeat=a},b.prototype.setTransparent=function(a){this.transparent=a},b.prototype.addFrame=function(a){this.image=a,this.getImagePixels(),this.analyzePixels(),this.firstFrame&&(this.writeLSD(),this.writePalette(),this.repeat>=0&&this.writeNetscapeExt()),this.writeGraphicCtrlExt(),this.writeImageDesc(),this.firstFrame||this.writePalette(),this.writePixels(),this.firstFrame=!1},b.prototype.finish=function(){this.out.writeByte(59)},b.prototype.setQuality=function(a){a<1&&(a=1),this.sample=a},b.prototype.writeHeader=function(){this.out.writeUTFBytes('GIF89a')},b.prototype.analyzePixels=function(){var g=this.pixels.length,d=g/3;this.indexedPixels=new Uint8Array(d);var a=new f(this.pixels,this.sample);a.buildColormap(),this.colorTab=a.getColormap();var b=0;for(var c=0;c<d;c++){var e=a.lookupRGB(this.pixels[b++]&255,this.pixels[b++]&255,this.pixels[b++]&255);this.usedEntry[e]=!0,this.indexedPixels[c]=e}this.pixels=null,this.colorDepth=8,this.palSize=7,this.transparent!==null&&(this.transIndex=this.findClosest(this.transparent))},b.prototype.findClosest=function(e){if(this.colorTab===null)return-1;var k=(e&16711680)>>16,l=(e&65280)>>8,m=e&255,c=0,d=16777216,j=this.colorTab.length;for(var a=0;a<j;){var f=k-(this.colorTab[a++]&255),g=l-(this.colorTab[a++]&255),h=m-(this.colorTab[a]&255),i=f*f+g*g+h*h,b=a/3;this.usedEntry[b]&&i<d&&(d=i,c=b),a++}return c},b.prototype.getImagePixels=function(){var a=this.width,g=this.height;this.pixels=new Uint8Array(a*g*3);var b=this.image,c=0;for(var d=0;d<g;d++)for(var e=0;e<a;e++){var f=d*a*4+e*4;this.pixels[c++]=b[f],this.pixels[c++]=b[f+1],this.pixels[c++]=b[f+2]}},b.prototype.writeGraphicCtrlExt=function(){this.out.writeByte(33),this.out.writeByte(249),this.out.writeByte(4);var b,a;this.transparent===null?(b=0,a=0):(b=1,a=2),this.dispose>=0&&(a=dispose&7),a<<=2,this.out.writeByte(0|a|0|b),this.writeShort(this.delay),this.out.writeByte(this.transIndex),this.out.writeByte(0)},b.prototype.writeImageDesc=function(){this.out.writeByte(44),this.writeShort(0),this.writeShort(0),this.writeShort(this.width),this.writeShort(this.height),this.firstFrame?this.out.writeByte(0):this.out.writeByte(128|this.palSize)},b.prototype.writeLSD=function(){this.writeShort(this.width),this.writeShort(this.height),this.out.writeByte(240|this.palSize),this.out.writeByte(0),this.out.writeByte(0)},b.prototype.writeNetscapeExt=function(){this.out.writeByte(33),this.out.writeByte(255),this.out.writeByte(11),this.out.writeUTFBytes('NETSCAPE2.0'),this.out.writeByte(3),this.out.writeByte(1),this.writeShort(this.repeat),this.out.writeByte(0)},b.prototype.writePalette=function(){this.out.writeBytes(this.colorTab);var b=768-this.colorTab.length;for(var a=0;a<b;a++)this.out.writeByte(0)},b.prototype.writeShort=function(a){this.out.writeByte(a&255),this.out.writeByte(a>>8&255)},b.prototype.writePixels=function(){var a=new g(this.width,this.height,this.indexedPixels,this.colorDepth);a.encode(this.out)},b.prototype.stream=function(){return this.out},e.exports=b}),a.define('/LZWEncoder.js',function(e,g,h,i){function f(y,D,C,B){function w(a,b){r[f++]=a,f>=254&&t(b)}function x(b){u(a),k=i+2,j=!0,l(i,b)}function u(b){for(var a=0;a<b;++a)h[a]=-1}function A(z,r){var g,t,d,e,y,w,s;for(q=z,j=!1,n_bits=q,m=p(n_bits),i=1<<z-1,o=i+1,k=i+2,f=0,e=v(),s=0,g=a;g<65536;g*=2)++s;s=8-s,w=a,u(w),l(i,r);a:while((t=v())!=c){if(g=(t<<b)+e,d=t<<s^e,h[d]===g){e=n[d];continue}if(h[d]>=0){y=w-d,d===0&&(y=1);do if((d-=y)<0&&(d+=w),h[d]===g){e=n[d];continue a}while(h[d]>=0)}l(e,r),e=t,k<1<<b?(n[d]=k++,h[d]=g):x(r)}l(e,r),l(o,r)}function z(a){a.writeByte(s),remaining=y*D,curPixel=0,A(s+1,a),a.writeByte(0)}function t(a){f>0&&(a.writeByte(f),a.writeBytes(r,0,f),f=0)}function p(a){return(1<<a)-1}function v(){if(remaining===0)return c;--remaining;var a=C[curPixel++];return a&255}function l(a,c){g&=d[e],e>0?g|=a<<e:g=a,e+=n_bits;while(e>=8)w(g&255,c),g>>=8,e-=8;if((k>m||j)&&(j?(m=p(n_bits=q),j=!1):(++n_bits,n_bits==b?m=1<<b:m=p(n_bits))),a==o){while(e>0)w(g&255,c),g>>=8,e-=8;t(c)}}var s=Math.max(2,B),r=new Uint8Array(256),h=new Int32Array(a),n=new Int32Array(a),g,e=0,f,k=0,m,j=!1,q,i,o;this.encode=z}var c=-1,b=12,a=5003,d=[0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535];e.exports=f}),a.define('/TypedNeuQuant.js',function(A,F,E,D){function C(A,B){function I(){o=[],q=new Int32Array(256),t=new Int32Array(a),y=new Int32Array(a),z=new Int32Array(a>>3);var c,d;for(c=0;c<a;c++)d=(c<<b+8)/a,o[c]=new Float64Array([d,d,d,0]),y[c]=e/a,t[c]=0}function J(){for(var c=0;c<a;c++)o[c][0]>>=b,o[c][1]>>=b,o[c][2]>>=b,o[c][3]=c}function K(b,a,c,e,f){o[a][0]-=b*(o[a][0]-c)/d,o[a][1]-=b*(o[a][1]-e)/d,o[a][2]-=b*(o[a][2]-f)/d}function L(j,e,n,l,k){var h=Math.abs(e-j),i=Math.min(e+j,a),g=e+1,f=e-1,m=1,b,d;while(g<i||f>h)d=z[m++],g<i&&(b=o[g++],b[0]-=d*(b[0]-n)/c,b[1]-=d*(b[1]-l)/c,b[2]-=d*(b[2]-k)/c),f>h&&(b=o[f--],b[0]-=d*(b[0]-n)/c,b[1]-=d*(b[1]-l)/c,b[2]-=d*(b[2]-k)/c)}function C(p,s,q){var h=2147483647,k=h,d=-1,m=d,c,j,e,n,l;for(c=0;c<a;c++)j=o[c],e=Math.abs(j[0]-p)+Math.abs(j[1]-s)+Math.abs(j[2]-q),e<h&&(h=e,d=c),n=e-(t[c]>>i-b),n<k&&(k=n,m=c),l=y[c]>>g,y[c]-=l,t[c]+=l<<f;return y[d]+=x,t[d]-=r,m}function D(){var d,b,e,c,h,g,f=0,i=0;for(d=0;d<a;d++){for(e=o[d],h=d,g=e[1],b=d+1;b<a;b++)c=o[b],c[1]<g&&(h=b,g=c[1]);if(c=o[h],d!=h&&(b=c[0],c[0]=e[0],e[0]=b,b=c[1],c[1]=e[1],e[1]=b,b=c[2],c[2]=e[2],e[2]=b,b=c[3],c[3]=e[3],e[3]=b),g!=f){for(q[f]=i+d>>1,b=f+1;b<g;b++)q[b]=d;f=g,i=d}}for(q[f]=i+n>>1,b=f+1;b<256;b++)q[b]=n}function E(j,i,k){var b,d,c,e=1e3,h=-1,f=q[i],g=f-1;while(f<a||g>=0)f<a&&(d=o[f],c=d[1]-i,c>=e?f=a:(f++,c<0&&(c=-c),b=d[0]-j,b<0&&(b=-b),c+=b,c<e&&(b=d[2]-k,b<0&&(b=-b),c+=b,c<e&&(e=c,h=d[3])))),g>=0&&(d=o[g],c=i-d[1],c>=e?g=-1:(g--,c<0&&(c=-c),b=d[0]-j,b<0&&(b=-b),c+=b,c<e&&(b=d[2]-k,b<0&&(b=-b),c+=b,c<e&&(e=c,h=d[3]))));return h}function F(){var c,f=A.length,D=30+(B-1)/3,y=f/(3*B),q=~~(y/w),n=d,o=u,a=o>>h;for(a<=1&&(a=0),c=0;c<a;c++)z[c]=n*((a*a-c*c)*m/(a*a));var i;f<s?(B=1,i=3):f%l!==0?i=3*l:f%k!==0?i=3*k:f%p!==0?i=3*p:i=3*j;var r,t,x,e,g=0;c=0;while(c<y)if(r=(A[g]&255)<<b,t=(A[g+1]&255)<<b,x=(A[g+2]&255)<<b,e=C(r,t,x),K(n,e,r,t,x),a!==0&&L(a,e,r,t,x),g+=i,g>=f&&(g-=f),c++,q===0&&(q=1),c%q===0)for(n-=n/D,o-=o/v,a=o>>h,a<=1&&(a=0),e=0;e<a;e++)z[e]=n*((a*a-e*e)*m/(a*a))}function G(){I(),F(),J(),D()}function H(){var b=[],g=[];for(var c=0;c<a;c++)g[o[c][3]]=c;var d=0;for(var e=0;e<a;e++){var f=g[e];b[d++]=o[f][0],b[d++]=o[f][1],b[d++]=o[f][2]}return b}var o,q,t,y,z;this.buildColormap=G,this.getColormap=H,this.lookupRGB=E}var w=100,a=256,n=a-1,b=4,i=16,e=1<<i,f=10,B=1<<f,g=10,x=e>>g,r=e<<f-g,z=a>>3,h=6,t=1<<h,u=z*t,v=30,o=10,d=1<<o,q=8,m=1<<q,y=o+q,c=1<<y,l=499,k=491,p=487,j=503,s=3*j;A.exports=C}),a('/gif.worker.coffee')}.call(this,this))
+	};
+	try {
+		var typedArray = [(worker+"").replace(/function \(\)\s?\{/,"").replace(/\}[^}]*$/, "")];
+		var blob = new Blob([typedArray], {type: "text/javascript"}); // pass a useful mime type here
+		window.GifWorkerURL = URL.createObjectURL(blob);
+	} catch (e) {
+		console.error("Could not create worker", e.message);
 	}
-;function encode64(input) {
-	var output = "", i = 0, l = input.length,
-	key = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=", 
-	chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-	while (i < l) {
-		chr1 = input.charCodeAt(i++);
-		chr2 = input.charCodeAt(i++);
-		chr3 = input.charCodeAt(i++);
-		enc1 = chr1 >> 2;
-		enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-		enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-		enc4 = chr3 & 63;
-		if (isNaN(chr2)) enc3 = enc4 = 64;
-		else if (isNaN(chr3)) enc4 = 64;
-		output = output + key.charAt(enc1) + key.charAt(enc2) + key.charAt(enc3) + key.charAt(enc4);
-	}
-	return output;
-}
-;/*
-* NeuQuant Neural-Net Quantization Algorithm
-* ------------------------------------------
-* 
-* Copyright (c) 1994 Anthony Dekker
-* 
-* NEUQUANT Neural-Net quantization algorithm by Anthony Dekker, 1994. See
-* "Kohonen neural networks for optimal colour quantization" in "Network:
-* Computation in Neural Systems" Vol. 5 (1994) pp 351-367. for a discussion of
-* the algorithm.
-* 
-* Any party obtaining a copy of these files from the author, directly or
-* indirectly, is granted, free of charge, a full and unrestricted irrevocable,
-* world-wide, paid up, royalty-free, nonexclusive right and license to deal in
-* this software and documentation files (the "Software"), including without
-* limitation the rights to use, copy, modify, merge, publish, distribute,
-* sublicense, and/or sell copies of the Software, and to permit persons who
-* receive copies from any such party to do so, with the only requirement being
-* that this copyright notice remain intact.
-*/
- 
-/*
-* This class handles Neural-Net quantization algorithm
-* @author Kevin Weiner (original Java version - kweiner@fmsware.com)
-* @author Thibault Imbert (AS3 version - bytearray.org)
-* @version 0.1 AS3 implementation
-*/
-
-	//import flash.utils.ByteArray;
-	
-	NeuQuant = function()
-	{
-	    var exports = {};
-		/*private_static*/ var netsize/*int*/ = 256; /* number of colours used */
-		
-		/* four primes near 500 - assume no image has a length so large */
-		/* that it is divisible by all four primes */
-		
-		/*private_static*/ var prime1/*int*/ = 499;
-		/*private_static*/ var prime2/*int*/ = 491;
-		/*private_static*/ var prime3/*int*/ = 487;
-		/*private_static*/ var prime4/*int*/ = 503;
-		/*private_static*/ var minpicturebytes/*int*/ = (3 * prime4);
-		
-		/* minimum size for input image */
-		/*
-		* Program Skeleton ---------------- [select samplefac in range 1..30] [read
-		* image from input file] pic = (unsigned char*) malloc(3*width*height);
-		* initnet(pic,3*width*height,samplefac); learn(); unbiasnet(); [write output
-		* image header, using writecolourmap(f)] inxbuild(); write output image using
-		* inxsearch(b,g,r)
-		*/
-
-		/*
-		* Network Definitions -------------------
-		*/
-		
-		/*private_static*/ var maxnetpos/*int*/ = (netsize - 1);
-		/*private_static*/ var netbiasshift/*int*/ = 4; /* bias for colour values */
-		/*private_static*/ var ncycles/*int*/ = 100; /* no. of learning cycles */
-		
-		/* defs for freq and bias */
-		/*private_static*/ var intbiasshift/*int*/ = 16; /* bias for fractions */
-		/*private_static*/ var intbias/*int*/ = (1 << intbiasshift);
-		/*private_static*/ var gammashift/*int*/ = 10; /* gamma = 1024 */
-		/*private_static*/ var gamma/*int*/ = (1 << gammashift);
-		/*private_static*/ var betashift/*int*/ = 10;
-		/*private_static*/ var beta/*int*/ = (intbias >> betashift); /* beta = 1/1024 */
-		/*private_static*/ var betagamma/*int*/ = (intbias << (gammashift - betashift));
-		
-		/* defs for decreasing radius factor */
-		/*private_static*/ var initrad/*int*/ = (netsize >> 3); /*
-	                                                         * for 256 cols, radius
-	                                                         * starts
-	                                                         */
-															 
-		/*private_static*/ var radiusbiasshift/*int*/ = 6; /* at 32.0 biased by 6 bits */
-		/*private_static*/ var radiusbias/*int*/ = (1 << radiusbiasshift);
-		/*private_static*/ var initradius/*int*/ = (initrad * radiusbias); /*
-	                                                                   * and
-	                                                                   * decreases
-	                                                                   * by a
-	                                                                   */
-																	   
-		/*private_static*/ var radiusdec/*int*/ = 30; /* factor of 1/30 each cycle */
-		
-		/* defs for decreasing alpha factor */
-		/*private_static*/ var alphabiasshift/*int*/ = 10; /* alpha starts at 1.0 */
-		/*private_static*/ var initalpha/*int*/ = (1 << alphabiasshift);
-		/*private*/ var alphadec/*int*/ /* biased by 10 bits */
-		
-		/* radbias and alpharadbias used for radpower calculation */
-		/*private_static*/ var radbiasshift/*int*/ = 8;
-		/*private_static*/ var radbias/*int*/ = (1 << radbiasshift);
-		/*private_static*/ var alpharadbshift/*int*/ = (alphabiasshift + radbiasshift);
-		
-		/*private_static*/ var alpharadbias/*int*/ = (1 << alpharadbshift);
-		
-		/*
-		* Types and Global Variables --------------------------
-		*/
-		
-		/*private*/ var thepicture/*ByteArray*//* the input image itself */
-		/*private*/ var lengthcount/*int*/; /* lengthcount = H*W*3 */
-		/*private*/ var samplefac/*int*/; /* sampling factor 1..30 */
-		
-		// typedef int pixel[4]; /* BGRc */
-		/*private*/ var network/*Array*/; /* the network itself - [netsize][4] */
-		/*protected*/ var netindex/*Array*/ = new Array();
-		
-		/* for network lookup - really 256 */
-		/*private*/ var bias/*Array*/ = new Array();
-		
-		/* bias and freq arrays for learning */
-		/*private*/ var freq/*Array*/ = new Array();
-		/*private*/ var radpower/*Array*/ = new Array();
-		
-		var NeuQuant = exports.NeuQuant = function NeuQuant(thepic/*ByteArray*/, len/*int*/, sample/*int*/)
-		{
-			
-			var i/*int*/;
-			var p/*Array*/;
-			
-			thepicture = thepic;
-			lengthcount = len;
-			samplefac = sample;
-			
-			network = new Array(netsize);
-			
-			for (i = 0; i < netsize; i++)
-			{
-				
-				network[i] = new Array(4);
-				p = network[i];
-				p[0] = p[1] = p[2] = (i << (netbiasshift + 8)) / netsize;
-				freq[i] = intbias / netsize; /* 1/netsize */
-				bias[i] = 0;
-			}
-			
-		}
-		
-		var colorMap = function colorMap()/*ByteArray*/
-		{
-			
-			var map/*ByteArray*/ = [];
-		    var index/*Array*/ = new Array(netsize);
-		    for (var i/*int*/ = 0; i < netsize; i++)
-		      index[network[i][3]] = i;
-		    var k/*int*/ = 0;
-		    for (var l/*int*/ = 0; l < netsize; l++) {
-		      var j/*int*/ = index[l];
-		      map[k++] = (network[j][0]);
-		      map[k++] = (network[j][1]);
-		      map[k++] = (network[j][2]);
-		    }
-		    return map;
-			
-		}
-		
-		/*
-	   * Insertion sort of network and building of netindex[0..255] (to do after
-	   * unbias)
-	   * -------------------------------------------------------------------------------
-	   */
-	   
-	   var inxbuild = function inxbuild()/*void*/
-	   {
-		   
-		  var i/*int*/;
-		  var j/*int*/;
-		  var smallpos/*int*/;
-		  var smallval/*int*/;
-		  var p/*Array*/;
-		  var q/*Array*/;
-		  var previouscol/*int*/
-		  var startpos/*int*/
-		  
-		  previouscol = 0;
-		  startpos = 0;
-		  for (i = 0; i < netsize; i++)
-		  {
-			  
-			  p = network[i];
-			  smallpos = i;
-			  smallval = p[1]; /* index on g */
-			  /* find smallest in i..netsize-1 */
-			  for (j = i + 1; j < netsize; j++)
-			  {
-				  q = network[j];
-				  if (q[1] < smallval)
-				  { /* index on g */
-				  
-					smallpos = j;
-					smallval = q[1]; /* index on g */
-				}
-			  }
-			  
-			  q = network[smallpos];
-			  /* swap p (i) and q (smallpos) entries */
-			  
-			  if (i != smallpos)
-			  {
-				  
-				  j = q[0];
-				  q[0] = p[0];
-				  p[0] = j;
-				  j = q[1];
-				  q[1] = p[1];
-				  p[1] = j;
-				  j = q[2];
-				  q[2] = p[2];
-				  p[2] = j;
-				  j = q[3];
-				  q[3] = p[3];
-				  p[3] = j;
-				  
-			  }
-			  
-			  /* smallval entry is now in position i */
-			  
-			  if (smallval != previouscol)
-			  
-			  {
-				  
-				netindex[previouscol] = (startpos + i) >> 1;
-				  
-				for (j = previouscol + 1; j < smallval; j++) netindex[j] = i;
-				  
-				previouscol = smallval;
-				startpos = i;
-				
-			  }
-			  
-			}
-			
-			netindex[previouscol] = (startpos + maxnetpos) >> 1;
-			for (j = previouscol + 1; j < 256; j++) netindex[j] = maxnetpos; /* really 256 */
-			
-	   }
-	   
-	   /*
-	   * Main Learning Loop ------------------
-	   */
-	   
-	   var learn = function learn()/*void*/ 
-	   
-	   {
-		   
-		   var i/*int*/;
-		   var j/*int*/;
-		   var b/*int*/;
-		   var g/*int*/
-		   var r/*int*/;
-		   var radius/*int*/;
-		   var rad/*int*/;
-		   var alpha/*int*/;
-		   var step/*int*/;
-		   var delta/*int*/;
-		   var samplepixels/*int*/;
-		   var p/*ByteArray*/;
-		   var pix/*int*/;
-		   var lim/*int*/;
-		   
-		   if (lengthcount < minpicturebytes) samplefac = 1;
-		   
-		   alphadec = 30 + ((samplefac - 1) / 3);
-		   p = thepicture;
-		   pix = 0;
-		   lim = lengthcount;
-		   samplepixels = lengthcount / (3 * samplefac);
-		   delta = samplepixels / ncycles;
-		   alpha = initalpha;
-		   radius = initradius;
-		   
-		   rad = radius >> radiusbiasshift;
-		   if (rad <= 1) rad = 0;
-		   
-		   for (i = 0; i < rad; i++) radpower[i] = alpha * (((rad * rad - i * i) * radbias) / (rad * rad));
-		   
-		   
-		   if (lengthcount < minpicturebytes) step = 3;
-		   
-		   else if ((lengthcount % prime1) != 0) step = 3 * prime1;
-		   
-		   else
-		   
-		   {
-			   
-			   if ((lengthcount % prime2) != 0) step = 3 * prime2;
-			   
-			   else
-			   
-			   {
-				   
-				   if ((lengthcount % prime3) != 0) step = 3 * prime3;
-				   
-				   else step = 3 * prime4;
-				   
-			   }
-			   
-		   }
-		   
-		   i = 0;
-		   
-		   while (i < samplepixels)
-		   
-		   {
-			   
-			   b = (p[pix + 0] & 0xff) << netbiasshift;
-			   g = (p[pix + 1] & 0xff) << netbiasshift;
-			   r = (p[pix + 2] & 0xff) << netbiasshift;
-			   j = contest(b, g, r);
-			   
-			   altersingle(alpha, j, b, g, r);
-			   
-			   if (rad != 0) alterneigh(rad, j, b, g, r); /* alter neighbours */
-			   
-			   pix += step;
-			   
-			   if (pix >= lim) pix -= lengthcount;
-			   
-			   i++;
-			   
-			   if (delta == 0) delta = 1;
-			   
-			   if (i % delta == 0)
-			   
-			   {
-				   
-				   alpha -= alpha / alphadec;
-				   radius -= radius / radiusdec;
-				   rad = radius >> radiusbiasshift;
-				   
-				   if (rad <= 1) rad = 0;
-				   
-				   for (j = 0; j < rad; j++) radpower[j] = alpha * (((rad * rad - j * j) * radbias) / (rad * rad));
-				   
-			   }
-			   
-		   }
-		   
-	   }
-	   
-	   /*
-	   ** Search for BGR values 0..255 (after net is unbiased) and return colour
-	   * index
-	   * ----------------------------------------------------------------------------
-	   */
-	   
-	   var map = exports.map = function map(b/*int*/, g/*int*/, r/*int*/)/*int*/
-	  
-	   {
-		   
-		   var i/*int*/;
-		   var j/*int*/;
-		   var dist/*int*/
-		   var a/*int*/;
-		   var bestd/*int*/;
-		   var p/*Array*/;
-		   var best/*int*/;
-		   
-		   bestd = 1000; /* biggest possible dist is 256*3 */
-		   best = -1;
-		   i = netindex[g]; /* index on g */
-		   j = i - 1; /* start at netindex[g] and work outwards */
-	
-	    while ((i < netsize) || (j >= 0))
-		
-		{
-			
-			if (i < netsize)
-			
-			{
-				
-				p = network[i];
-				
-				dist = p[1] - g; /* inx key */
-				
-				if (dist >= bestd) i = netsize; /* stop iter */
-				
-				else
-				
-				{
-					
-					i++;
-					
-					if (dist < 0) dist = -dist;
-					
-					a = p[0] - b;
-					
-					if (a < 0) a = -a;
-					
-					dist += a;
-					
-					if (dist < bestd)
-					
-					{
-						
-						a = p[2] - r;
-						
-						if (a < 0) a = -a;
-						
-						dist += a;
-						
-						if (dist < bestd)
-						
-						{
-							
-							bestd = dist;
-							best = p[3];
-							
-						}
-						
-					}
-					
-				}
-				
-			}
-		  
-	      if (j >= 0)
-		  {
-			  
-			  p = network[j];
-			  
-			  dist = g - p[1]; /* inx key - reverse dif */
-			  
-			  if (dist >= bestd) j = -1; /* stop iter */
-			  
-			  else 
-			  {
-				  
-				  j--;
-				  if (dist < 0) dist = -dist;
-				  a = p[0] - b;
-				  if (a < 0) a = -a;
-				  dist += a;
-				  
-				  if (dist < bestd)
-				  
-				  {
-					  
-					  a = p[2] - r;
-					  if (a < 0)a = -a;
-					  dist += a;
-					  if (dist < bestd)
-					  {
-						  bestd = dist;
-						  best = p[3];
-					  }
-					  
-				  }
-				  
-			  }
-			  
-		  }
-		  
-		}
-		
-	    return (best);
-		
-	  }
-	  
-	  var process = exports.process = function process()/*ByteArray*/
-	  {
-	   
-	    learn();
-	    unbiasnet();
-	    inxbuild();
-	    return colorMap();
-		
-	  }
-	  
-	  /*
-	  * Unbias network to give byte values 0..255 and record position i to prepare
-	  * for sort
-	  * -----------------------------------------------------------------------------------
-	  */
-	  
-	  var unbiasnet = function unbiasnet()/*void*/
-	  
-	  {
-	
-	    var i/*int*/;
-	    var j/*int*/;
-	
-	    for (i = 0; i < netsize; i++)
-		{
-	      network[i][0] >>= netbiasshift;
-	      network[i][1] >>= netbiasshift;
-	      network[i][2] >>= netbiasshift;
-	      network[i][3] = i; /* record colour no */
-	    }
-		
-	  }
-	  
-	  /*
-	  * Move adjacent neurons by precomputed alpha*(1-((i-j)^2/[r]^2)) in
-	  * radpower[|i-j|]
-	  * ---------------------------------------------------------------------------------
-	  */
-	  
-	  var alterneigh = function alterneigh(rad/*int*/, i/*int*/, b/*int*/, g/*int*/, r/*int*/)/*void*/
-	  
-	  {
-		  
-		  var j/*int*/;
-		  var k/*int*/;
-		  var lo/*int*/;
-		  var hi/*int*/;
-		  var a/*int*/;
-		  var m/*int*/;
-		  
-		  var p/*Array*/;
-		  
-		  lo = i - rad;
-		  if (lo < -1) lo = -1;
-		  
-		  hi = i + rad;
-		  
-		  if (hi > netsize) hi = netsize;
-		  
-		  j = i + 1;
-		  k = i - 1;
-		  m = 1;
-		  
-		  while ((j < hi) || (k > lo))
-		  
-		  {
-			  
-			  a = radpower[m++];
-			  
-			  if (j < hi)
-			  
-			  {
-				  
-				  p = network[j++];
-				  
-				  try {
-					  
-					  p[0] -= (a * (p[0] - b)) / alpharadbias;
-					  p[1] -= (a * (p[1] - g)) / alpharadbias;
-					  p[2] -= (a * (p[2] - r)) / alpharadbias;
-					  
-					  } catch (e/*Error*/) {} // prevents 1.3 miscompilation
-					  
-				}
-				
-				if (k > lo)
-				
-				{
-					
-					p = network[k--];
-					
-					try
-					{
-						
-						p[0] -= (a * (p[0] - b)) / alpharadbias;
-						p[1] -= (a * (p[1] - g)) / alpharadbias;
-						p[2] -= (a * (p[2] - r)) / alpharadbias;
-						
-					} catch (e/*Error*/) {}
-					
-				}
-				
-		  }
-		  
-	  }
-	  
-	  /*
-	  * Move neuron i towards biased (b,g,r) by factor alpha
-	  * ----------------------------------------------------
-	  */
-	  
-	  var altersingle = function altersingle(alpha/*int*/, i/*int*/, b/*int*/, g/*int*/, r/*int*/)/*void*/ 
-	  {
-		  
-		  /* alter hit neuron */
-		  var n/*Array*/ = network[i];
-		  n[0] -= (alpha * (n[0] - b)) / initalpha;
-		  n[1] -= (alpha * (n[1] - g)) / initalpha;
-		  n[2] -= (alpha * (n[2] - r)) / initalpha;
-		
-	  }
-	  
-	  /*
-	  * Search for biased BGR values ----------------------------
-	  */
-	  
-	  var contest = function contest(b/*int*/, g/*int*/, r/*int*/)/*int*/
-	  {
-		  
-		  /* finds closest neuron (min dist) and updates freq */
-		  /* finds best neuron (min dist-bias) and returns position */
-		  /* for frequently chosen neurons, freq[i] is high and bias[i] is negative */
-		  /* bias[i] = gamma*((1/netsize)-freq[i]) */
-		  
-		  var i/*int*/;
-		  var dist/*int*/;
-		  var a/*int*/;
-		  var biasdist/*int*/;
-		  var betafreq/*int*/;
-		  var bestpos/*int*/;
-		  var bestbiaspos/*int*/;
-		  var bestd/*int*/;
-		  var bestbiasd/*int*/;
-		  var n/*Array*/;
-		  
-		  bestd = ~(1 << 31);
-		  bestbiasd = bestd;
-		  bestpos = -1;
-		  bestbiaspos = bestpos;
-		  
-		  for (i = 0; i < netsize; i++)
-		  
-		  {
-			  
-			  n = network[i];
-			  dist = n[0] - b;
-			  
-			  if (dist < 0) dist = -dist;
-			  
-			  a = n[1] - g;
-			  
-			  if (a < 0) a = -a;
-			  
-			  dist += a;
-			  
-			  a = n[2] - r;
-			  
-			  if (a < 0) a = -a;
-			  
-			  dist += a;
-			  
-			  if (dist < bestd)
-			  
-			  {
-				  
-				  bestd = dist;
-				  bestpos = i;
-				  
-			  }
-			  
-			  biasdist = dist - ((bias[i]) >> (intbiasshift - netbiasshift));
-			  
-			  if (biasdist < bestbiasd)
-			  
-			  {
-				  
-				  bestbiasd = biasdist;
-				  bestbiaspos = i;
-				  
-			  }
-			  
-			  betafreq = (freq[i] >> betashift);
-			  freq[i] -= betafreq;
-			  bias[i] += (betafreq << gammashift);
-			  
-		  }
-		  
-		  freq[bestpos] += beta;
-		  bias[bestpos] -= betagamma;
-		  return (bestbiaspos);
-		  
-	  }
-	  
-	  NeuQuant.apply(this, arguments);
-	  return exports;
-	}
-;/**
-* This class handles LZW encoding
-* Adapted from Jef Poskanzer's Java port by way of J. M. G. Elliott.
-* @author Kevin Weiner (original Java version - kweiner@fmsware.com)
-* @author Thibault Imbert (AS3 version - bytearray.org)
-* @version 0.1 AS3 implementation
-*/
-
-	//import flash.utils.ByteArray;
-	
-	LZWEncoder = function()
-	{
-	    var exports = {};
-		/*private_static*/ var EOF/*int*/ = -1;
-		/*private*/ var imgW/*int*/;
-		/*private*/ var imgH/*int*/
-		/*private*/ var pixAry/*ByteArray*/;
-		/*private*/ var initCodeSize/*int*/;
-		/*private*/ var remaining/*int*/;
-		/*private*/ var curPixel/*int*/;
-		
-		// GIFCOMPR.C - GIF Image compression routines
-		// Lempel-Ziv compression based on 'compress'. GIF modifications by
-		// David Rowley (mgardi@watdcsu.waterloo.edu)
-		// General DEFINEs
-		
-		/*private_static*/ var BITS/*int*/ = 12;
-		/*private_static*/ var HSIZE/*int*/ = 5003; // 80% occupancy
-		
-		// GIF Image compression - modified 'compress'
-		// Based on: compress.c - File compression ala IEEE Computer, June 1984.
-		// By Authors: Spencer W. Thomas (decvax!harpo!utah-cs!utah-gr!thomas)
-		// Jim McKie (decvax!mcvax!jim)
-		// Steve Davies (decvax!vax135!petsd!peora!srd)
-		// Ken Turkowski (decvax!decwrl!turtlevax!ken)
-		// James A. Woods (decvax!ihnp4!ames!jaw)
-		// Joe Orost (decvax!vax135!petsd!joe)
-		
-		/*private*/ var n_bits/*int*/ // number of bits/code
-		/*private*/ var maxbits/*int*/ = BITS; // user settable max # bits/code
-		/*private*/ var maxcode/*int*/ // maximum code, given n_bits
-		/*private*/ var maxmaxcode/*int*/ = 1 << BITS; // should NEVER generate this code
-		/*private*/ var htab/*Array*/ = new Array;
-		/*private*/ var codetab/*Array*/ = new Array;
-		/*private*/ var hsize/*int*/ = HSIZE; // for dynamic table sizing
-		/*private*/ var free_ent/*int*/ = 0; // first unused entry
-		
-		// block compression parameters -- after all codes are used up,
-		// and compression rate changes, start over.
-		
-		/*private*/ var clear_flg/*Boolean*/ = false;
-		
-		// Algorithm: use open addressing double hashing (no chaining) on the
-		// prefix code / next character combination. We do a variant of Knuth's
-		// algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
-		// secondary probe. Here, the modular division first probe is gives way
-		// to a faster exclusive-or manipulation. Also do block compression with
-		// an adaptive reset, whereby the code table is cleared when the compression
-		// ratio decreases, but after the table fills. The variable-length output
-		// codes are re-sized at this point, and a special CLEAR code is generated
-		// for the decompressor. Late addition: construct the table according to
-		// file size for noticeable speed improvement on small files. Please direct
-		// questions about this implementation to ames!jaw.
-		
-		/*private*/ var g_init_bits/*int*/;
-		/*private*/ var ClearCode/*int*/;
-		/*private*/ var EOFCode/*int*/;
-		
-		// output
-		// Output the given code.
-		// Inputs:
-		// code: A n_bits-bit integer. If == -1, then EOF. This assumes
-		// that n_bits =< wordsize - 1.
-		// Outputs:
-		// Outputs code to the file.
-		// Assumptions:
-		// Chars are 8 bits long.
-		// Algorithm:
-		// Maintain a BITS character long buffer (so that 8 codes will
-		// fit in it exactly). Use the VAX insv instruction to insert each
-		// code in turn. When the buffer fills up empty it and start over.
-		
-		/*private*/ var cur_accum/*int*/ = 0;
-		/*private*/ var cur_bits/*int*/ = 0;
-		/*private*/ var masks/*Array*/ = [ 0x0000, 0x0001, 0x0003, 0x0007, 0x000F, 0x001F, 0x003F, 0x007F, 0x00FF, 0x01FF, 0x03FF, 0x07FF, 0x0FFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF ];
-		
-		// Number of characters so far in this 'packet'
-		/*private*/ var a_count/*int*/;
-		
-		// Define the storage for the packet accumulator
-		/*private*/ var accum/*ByteArray*/ = [];
-		
-		var LZWEncoder = exports.LZWEncoder = function LZWEncoder (width/*int*/, height/*int*/, pixels/*ByteArray*/, color_depth/*int*/)
-		{
-			
-			imgW = width;
-			imgH = height;
-			pixAry = pixels;
-			initCodeSize = Math.max(2, color_depth);
-			
-		}
-		
-		// Add a character to the end of the current packet, and if it is 254
-		// characters, flush the packet to disk.
-		var char_out = function char_out(c/*Number*/, outs/*ByteArray*/)/*void*/
-		{
-			accum[a_count++] = c;
-			if (a_count >= 254) flush_char(outs);
-			
-		}
-		
-		// Clear out the hash table
-		// table clear for block compress
-		
-		var cl_block = function cl_block(outs/*ByteArray*/)/*void*/
-		{
-			
-			cl_hash(hsize);
-			free_ent = ClearCode + 2;
-			clear_flg = true;
-			output(ClearCode, outs);
-			
-		}
-		
-		// reset code table
-		var cl_hash = function cl_hash(hsize/*int*/)/*void*/
-		{
-			
-			for (var i/*int*/ = 0; i < hsize; ++i) htab[i] = -1;
-			
-		}
-		
-		var compress = exports.compress = function compress(init_bits/*int*/, outs/*ByteArray*/)/*void*/
-		
-		{
-			var fcode/*int*/;
-			var i/*int*/ /* = 0 */;
-			var c/*int*/;
-			var ent/*int*/;
-			var disp/*int*/;
-			var hsize_reg/*int*/;
-			var hshift/*int*/;
-			
-			// Set up the globals: g_init_bits - initial number of bits
-			g_init_bits = init_bits;
-			
-			// Set up the necessary values
-			clear_flg = false;
-			n_bits = g_init_bits;
-			maxcode = MAXCODE(n_bits);
-	
-			ClearCode = 1 << (init_bits - 1);
-			EOFCode = ClearCode + 1;
-			free_ent = ClearCode + 2;
-	
-			a_count = 0; // clear packet
-		
-			ent = nextPixel();
-	
-			hshift = 0;
-			for (fcode = hsize; fcode < 65536; fcode *= 2)
-			  ++hshift;
-			hshift = 8 - hshift; // set hash code range bound
-	
-			hsize_reg = hsize;
-			cl_hash(hsize_reg); // clear hash table
-		
-			output(ClearCode, outs);
-		
-			outer_loop: while ((c = nextPixel()) != EOF)
-			
-			{
-				
-				fcode = (c << maxbits) + ent;
-				i = (c << hshift) ^ ent; // xor hashing
-	
-				if (htab[i] == fcode)
-				{
-				ent = codetab[i];
-				continue;
-				} else if (htab[i] >= 0) // non-empty slot
-				{
-					disp = hsize_reg - i; // secondary hash (after G. Knott)
-					if (i == 0)
-					disp = 1;
-					do 
-					{
-						
-						if ((i -= disp) < 0) i += hsize_reg;
-	
-						if (htab[i] == fcode)
-						{
-						ent = codetab[i];
-						continue outer_loop;
-						}
-					} while (htab[i] >= 0);
-				}
-	      
-				output(ent, outs);
-				ent = c;
-				if (free_ent < maxmaxcode)
-				{
-					codetab[i] = free_ent++; // code -> hashtable
-					htab[i] = fcode;
-				} else cl_block(outs);
-			}
-			
-			// Put out the final code.
-			output(ent, outs);
-			output(EOFCode, outs);
-			
-		}
-		
-		// ----------------------------------------------------------------------------
-		var encode = exports.encode = function encode(os/*ByteArray*/)/*void*/
-		{
-			os.writeByte(initCodeSize); // write "initial code size" byte
-			remaining = imgW * imgH; // reset navigation variables
-			curPixel = 0;
-			compress(initCodeSize + 1, os); // compress and write the pixel data
-			os.writeByte(0); // write block terminator
-			
-		}
-		
-		// Flush the packet to disk, and reset the accumulator
-		var flush_char = function flush_char(outs/*ByteArray*/)/*void*/
-		{
-			
-			if (a_count > 0)
-			{
-				outs.writeByte(a_count);
-				outs.writeBytes(accum, 0, a_count);
-				a_count = 0;
-			}
-			
-		}
-		
-		var MAXCODE = function MAXCODE(n_bits/*int*/)/*int*/
-		{
-			
-			return (1 << n_bits) - 1;
-			
-		}
-		
-		// ----------------------------------------------------------------------------
-		// Return the next pixel from the image
-		// ----------------------------------------------------------------------------
-		
-		var nextPixel = function nextPixel()/*int*/
-		{
-			
-			if (remaining == 0) return EOF;
-			
-			--remaining;
-			
-			var pix/*Number*/ = pixAry[curPixel++];
-			
-			return pix & 0xff;
-			
-		}
-		
-		var output = function output(code/*int*/, outs/*ByteArray*/)/*void*/
-		
-		{
-			cur_accum &= masks[cur_bits];
-			
-			if (cur_bits > 0) cur_accum |= (code << cur_bits);
-			else cur_accum = code;
-			
-			cur_bits += n_bits;
-			
-			while (cur_bits >= 8)
-			
-			{
-				
-				char_out((cur_accum & 0xff), outs);
-				cur_accum >>= 8;
-				cur_bits -= 8;
-				
-			}
-			
-			// If the next entry is going to be too big for the code size,
-			// then increase it, if possible.
-			
-			if (free_ent > maxcode || clear_flg)
-			{
-				
-				if (clear_flg)
-				{
-					
-					maxcode = MAXCODE(n_bits = g_init_bits);
-					clear_flg = false;
-					
-				} else
-				{
-					
-					++n_bits;
-					
-					if (n_bits == maxbits) maxcode = maxmaxcode;
-					
-					else maxcode = MAXCODE(n_bits);
-					
-				}
-				
-			}
-			
-			if (code == EOFCode) 
-			{
-				
-				// At EOF, write the rest of the buffer.
-				while (cur_bits > 0) 
-				{
-					
-					char_out((cur_accum & 0xff), outs);
-					cur_accum >>= 8;
-					cur_bits -= 8;
-				}
-				
-				
-				flush_char(outs);
-				
-			}
-			
-		}
-		LZWEncoder.apply(this, arguments);
-	   return exports;
-	}
-	
-;// TODO(grosbouddha): put under pskl namespace.
+})();
+;(function(c){function a(b,d){if({}.hasOwnProperty.call(a.cache,b))return a.cache[b];var e=a.resolve(b);if(!e)throw new Error('Failed to resolve module '+b);var c={id:b,require:a,filename:b,exports:{},loaded:!1,parent:d,children:[]};d&&d.children.push(c);var f=b.slice(0,b.lastIndexOf('/')+1);return a.cache[b]=c.exports,e.call(c.exports,c,c.exports,f,b),c.loaded=!0,a.cache[b]=c.exports}a.modules={},a.cache={},a.resolve=function(b){return{}.hasOwnProperty.call(a.modules,b)?a.modules[b]:void 0},a.define=function(b,c){a.modules[b]=c};var b=function(a){return a='/',{title:'browser',version:'v0.10.5',browser:!0,env:{},argv:[],nextTick:c.setImmediate||function(a){setTimeout(a,0)},cwd:function(){return a},chdir:function(b){a=b}}}();a.define('/gif.coffee',function(b,k,j,i){function c(a,b){return{}.hasOwnProperty.call(a,b)}function g(d,b){for(var a=0,c=b.length;a<c;++a)if(a in b&&b[a]===d)return!0;return!1}function h(a,b){function e(){this.constructor=a}for(var d in b)c(b,d)&&(a[d]=b[d]);return e.prototype=b.prototype,a.prototype=new e,a.__super__=b.prototype,a}var e,d,f;d=a('events',b).EventEmitter,e=a('/browser.coffee',b),f=function(f,b,d){function a(d){var a,c;this.running=!1,this.options={},this.frames=[],this.freeWorkers=[],this.activeWorkers=[],this.setOptions(d);for(a in b)c=b[a],null!=this.options[a]?this.options[a]:this.options[a]=c}return h(a,f),b={workerScript:window.GifWorkerURL,workers:2,repeat:0,background:'#fff',quality:10,width:null,height:null},d={delay:500,copy:!1},a.prototype.setOption=function(a,b){return this.options[a]=b,null!=this._canvas&&(a==='width'||a==='height')?this._canvas[a]=b:void 0},a.prototype.setOptions=function(a){return function(d){var b,e;for(b in a){if(!c(a,b))continue;e=a[b],d.push(this.setOption(b,e))}return d}.call(this,[])},a.prototype.addFrame=function(a,c){var b,e;null==c&&(c={}),b={};for(e in d)b[e]=c[e]||d[e];if(null!=this.options.width||this.setOption('width',a.width),null!=this.options.height||this.setOption('height',a.height),'undefined'!==typeof ImageData&&null!=ImageData&&a instanceof ImageData)b.data=a.data;else if('undefined'!==typeof CanvasRenderingContext2D&&null!=CanvasRenderingContext2D&&a instanceof CanvasRenderingContext2D||'undefined'!==typeof WebGLRenderingContext&&null!=WebGLRenderingContext&&a instanceof WebGLRenderingContext)c.copy?b.data=this.getContextData(a):b.context=a;else if(null!=a.childNodes)c.copy?b.data=this.getImageData(a):b.image=a;else throw new Error('Invalid image');return this.frames.push(b)},a.prototype.render=function(){var d,a;if(this.running)throw new Error('Already running');if(!(null!=this.options.width&&null!=this.options.height))throw new Error('Width and height must be set prior to rendering');this.running=!0,this.nextFrame=0,this.finishedFrames=0,this.imageParts=function(b){var d;for(var a=0,c=function(){var b,b;b=[];for(var a=0;0<=this.frames.length?a<this.frames.length:a>this.frames.length;0<=this.frames.length?++a:--a)b.push(a);return b}.apply(this,arguments).length;a<c;++a)d=function(){var b,b;b=[];for(var a=0;0<=this.frames.length?a<this.frames.length:a>this.frames.length;0<=this.frames.length?++a:--a)b.push(a);return b}.apply(this,arguments)[a],b.push(null);return b}.call(this,[]),a=this.spawnWorkers();for(var b=0,c=function(){var c,c;c=[];for(var b=0;0<=a?b<a:b>a;0<=a?++b:--b)c.push(b);return c}.apply(this,arguments).length;b<c;++b)d=function(){var c,c;c=[];for(var b=0;0<=a?b<a:b>a;0<=a?++b:--b)c.push(b);return c}.apply(this,arguments)[b],this.renderNextFrame();return this.emit('start'),this.emit('progress',0)},a.prototype.abort=function(){var a;while(!0){if(a=this.activeWorkers.shift(),!(null!=a))break;console.log('killing active worker'),a.terminate()}return this.running=!1,this.emit('abort')},a.prototype.spawnWorkers=function(){var a,b;return a=Math.min(this.options.workers,this.frames.length),function(){var c;c=[];for(var b=this.freeWorkers.length;this.freeWorkers.length<=a?b<a:b>a;this.freeWorkers.length<=a?++b:--b)c.push(b);return c}.apply(this,arguments).forEach((b=this,function(d){var a,c;return console.log('spawning worker '+d),c=new Worker(b.options.workerScript),a=b,c.onmessage=function(b){return a.activeWorkers.splice(a.activeWorkers.indexOf(c),1),a.freeWorkers.push(c),a.frameFinished(b.data)},b.freeWorkers.push(c)})),a},a.prototype.frameFinished=function(a){return console.log('frame '+a.index+' finished - '+this.activeWorkers.length+' active'),this.finishedFrames++,this.emit('progress',this.finishedFrames/this.frames.length),this.imageParts[a.index]=a,g(null,this.imageParts)?this.renderNextFrame():this.finishRendering()},a.prototype.finishRendering=function(){var e,a,k,m,b,d,h;b=0;for(var f=0,j=this.imageParts.length;f<j;++f)a=this.imageParts[f],b+=(a.data.length-1)*a.pageSize+a.cursor;b+=a.pageSize-a.cursor,console.log('rendering finished - filesize '+Math.round(b/1e3)+'kb'),e=new Uint8Array(b),d=0;for(var g=0,l=this.imageParts.length;g<l;++g){a=this.imageParts[g];for(var c=0,i=a.data.length;c<i;++c)h=a.data[c],k=c,e.set(h,d),k===a.data.length-1?d+=a.cursor:d+=a.pageSize}return m=new Blob([e],{type:'image/gif'}),this.emit('finished',m,e)},a.prototype.renderNextFrame=function(){var c,a,b;if(this.freeWorkers.length===0)throw new Error('No free workers');return this.nextFrame>=this.frames.length?void 0:(c=this.frames[this.nextFrame++],b=this.freeWorkers.shift(),a=this.getTask(c),console.log('starting frame '+(a.index+1)+' of '+this.frames.length),this.activeWorkers.push(b),b.postMessage(a))},a.prototype.getContextData=function(a){return a.getImageData(0,0,this.options.width,this.options.height).data},a.prototype.getImageData=function(b){var a;return null!=this._canvas||(this._canvas=document.createElement('canvas'),this._canvas.width=this.options.width,this._canvas.height=this.options.height),a=this._canvas.getContext('2d'),a.setFill=this.options.background,a.fillRect(0,0,this.options.width,this.options.height),a.drawImage(b,0,0),this.getContextData(a)},a.prototype.getTask=function(a){var c,b;if(c=this.frames.indexOf(a),b={index:c,last:c===this.frames.length-1,delay:a.delay,width:this.options.width,height:this.options.height,quality:this.options.quality,repeat:this.options.repeat,canTransfer:e.name==='chrome'},null!=a.data)b.data=a.data;else if(null!=a.context)b.data=this.getContextData(a.context);else if(null!=a.image)b.data=this.getImageData(a.image);else throw new Error('Invalid frame');return b},a}(d),b.exports=f}),a.define('/browser.coffee',function(f,g,h,i){var a,d,e,c,b;c=navigator.userAgent.toLowerCase(),e=navigator.platform.toLowerCase(),b=c.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/)||[null,'unknown',0],d=b[1]==='ie'&&document.documentMode,a={name:b[1]==='version'?b[3]:b[1],version:d||parseFloat(b[1]==='opera'&&b[4]?b[4]:b[2]),platform:{name:c.match(/ip(?:ad|od|hone)/)?'ios':(c.match(/(?:webos|android)/)||e.match(/mac|win|linux/)||['other'])[0]}},a[a.name]=!0,a[a.name+parseInt(a.version,10)]=!0,a.platform[a.platform.name]=!0,f.exports=a}),a.define('events',function(f,e,g,h){b.EventEmitter||(b.EventEmitter=function(){});var a=e.EventEmitter=b.EventEmitter,c=typeof Array.isArray==='function'?Array.isArray:function(a){return Object.prototype.toString.call(a)==='[object Array]'},d=10;a.prototype.setMaxListeners=function(a){this._events||(this._events={}),this._events.maxListeners=a},a.prototype.emit=function(f){if(f==='error'&&(!(this._events&&this._events.error)||c(this._events.error)&&!this._events.error.length))throw arguments[1]instanceof Error?arguments[1]:new Error("Uncaught, unspecified 'error' event.");if(!this._events)return!1;var a=this._events[f];if(!a)return!1;if(!(typeof a=='function'))if(c(a)){var b=Array.prototype.slice.call(arguments,1),e=a.slice();for(var d=0,g=e.length;d<g;d++)e[d].apply(this,b);return!0}else return!1;switch(arguments.length){case 1:a.call(this);break;case 2:a.call(this,arguments[1]);break;case 3:a.call(this,arguments[1],arguments[2]);break;default:var b=Array.prototype.slice.call(arguments,1);a.apply(this,b)}return!0},a.prototype.addListener=function(a,b){if('function'!==typeof b)throw new Error('addListener only takes instances of Function');if(this._events||(this._events={}),this.emit('newListener',a,b),!this._events[a])this._events[a]=b;else if(c(this._events[a])){if(!this._events[a].warned){var e;this._events.maxListeners!==undefined?e=this._events.maxListeners:e=d,e&&e>0&&this._events[a].length>e&&(this._events[a].warned=!0,console.error('(node) warning: possible EventEmitter memory leak detected. %d listeners added. Use emitter.setMaxListeners() to increase limit.',this._events[a].length),console.trace())}this._events[a].push(b)}else this._events[a]=[this._events[a],b];return this},a.prototype.on=a.prototype.addListener,a.prototype.once=function(b,c){var a=this;return a.on(b,function d(){a.removeListener(b,d),c.apply(this,arguments)}),this},a.prototype.removeListener=function(a,d){if('function'!==typeof d)throw new Error('removeListener only takes instances of Function');if(!(this._events&&this._events[a]))return this;var b=this._events[a];if(c(b)){var e=b.indexOf(d);if(e<0)return this;b.splice(e,1),b.length==0&&delete this._events[a]}else this._events[a]===d&&delete this._events[a];return this},a.prototype.removeAllListeners=function(a){return a&&this._events&&this._events[a]&&(this._events[a]=null),this},a.prototype.listeners=function(a){return this._events||(this._events={}),this._events[a]||(this._events[a]=[]),c(this._events[a])||(this._events[a]=[this._events[a]]),this._events[a]}}),c.GIF=a('/gif.coffee')}.call(this,this))
+//# sourceMappingURL=gif.js.map
+// gif.js 0.1.4 - https://github.com/jnordberg/gif.js;// TODO(grosbouddha): put under pskl namespace.
 var Constants = {
-    DEFAULT_SIZE : {
-        height : 32,
-        width : 32
-    },
+  DEFAULT_SIZE : {
+    height : 32,
+    width : 32
+  },
 
-    MAX_HEIGHT : 128,
-    MAX_WIDTH : 128,
+  MAX_HEIGHT : 128,
+  MAX_WIDTH : 128,
 
-    PREVIEW_FILM_SIZE : 120,
+  PREVIEW_FILM_SIZE : 120,
 
-    DEFAULT_PEN_COLOR : '#000000',  
-    TRANSPARENT_COLOR : 'TRANSPARENT',
-    
-    /*
-     * Fake semi-transparent color used to highlight transparent
-     * strokes and rectangles:
-     */
-    SELECTION_TRANSPARENT_COLOR: 'rgba(255, 255, 255, 0.6)',
+  DEFAULT_PEN_COLOR : '#000000',  
+  TRANSPARENT_COLOR : 'TRANSPARENT',
+  
+  /*
+   * Fake semi-transparent color used to highlight transparent
+   * strokes and rectangles:
+   */
+  SELECTION_TRANSPARENT_COLOR: 'rgba(255, 255, 255, 0.6)',
 
-    /*
-     * When a tool is hovering the drawing canvas, we highlight the eventual
-     * pixel target with this color:
-     */
-    TOOL_TARGET_HIGHLIGHT_COLOR: 'rgba(255, 255, 255, 0.2)',
-    
-    /*
-     * Default entry point for piskel web service:
-     */
-    PISKEL_SERVICE_URL: 'http://3.piskel-app.appspot.com',
+  /*
+   * When a tool is hovering the drawing canvas, we highlight the eventual
+   * pixel target with this color:
+   */
+  TOOL_TARGET_HIGHLIGHT_COLOR: 'rgba(255, 255, 255, 0.2)',
+  
+  /*
+   * Default entry point for piskel web service:
+   */
+  PISKEL_SERVICE_URL: 'http://3.piskel-app.appspot.com',
 
-    GRID_STROKE_WIDTH: 1,
-    GRID_STROKE_COLOR: "lightgray",
+  GRID_STROKE_WIDTH: 1,
+  GRID_STROKE_COLOR: "lightgray",
 
-    LEFT_BUTTON : "left_button_1",
-    RIGHT_BUTTON : "right_button_2"
+  LEFT_BUTTON : "left_button_1",
+  RIGHT_BUTTON : "right_button_2"
 };;// TODO(grosbouddha): put under pskl namespace.
 Events = {
-    
-    TOOL_SELECTED : "TOOL_SELECTED",
-    TOOL_RELEASED : "TOOL_RELEASED",
-    PRIMARY_COLOR_SELECTED: "PRIMARY_COLOR_SELECTED",
-    PRIMARY_COLOR_UPDATED: "PRIMARY_COLOR_UPDATED",
-    SECONDARY_COLOR_SELECTED: "SECONDARY_COLOR_SELECTED",
-    SECONDARY_COLOR_UPDATED: "SECONDARY_COLOR_UPDATED",
+  
+  TOOL_SELECTED : "TOOL_SELECTED",
+  TOOL_RELEASED : "TOOL_RELEASED",
+  PRIMARY_COLOR_SELECTED: "PRIMARY_COLOR_SELECTED",
+  PRIMARY_COLOR_UPDATED: "PRIMARY_COLOR_UPDATED",
+  SECONDARY_COLOR_SELECTED: "SECONDARY_COLOR_SELECTED",
+  SECONDARY_COLOR_UPDATED: "SECONDARY_COLOR_UPDATED",
 
-    /**
-     *  When this event is emitted, a request is sent to the localstorage
-     *  Service to save the current framesheet. The storage service 
-     *  may not immediately store data (internal throttling of requests).
-     */
-    LOCALSTORAGE_REQUEST: "LOCALSTORAGE_REQUEST",
+  /**
+   *  When this event is emitted, a request is sent to the localstorage
+   *  Service to save the current framesheet. The storage service 
+   *  may not immediately store data (internal throttling of requests).
+   */
+  LOCALSTORAGE_REQUEST: "LOCALSTORAGE_REQUEST",
 
-    CANVAS_RIGHT_CLICKED: "CANVAS_RIGHT_CLICKED",
+  CANVAS_RIGHT_CLICKED: "CANVAS_RIGHT_CLICKED",
 
-    /**
-     * Event to request a refresh of the display.
-     * A bit overkill but, it's just workaround in our current drawing system.
-     * TODO: Remove or rework when redraw system is refactored.
-     */
-    REFRESH: "REFRESH",
+  /**
+   * Event to request a refresh of the display.
+   * A bit overkill but, it's just workaround in our current drawing system.
+   * TODO: Remove or rework when redraw system is refactored.
+   */
+  REFRESH: "REFRESH",
 
-    /**
-     * Temporary event to bind the redraw of right preview film to the canvas.
-     * This redraw should be driven by model updates.
-     * TODO(vincz): Remove.
-     */
-    REDRAW_PREVIEWFILM: "REDRAW_PREVIEWFILM",
+  /**
+   * Temporary event to bind the redraw of right preview film to the canvas.
+   * This redraw should be driven by model updates.
+   * TODO(vincz): Remove.
+   */
+  REDRAW_PREVIEWFILM: "REDRAW_PREVIEWFILM",
 
-    /**
-     * Fired each time a user setting change.
-     * The payload will be:
-     *   1st argument: Name of the settings
-     *   2nd argument: New value
-     */
-    USER_SETTINGS_CHANGED: "USER_SETTINGS_CHANGED",
-    
-    /**
-     * The framesheet was reseted and is now probably drastically different.
-     * Number of frames, content of frames, color used for the palette may have changed.
-     */
-    FRAMESHEET_RESET: "FRAMESHEET_RESET",
+  /**
+   * Fired each time a user setting change.
+   * The payload will be:
+   *   1st argument: Name of the settings
+   *   2nd argument: New value
+   */
+  USER_SETTINGS_CHANGED: "USER_SETTINGS_CHANGED",
+  
+  /**
+   * The framesheet was reseted and is now probably drastically different.
+   * Number of frames, content of frames, color used for the palette may have changed.
+   */
+  FRAMESHEET_RESET: "FRAMESHEET_RESET",
 
-    FRAME_SIZE_CHANGED : "FRAME_SIZE_CHANGED",
+  FRAME_SIZE_CHANGED : "FRAME_SIZE_CHANGED",
 
-    CURRENT_FRAME_SET: "CURRENT_FRAME_SET",
+  CURRENT_FRAME_SET: "CURRENT_FRAME_SET",
 
-    SELECTION_CREATED: "SELECTION_CREATED",
-    SELECTION_MOVE_REQUEST: "SELECTION_MOVE_REQUEST",
-    SELECTION_DISMISSED: "SELECTION_DISMISSED",
-    
-    SHOW_NOTIFICATION: "SHOW_NOTIFICATION",
-    HIDE_NOTIFICATION: "HIDE_NOTIFICATION",
+  SELECTION_CREATED: "SELECTION_CREATED",
+  SELECTION_MOVE_REQUEST: "SELECTION_MOVE_REQUEST",
+  SELECTION_DISMISSED: "SELECTION_DISMISSED",
+  
+  SHOW_NOTIFICATION: "SHOW_NOTIFICATION",
+  HIDE_NOTIFICATION: "HIDE_NOTIFICATION",
 
-    UNDO: "UNDO",
-    REDO: "REDO",
-    CUT: "CUT",
-    COPY: "COPY",
-    PASTE: "PASTE"    
+  UNDO: "UNDO",
+  REDO: "REDO",
+  CUT: "CUT",
+  COPY: "COPY",
+  PASTE: "PASTE"    
 };;jQuery.namespace = function() {
-    var a=arguments, o=null, i, j, d;
-    for (i=0; i<a.length; i=i+1) {
-        d=a[i].split(".");
-        o=window;
-        for (j=0; j<d.length; j=j+1) {
-            o[d[j]]=o[d[j]] || {};
-            o=o[d[j]];
-        }
+  var a=arguments, o=null, i, j, d;
+  for (i=0; i<a.length; i=i+1) {
+    d=a[i].split(".");
+    o=window;
+    for (j=0; j<d.length; j=j+1) {
+      o[d[j]]=o[d[j]] || {};
+      o=o[d[j]];
     }
-    return o;
+  }
+  return o;
 };
 
 /**
  * Need a polyfill for PhantomJS
  */
 if (typeof Function.prototype.bind !== "function") {
-    Function.prototype.bind = function(scope) {
-        "use strict";
-        var _function = this;
-        return function() {
-            return _function.apply(scope, arguments);
-        };
+  Function.prototype.bind = function(scope) {
+    "use strict";
+    var _function = this;
+    return function() {
+      return _function.apply(scope, arguments);
     };
+  };
 }
 
 /*
@@ -13494,292 +11923,294 @@ if (typeof Function.prototype.bind !== "function") {
  */
 (function() { // namespace: pskl.utils
 
-    var ns = $.namespace("pskl.utils");
+  var ns = $.namespace("pskl.utils");
 
-    ns.rgbToHex = function(r, g, b) {
-        if (r > 255 || g > 255 || b > 255)
-            throw "Invalid color component";
-        return ((r << 16) | (g << 8) | b).toString(16);
-    };
+  ns.rgbToHex = function(r, g, b) {
+    if (r > 255 || g > 255 || b > 255)
+      throw "Invalid color component";
+    return ((r << 16) | (g << 8) | b).toString(16);
+  };
 
-    ns.inherit = function(extendedObject, inheritFrom) {
-        extendedObject.prototype = Object.create(inheritFrom.prototype);
-        extendedObject.prototype.constructor = extendedObject;
-        extendedObject.prototype.superclass = inheritFrom.prototype;
-    };
+  ns.inherit = function(extendedObject, inheritFrom) {
+    extendedObject.prototype = Object.create(inheritFrom.prototype);
+    extendedObject.prototype.constructor = extendedObject;
+    extendedObject.prototype.superclass = inheritFrom.prototype;
+  };
 
 })();
 
 ;(function () {
-    var ns = $.namespace("pskl");
+  var ns = $.namespace("pskl");
 
-    ns.PixelUtils = {
+  ns.PixelUtils = {
 
-        getRectanglePixels : function (x0, y0, x1, y1) {
-            var rectangle = this.getOrderedRectangleCoordinates(x0, y0, x1, y1);
-            var pixels = [];
+    getRectanglePixels : function (x0, y0, x1, y1) {
+      var rectangle = this.getOrderedRectangleCoordinates(x0, y0, x1, y1);
+      var pixels = [];
 
-            for(var x = rectangle.x0; x <= rectangle.x1; x++) {
-                for(var y = rectangle.y0; y <= rectangle.y1; y++) {
-                    pixels.push({"col": x, "row": y});
-                }
-            }
-            
-            return pixels;      
-        },
-
-        getBoundRectanglePixels : function (x0, y0, x1, y1) {
-            var rectangle = this.getOrderedRectangleCoordinates(x0, y0, x1, y1);
-            var pixels = [];
-            // Creating horizontal sides of the rectangle:
-            for(var x = rectangle.x0; x <= rectangle.x1; x++) {
-                pixels.push({"col": x, "row": rectangle.y0});
-                pixels.push({"col": x, "row": rectangle.y1});
-            }
-
-            // Creating vertical sides of the rectangle:
-            for(var y = rectangle.y0; y <= rectangle.y1; y++) {
-                pixels.push({"col": rectangle.x0, "row": y});
-                pixels.push({"col": rectangle.x1, "row": y});
-            }
-            
-            return pixels;  
-        },
-
-        /**
-         * Return an object of ordered rectangle coordinate.
-         * In returned object {x0, y0} => top left corner - {x1, y1} => bottom right corner 
-         * @private
-         */
-        getOrderedRectangleCoordinates : function (x0, y0, x1, y1) {
-            return {
-                x0 : Math.min(x0, x1), y0 : Math.min(y0, y1),
-                x1 : Math.max(x0, x1), y1 : Math.max(y0, y1),
-            };
-        },
-
-        /**
-         * Return the list of pixels that would have been filled by a paintbucket tool applied 
-         * on pixel at coordinate (x,y).
-         * This function is not altering the Frame object argument. 
-         *
-         * @param frame pskl.model.Frame The frame target in which we want to paintbucket
-         * @param col number Column coordinate in the frame 
-         * @param row number Row coordinate in the frame 
-         *
-         * @return an array of the pixel coordinates paint with the replacement color
-         */
-        getSimilarConnectedPixelsFromFrame: function(frame, col, row) {
-            // To get the list of connected (eg the same color) pixels, we will use the paintbucket algorithm
-            // in a fake cloned frame. The returned pixels by the paintbucket algo are the painted pixels
-            // and are as well connected.
-            var fakeFrame = frame.clone(); // We just want to
-            var fakeFillColor = "sdfsdfsdf"; // A fake color that will never match a real color.
-            var paintedPixels = this.paintSimilarConnectedPixelsFromFrame(fakeFrame, col, row, fakeFillColor);
-
-            return paintedPixels;
-        },
-
-        /**
-         * Apply the paintbucket tool in a frame at the (col, row) initial position
-         * with the replacement color.
-         * 
-         * @param frame pskl.model.Frame The frame target in which we want to paintbucket
-         * @param col number Column coordinate in the frame 
-         * @param row number Row coordinate in the frame 
-         * @param replacementColor string Hexadecimal color used to fill the area
-         *
-         * @return an array of the pixel coordinates paint with the replacement color
-         */
-        paintSimilarConnectedPixelsFromFrame: function(frame, col, row, replacementColor) {
-            /**
-             *  Queue linear Flood-fill (node, target-color, replacement-color):
-             *   1. Set Q to the empty queue.
-             *   2. If the color of node is not equal to target-color, return.
-             *   3. Add node to Q.
-             *   4. For each element n of Q:
-             *   5.     If the color of n is equal to target-color:
-             *   6.         Set w and e equal to n.
-             *   7.         Move w to the west until the color of the node to the west of w no longer matches target-color.
-             *   8.         Move e to the east until the color of the node to the east of e no longer matches target-color.
-             *   9.         Set the color of nodes between w and e to replacement-color.
-             *  10.         For each node n between w and e:
-             *  11.             If the color of the node to the north of n is target-color, add that node to Q.
-             *  12.             If the color of the node to the south of n is target-color, add that node to Q.
-             *  13. Continue looping until Q is exhausted.
-             *  14. Return.
-             */
-            var paintedPixels = [];
-            var queue = [];
-            var dy = [-1, 0, 1, 0];
-            var dx = [0, 1, 0, -1];
-            var targetColor;
-            try {
-                targetColor = frame.getPixel(col, row);
-            } catch(e) {
-                // Frame out of bound exception.
-            }
-            
-            if(targetColor == replacementColor) {
-                return;
-            }
-            
-
-            queue.push({"col": col, "row": row});
-            var loopCount = 0;
-            var cellCount = frame.getWidth() * frame.getHeight();
-            while(queue.length > 0) {
-                loopCount ++;
-
-                var currentItem = queue.pop();
-                frame.setPixel(currentItem.col, currentItem.row, replacementColor);
-                paintedPixels.push({"col": currentItem.col, "row": currentItem.row });
-
-                for (var i = 0; i < 4; i++) {
-                    var nextCol = currentItem.col + dx[i];
-                    var nextRow = currentItem.row + dy[i];
-                    try {
-                        if (frame.containsPixel(nextCol, nextRow)  && frame.getPixel(nextCol, nextRow) == targetColor) {
-                            queue.push({"col": nextCol, "row": nextRow });
-                        }
-                    } catch(e) {
-                        // Frame out of bound exception.
-                    }
-                }
-
-                // Security loop breaker:
-                if(loopCount > 10 * cellCount) {
-                    console.log("loop breaker called");
-                    break;          
-                }
-            }
-            return paintedPixels;
-        },
-
-        /**
-         * Calculate and return the maximal DPI to display a picture in a given container.
-         *
-         * @param container jQueryObject Container where the picture should be displayed
-         * @param number pictureHeight height in pixels of the picture to display
-         * @param number pictureWidth width in pixels of the picture to display
-         * @return number maximal dpi
-         */
-        calculateDPIForContainer : function (container, pictureHeight, pictureWidth) {
-          return this.calculateDPI(container.height(), container.width(), pictureHeight, pictureWidth);
-        },
-
-        /**
-         * Calculate and return the maximal DPI to display a picture for a given height and width.
-         *
-         * @param height number Height available to display the picture
-         * @param width number Width available to display the picture
-         * @param number pictureHeight height in pixels of the picture to display
-         * @param number pictureWidth width in pixels of the picture to display
-         * @return number maximal dpi
-         */
-        calculateDPI : function (height, width, pictureHeight, pictureWidth) {
-          var heightBoundDpi = Math.floor(height / pictureHeight),
-              widthBoundDpi = Math.floor(width / pictureWidth);
-
-          return Math.min(heightBoundDpi, widthBoundDpi);
-        },
-    };
-})();;(function () {
-	var ns = $.namespace("pskl");
-
-	ns.CanvasUtils = {
-		createCanvas : function (width, height, classList) {
-			var canvas = document.createElement("canvas");
-			canvas.setAttribute("width", width);
-			canvas.setAttribute("height", height);
-
-			if (typeof classList == "string") {
-				classList = [classList];
-			}
-			if (Array.isArray(classList)) {
-				for (var i = 0 ; i < classList.length ; i++) {
-					canvas.classList.add(classList[i]);
-				}
-			}
-			
-			return canvas;
-		}
-	};
-})();;(function () {
-    var ns = $.namespace("pskl");
-
-    ns.UserSettings = {
-
-        SHOW_GRID : 'SHOW_GRID',
-        CANVAS_BACKGROUND : 'CANVAS_BACKGROUND',
-
-        KEY_TO_DEFAULT_VALUE_MAP_ : {
-            'SHOW_GRID' : false,
-            'CANVAS_BACKGROUND' : 'medium-canvas-background' 
-        },
-
-        /**
-         * @private
-         */
-        cache_ : {},
-
-        /**
-         * Static method to access a user defined settings value ot its default 
-         * value if not defined yet.
-         */
-        get : function (key) {
-            this.checkKeyValidity_(key);
-            if (!(key in this.cache_)) {
-                this.cache_[key] =
-                    this.readFromLocalStorage_(key) || this.readFromDefaults_(key);
-            }
-            return this.cache_[key];
-        },
-
-        set : function (key, value) {
-           this.checkKeyValidity_(key);
-           this.cache_[key] = value;
-           this.writeToLocalStorage_(key, value);
-
-           $.publish(Events.USER_SETTINGS_CHANGED, [key, value]);    
-        },
-
-        /**
-         * @private
-         */
-        readFromLocalStorage_ : function(key) {
-            var value = window.localStorage[key];
-            if (typeof value != "undefined") {
-                value = JSON.parse(value);
-            }
-            return value;
-        },
-
-        /**
-         * @private
-         */
-        writeToLocalStorage_ : function(key, value) {
-            // TODO(grosbouddha): Catch storage exception here.
-            window.localStorage[key] = JSON.stringify(value);
-        },
-
-        /**
-         * @private
-         */
-        readFromDefaults_ : function (key) {
-            return this.KEY_TO_DEFAULT_VALUE_MAP_[key];
-        },
-
-        /**
-         * @private
-         */
-        checkKeyValidity_ : function(key) {
-            if(!(key in this.KEY_TO_DEFAULT_VALUE_MAP_)) {
-                // TODO(grosbouddha): Define error catching strategy and throw exception from here.
-                console.log("UserSettings key <"+ key +"> not find in supported keys.");
-            }
+      for(var x = rectangle.x0; x <= rectangle.x1; x++) {
+        for(var y = rectangle.y0; y <= rectangle.y1; y++) {
+          pixels.push({"col": x, "row": y});
         }
-    };
+      }
+      
+      return pixels;      
+    },
+
+    getBoundRectanglePixels : function (x0, y0, x1, y1) {
+      var rectangle = this.getOrderedRectangleCoordinates(x0, y0, x1, y1);
+      var pixels = [];
+      // Creating horizontal sides of the rectangle:
+      for(var x = rectangle.x0; x <= rectangle.x1; x++) {
+        pixels.push({"col": x, "row": rectangle.y0});
+        pixels.push({"col": x, "row": rectangle.y1});
+      }
+
+      // Creating vertical sides of the rectangle:
+      for(var y = rectangle.y0; y <= rectangle.y1; y++) {
+        pixels.push({"col": rectangle.x0, "row": y});
+        pixels.push({"col": rectangle.x1, "row": y});
+      }
+      
+      return pixels;  
+    },
+
+    /**
+     * Return an object of ordered rectangle coordinate.
+     * In returned object {x0, y0} => top left corner - {x1, y1} => bottom right corner 
+     * @private
+     */
+    getOrderedRectangleCoordinates : function (x0, y0, x1, y1) {
+      return {
+        x0 : Math.min(x0, x1), 
+        y0 : Math.min(y0, y1),
+        x1 : Math.max(x0, x1), 
+        y1 : Math.max(y0, y1),
+      };
+    },
+
+    /**
+     * Return the list of pixels that would have been filled by a paintbucket tool applied 
+     * on pixel at coordinate (x,y).
+     * This function is not altering the Frame object argument. 
+     *
+     * @param frame pskl.model.Frame The frame target in which we want to paintbucket
+     * @param col number Column coordinate in the frame 
+     * @param row number Row coordinate in the frame 
+     *
+     * @return an array of the pixel coordinates paint with the replacement color
+     */
+    getSimilarConnectedPixelsFromFrame: function(frame, col, row) {
+      // To get the list of connected (eg the same color) pixels, we will use the paintbucket algorithm
+      // in a fake cloned frame. The returned pixels by the paintbucket algo are the painted pixels
+      // and are as well connected.
+      var fakeFrame = frame.clone(); // We just want to
+      var fakeFillColor = "sdfsdfsdf"; // A fake color that will never match a real color.
+      var paintedPixels = this.paintSimilarConnectedPixelsFromFrame(fakeFrame, col, row, fakeFillColor);
+
+      return paintedPixels;
+    },
+
+    /**
+     * Apply the paintbucket tool in a frame at the (col, row) initial position
+     * with the replacement color.
+     * 
+     * @param frame pskl.model.Frame The frame target in which we want to paintbucket
+     * @param col number Column coordinate in the frame 
+     * @param row number Row coordinate in the frame 
+     * @param replacementColor string Hexadecimal color used to fill the area
+     *
+     * @return an array of the pixel coordinates paint with the replacement color
+     */
+    paintSimilarConnectedPixelsFromFrame: function(frame, col, row, replacementColor) {
+      /**
+       *  Queue linear Flood-fill (node, target-color, replacement-color):
+       *   1. Set Q to the empty queue.
+       *   2. If the color of node is not equal to target-color, return.
+       *   3. Add node to Q.
+       *   4. For each element n of Q:
+       *   5.     If the color of n is equal to target-color:
+       *   6.         Set w and e equal to n.
+       *   7.         Move w to the west until the color of the node to the west of w no longer matches target-color.
+       *   8.         Move e to the east until the color of the node to the east of e no longer matches target-color.
+       *   9.         Set the color of nodes between w and e to replacement-color.
+       *  10.         For each node n between w and e:
+       *  11.             If the color of the node to the north of n is target-color, add that node to Q.
+       *  12.             If the color of the node to the south of n is target-color, add that node to Q.
+       *  13. Continue looping until Q is exhausted.
+       *  14. Return.
+       */
+      var paintedPixels = [];
+      var queue = [];
+      var dy = [-1, 0, 1, 0];
+      var dx = [0, 1, 0, -1];
+      var targetColor;
+      try {
+        targetColor = frame.getPixel(col, row);
+      } catch(e) {
+        // Frame out of bound exception.
+      }
+      
+      if(targetColor == replacementColor) {
+        return;
+      }
+      
+
+      queue.push({"col": col, "row": row});
+      var loopCount = 0;
+      var cellCount = frame.getWidth() * frame.getHeight();
+      while(queue.length > 0) {
+        loopCount ++;
+
+        var currentItem = queue.pop();
+        frame.setPixel(currentItem.col, currentItem.row, replacementColor);
+        paintedPixels.push({"col": currentItem.col, "row": currentItem.row });
+
+        for (var i = 0; i < 4; i++) {
+          var nextCol = currentItem.col + dx[i];
+          var nextRow = currentItem.row + dy[i];
+          try {
+            if (frame.containsPixel(nextCol, nextRow)  && frame.getPixel(nextCol, nextRow) == targetColor) {
+              queue.push({"col": nextCol, "row": nextRow });
+            }
+          } catch(e) {
+            // Frame out of bound exception.
+          }
+        }
+
+        // Security loop breaker:
+        if(loopCount > 10 * cellCount) {
+          console.log("loop breaker called");
+          break;          
+        }
+      }
+      return paintedPixels;
+    },
+
+    /**
+     * Calculate and return the maximal DPI to display a picture in a given container.
+     *
+     * @param container jQueryObject Container where the picture should be displayed
+     * @param number pictureHeight height in pixels of the picture to display
+     * @param number pictureWidth width in pixels of the picture to display
+     * @return number maximal dpi
+     */
+    calculateDPIForContainer : function (container, pictureHeight, pictureWidth) {
+      return this.calculateDPI(container.height(), container.width(), pictureHeight, pictureWidth);
+    },
+
+    /**
+     * Calculate and return the maximal DPI to display a picture for a given height and width.
+     *
+     * @param height number Height available to display the picture
+     * @param width number Width available to display the picture
+     * @param number pictureHeight height in pixels of the picture to display
+     * @param number pictureWidth width in pixels of the picture to display
+     * @return number maximal dpi
+     */
+    calculateDPI : function (height, width, pictureHeight, pictureWidth) {
+      var heightBoundDpi = Math.floor(height / pictureHeight),
+        widthBoundDpi = Math.floor(width / pictureWidth);
+
+      return Math.min(heightBoundDpi, widthBoundDpi);
+    },
+  };
+})();;(function () {
+  var ns = $.namespace("pskl");
+
+  ns.CanvasUtils = {
+    createCanvas : function (width, height, classList) {
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("width", width);
+      canvas.setAttribute("height", height);
+
+      if (typeof classList == "string") {
+        classList = [classList];
+      }
+      if (Array.isArray(classList)) {
+        for (var i = 0 ; i < classList.length ; i++) {
+          canvas.classList.add(classList[i]);
+        }
+      }
+      
+      return canvas;
+    }
+  };
+})();;(function () {
+  var ns = $.namespace("pskl");
+
+  ns.UserSettings = {
+
+    SHOW_GRID : 'SHOW_GRID',
+    CANVAS_BACKGROUND : 'CANVAS_BACKGROUND',
+
+    KEY_TO_DEFAULT_VALUE_MAP_ : {
+      'SHOW_GRID' : false,
+      'CANVAS_BACKGROUND' : 'medium-canvas-background' 
+    },
+
+    /**
+     * @private
+     */
+    cache_ : {},
+
+    /**
+     * Static method to access a user defined settings value ot its default 
+     * value if not defined yet.
+     */
+    get : function (key) {
+      this.checkKeyValidity_(key);
+      if (!(key in this.cache_)) {
+        this.cache_[key] =
+          this.readFromLocalStorage_(key) || this.readFromDefaults_(key);
+      }
+      return this.cache_[key];
+    },
+
+    set : function (key, value) {
+      this.checkKeyValidity_(key);
+      this.cache_[key] = value;
+      this.writeToLocalStorage_(key, value);
+
+      $.publish(Events.USER_SETTINGS_CHANGED, [key, value]);    
+    },
+
+    /**
+     * @private
+     */
+    readFromLocalStorage_ : function(key) {
+      var value = window.localStorage[key];
+      if (typeof value != "undefined") {
+        value = JSON.parse(value);
+      }
+      return value;
+    },
+
+    /**
+     * @private
+     */
+    writeToLocalStorage_ : function(key, value) {
+      // TODO(grosbouddha): Catch storage exception here.
+      window.localStorage[key] = JSON.stringify(value);
+    },
+
+    /**
+     * @private
+     */
+    readFromDefaults_ : function (key) {
+      return this.KEY_TO_DEFAULT_VALUE_MAP_[key];
+    },
+
+    /**
+     * @private
+     */
+    checkKeyValidity_ : function(key) {
+      if(!(key in this.KEY_TO_DEFAULT_VALUE_MAP_)) {
+        // TODO(grosbouddha): Define error catching strategy and throw exception from here.
+        console.log("UserSettings key <"+ key +"> not find in supported keys.");
+      }
+    }
+  };
 })();;/**
  * jscolor, JavaScript Color Picker
  *
@@ -14707,768 +13138,782 @@ var jscolor = {
 
 jscolor.install();
 ;(function () {
-	var ns = $.namespace("pskl.rendering");
+  var ns = $.namespace("pskl.rendering");
 
-	ns.DrawingLoop = function () {
-		this.requestAnimationFrame = this.getRequestAnimationFrameShim_();
-		this.isRunning = false;
-		this.previousTime = 0;
-		this.callbacks = [];
-	};
+  ns.DrawingLoop = function () {
+    this.requestAnimationFrame = this.getRequestAnimationFrameShim_();
+    this.isRunning = false;
+    this.previousTime = 0;
+    this.callbacks = [];
+  };
 
-	ns.DrawingLoop.prototype.addCallback = function (callback, scope, args) {
-		var callbackObj = {
-			fn : callback, 
-			scope : scope, 
-			args : args
-		};
-		this.callbacks.push(callbackObj);
-		return callbackObj;
-	};
+  ns.DrawingLoop.prototype.addCallback = function (callback, scope, args) {
+    var callbackObj = {
+      fn : callback, 
+      scope : scope, 
+      args : args
+    };
+    this.callbacks.push(callbackObj);
+    return callbackObj;
+  };
 
-	ns.DrawingLoop.prototype.removeCallback = function (callbackObj) {
-		var index = this.callbacks.indexOf(callbackObj);
-		if (index != -1) {
-			this.callbacks.splice(index, 1);
-		}
-	};
+  ns.DrawingLoop.prototype.removeCallback = function (callbackObj) {
+    var index = this.callbacks.indexOf(callbackObj);
+    if (index != -1) {
+      this.callbacks.splice(index, 1);
+    }
+  };
 
-	ns.DrawingLoop.prototype.start = function () {
-		this.isRunning = true;
-		this.loop_();
-	};
+  ns.DrawingLoop.prototype.start = function () {
+    this.isRunning = true;
+    this.loop_();
+  };
 
-	ns.DrawingLoop.prototype.loop_ = function () {
-		var currentTime = Date.now();
-		var delta = currentTime - this.previousTime;
-		this.executeCallbacks_(delta);
-		this.previousTime = currentTime;
-		this.requestAnimationFrame.call(window, this.loop_.bind(this));
-	};
+  ns.DrawingLoop.prototype.loop_ = function () {
+    var currentTime = Date.now();
+    var delta = currentTime - this.previousTime;
+    this.executeCallbacks_(delta);
+    this.previousTime = currentTime;
+    this.requestAnimationFrame.call(window, this.loop_.bind(this));
+  };
 
-	ns.DrawingLoop.prototype.executeCallbacks_ = function (deltaTime) {
-		for (var i = 0 ; i < this.callbacks.length ; i++) {
-			var cb = this.callbacks[i];
-			cb.fn.call(cb.scope, deltaTime, cb.args);
-		}
-	};
+  ns.DrawingLoop.prototype.executeCallbacks_ = function (deltaTime) {
+    for (var i = 0 ; i < this.callbacks.length ; i++) {
+      var cb = this.callbacks[i];
+      cb.fn.call(cb.scope, deltaTime, cb.args);
+    }
+  };
 
-	ns.DrawingLoop.prototype.stop = function () {
-		this.isRunning = false;
-	};
+  ns.DrawingLoop.prototype.stop = function () {
+    this.isRunning = false;
+  };
 
-	ns.DrawingLoop.prototype.getRequestAnimationFrameShim_ = function () {
-		var requestAnimationFrame = window.requestAnimationFrame ||
-									window.mozRequestAnimationFrame ||  
-									window.webkitRequestAnimationFrame || 
-									window.msRequestAnimationFrame || 
-									function (callback) { window.setTimeout(callback, 1000/60); };
+  ns.DrawingLoop.prototype.getRequestAnimationFrameShim_ = function () {
+    var requestAnimationFrame = window.requestAnimationFrame ||
+                  window.mozRequestAnimationFrame ||  
+                  window.webkitRequestAnimationFrame || 
+                  window.msRequestAnimationFrame || 
+                  function (callback) { window.setTimeout(callback, 1000/60); };
 
-		return requestAnimationFrame;
-	};
+    return requestAnimationFrame;
+  };
 })();;(function () {
-	var ns = $.namespace("pskl.model");
-	
-	ns.Frame = function (pixels) {
-		this.pixels = pixels;
-		this.previousStates = [this.getPixels()];
-		this.stateIndex = 0;
-	};
+  var ns = $.namespace("pskl.model");
+  
+  ns.Frame = function (pixels) {
+    this.pixels = pixels;
+    this.previousStates = [this.getPixels()];
+    this.stateIndex = 0;
+  };
 
-	ns.Frame.createEmpty = function (width, height) {
-		var pixels = ns.Frame.createEmptyPixelGrid_(width, height);
-		return new ns.Frame(pixels);
-	};
+  ns.Frame.createEmpty = function (width, height) {
+    var pixels = ns.Frame.createEmptyPixelGrid_(width, height);
+    return new ns.Frame(pixels);
+  };
 
-	ns.Frame.createEmptyPixelGrid_ = function (width, height) {
-		var pixels = []; //new Array(width);
-		for (var columnIndex=0; columnIndex < width; columnIndex++) {
-			var columnArray = [];
-			for(var heightIndex = 0; heightIndex < height; heightIndex++) {
-				columnArray.push(Constants.TRANSPARENT_COLOR);
-			}
-			pixels[columnIndex] = columnArray;
-		}
-		return pixels;
-	};
+  ns.Frame.createEmptyPixelGrid_ = function (width, height) {
+    var pixels = []; //new Array(width);
+    for (var columnIndex=0; columnIndex < width; columnIndex++) {
+      var columnArray = [];
+      for(var heightIndex = 0; heightIndex < height; heightIndex++) {
+        columnArray.push(Constants.TRANSPARENT_COLOR);
+      }
+      pixels[columnIndex] = columnArray;
+    }
+    return pixels;
+  };
 
-	ns.Frame.createEmptyFromFrame = function (frame) {
-		return ns.Frame.createEmpty(frame.getWidth(), frame.getHeight());
-	};
+  ns.Frame.createEmptyFromFrame = function (frame) {
+    return ns.Frame.createEmpty(frame.getWidth(), frame.getHeight());
+  };
 
-	ns.Frame.prototype.clone = function () {
-		return new ns.Frame(this.getPixels());
-	};
+  ns.Frame.prototype.clone = function () {
+    return new ns.Frame(this.getPixels());
+  };
 
-	/**
-	 * Returns a copy of the pixels used by the frame
-	 */
-	ns.Frame.prototype.getPixels = function () {
-		return this.clonePixels_(this.pixels);
-	};
+  /**
+   * Returns a copy of the pixels used by the frame
+   */
+  ns.Frame.prototype.getPixels = function () {
+    return this.clonePixels_(this.pixels);
+  };
 
-	/**
-	 * Copies the passed pixels into the frame.
-	 */
-	ns.Frame.prototype.setPixels = function (pixels) {
-		this.pixels = this.clonePixels_(pixels);
-	};
+  /**
+   * Copies the passed pixels into the frame.
+   */
+  ns.Frame.prototype.setPixels = function (pixels) {
+    this.pixels = this.clonePixels_(pixels);
+  };
 
 
 
-	ns.Frame.prototype.clear = function () {
-		var pixels = ns.Frame.createEmptyPixelGrid_(this.getWidth(), this.getHeight());
-		this.setPixels(pixels);
-	};
+  ns.Frame.prototype.clear = function () {
+    var pixels = ns.Frame.createEmptyPixelGrid_(this.getWidth(), this.getHeight());
+    this.setPixels(pixels);
+  };
 
-	/**
-	 * Clone a set of pixels. Should be static utility method
-	 * @private
-	 */
-	ns.Frame.prototype.clonePixels_ = function (pixels) {
-		var clonedPixels = [];
-		for (var col = 0 ; col < pixels.length ; col++) {
-			clonedPixels[col] = pixels[col].slice(0 , pixels[col].length);
-		}
-		return clonedPixels;
-	};
+  /**
+   * Clone a set of pixels. Should be static utility method
+   * @private
+   */
+  ns.Frame.prototype.clonePixels_ = function (pixels) {
+    var clonedPixels = [];
+    for (var col = 0 ; col < pixels.length ; col++) {
+      clonedPixels[col] = pixels[col].slice(0 , pixels[col].length);
+    }
+    return clonedPixels;
+  };
 
-	ns.Frame.prototype.serialize = function () {
-		return JSON.stringify(this.pixels);
-	};
+  ns.Frame.prototype.serialize = function () {
+    return JSON.stringify(this.pixels);
+  };
 
-	ns.Frame.prototype.setPixel = function (col, row, color) {
-		this.pixels[col][row] = color;
-	};
+  ns.Frame.prototype.setPixel = function (col, row, color) {
+    this.pixels[col][row] = color;
+  };
 
-	ns.Frame.prototype.getPixel = function (col, row) {
-		return this.pixels[col][row];
-	};
+  ns.Frame.prototype.getPixel = function (col, row) {
+    return this.pixels[col][row];
+  };
 
-	ns.Frame.prototype.getWidth = function () {
-		return this.pixels.length;
-	};
+  ns.Frame.prototype.getWidth = function () {
+    return this.pixels.length;
+  };
 
-	ns.Frame.prototype.getHeight = function () {
-		return this.pixels[0].length;
-	};
+  ns.Frame.prototype.getHeight = function () {
+    return this.pixels[0].length;
+  };
 
-	ns.Frame.prototype.containsPixel = function (col, row) {
-		return col >= 0 && row >= 0 && col < this.pixels.length && row < this.pixels[0].length;
-	};
+  ns.Frame.prototype.containsPixel = function (col, row) {
+    return col >= 0 && row >= 0 && col < this.pixels.length && row < this.pixels[0].length;
+  };
 
-	ns.Frame.prototype.saveState = function () {
-		// remove all states past current state
-		this.previousStates.length = this.stateIndex + 1;
-		// push new state
-		this.previousStates.push(this.getPixels());
-		// set the stateIndex to latest saved state
-		this.stateIndex = this.previousStates.length - 1;
-	};
+  ns.Frame.prototype.saveState = function () {
+    // remove all states past current state
+    this.previousStates.length = this.stateIndex + 1;
+    // push new state
+    this.previousStates.push(this.getPixels());
+    // set the stateIndex to latest saved state
+    this.stateIndex = this.previousStates.length - 1;
+  };
 
-	ns.Frame.prototype.loadPreviousState = function () {
-		if (this.stateIndex > 0) {
-			this.stateIndex--;
-			this.setPixels(this.previousStates[this.stateIndex]);
-		}
-	};
+  ns.Frame.prototype.loadPreviousState = function () {
+    if (this.stateIndex > 0) {
+      this.stateIndex--;
+      this.setPixels(this.previousStates[this.stateIndex]);
+    }
+  };
 
-	ns.Frame.prototype.loadNextState = function () {
-		if (this.stateIndex < this.previousStates.length - 1) {
-			this.stateIndex++;
-			this.setPixels(this.previousStates[this.stateIndex]);
-		}	
-	};
+  ns.Frame.prototype.loadNextState = function () {
+    if (this.stateIndex < this.previousStates.length - 1) {
+      this.stateIndex++;
+      this.setPixels(this.previousStates[this.stateIndex]);
+    } 
+  };
 
-	ns.Frame.prototype.isSameSize = function (otherFrame) {
-		return this.getHeight() == otherFrame.getHeight() && this.getWidth() == otherFrame.getWidth();
-	};
+  ns.Frame.prototype.isSameSize = function (otherFrame) {
+    return this.getHeight() == otherFrame.getHeight() && this.getWidth() == otherFrame.getWidth();
+  };
 })();;(function () {
-	var ns = $.namespace("pskl.model");
-	ns.FrameSheet = function (height, width) {
-		this.width = width;
-		this.height = height;
-		this.frames = [];
-		this.currentFrameIndex = 0;
-	};
+  var ns = $.namespace("pskl.model");
+  ns.FrameSheet = function (height, width) {
+    this.width = width;
+    this.height = height;
+    this.frames = [];
+    this.currentFrameIndex = 0;
+  };
 
-	ns.FrameSheet.prototype.getHeight = function () {
-		return this.height;
-	};
+  ns.FrameSheet.prototype.getHeight = function () {
+    return this.height;
+  };
 
-	ns.FrameSheet.prototype.getWidth = function () {
-		return this.width;
-	};
+  ns.FrameSheet.prototype.getWidth = function () {
+    return this.width;
+  };
 
-	ns.FrameSheet.prototype.addEmptyFrame = function () {
-		this.addFrame(ns.Frame.createEmpty(this.width, this.height));
-	};
+  ns.FrameSheet.prototype.addEmptyFrame = function () {
+    this.addFrame(ns.Frame.createEmpty(this.width, this.height));
+  };
 
-	ns.FrameSheet.prototype.addFrame = function (frame) {
-		this.frames.push(frame);
-	};
+  ns.FrameSheet.prototype.addFrame = function (frame) {
+    this.frames.push(frame);
+  };
 
-	ns.FrameSheet.prototype.getFrameCount = function () {
-		return this.frames.length;
-	};
+  ns.FrameSheet.prototype.getFrameCount = function () {
+    return this.frames.length;
+  };
 
-	ns.FrameSheet.prototype.getCurrentFrame = function () {
-		return this.frames[this.currentFrameIndex];
-	};
+  ns.FrameSheet.prototype.getCurrentFrame = function () {
+    return this.frames[this.currentFrameIndex];
+  };
 
-	ns.FrameSheet.prototype.setCurrentFrameIndex = function (index) {
-		this.currentFrameIndex = index;
-		$.publish(Events.CURRENT_FRAME_SET, [this.getCurrentFrame()]);
-		$.publish(Events.FRAMESHEET_RESET);  // Is it no to overkill to have this here ?
-	};
+  ns.FrameSheet.prototype.setCurrentFrameIndex = function (index) {
+    this.currentFrameIndex = index;
+    $.publish(Events.CURRENT_FRAME_SET, [this.getCurrentFrame()]);
+    $.publish(Events.FRAMESHEET_RESET);  // Is it no to overkill to have this here ?
+  };
 
-	ns.FrameSheet.prototype.getUsedColors = function() {
-		var colors = {};
-		for (var frameIndex=0; frameIndex < this.frames.length; frameIndex++) {
-			var frame = this.frames[frameIndex];
-			for (var i = 0, width = frame.getWidth(); i < width  ; i++) {
-				var line = frame[i];
-				for (var j = 0, height = frame.getHeight() ; j < height ; j++) {
-					var pixel = frame.getPixel(i, j);
-					colors[pixel] = pixel;
-				}
-			}
-		}
-		return colors;
-	};
+  ns.FrameSheet.prototype.getUsedColors = function() {
+    var colors = {};
+    for (var frameIndex=0; frameIndex < this.frames.length; frameIndex++) {
+      var frame = this.frames[frameIndex];
+      for (var i = 0, width = frame.getWidth(); i < width  ; i++) {
+        var line = frame[i];
+        for (var j = 0, height = frame.getHeight() ; j < height ; j++) {
+          var pixel = frame.getPixel(i, j);
+          colors[pixel] = pixel;
+        }
+      }
+    }
+    return colors;
+  };
 
-	// Could be used to pass around model using long GET param (good enough for simple models) and 
-	// do some temporary locastorage
-	ns.FrameSheet.prototype.serialize = function() {
-		var serializedFrames = [];
-		for (var i = 0 ; i < this.frames.length ; i++) {
-			serializedFrames.push(this.frames[i].serialize());
-		}
-		return '[' + serializedFrames.join(",") + ']';
-		//return JSON.stringify(frames);
-	};
+  // Could be used to pass around model using long GET param (good enough for simple models) and 
+  // do some temporary locastorage
+  ns.FrameSheet.prototype.serialize = function() {
+    var serializedFrames = [];
+    for (var i = 0 ; i < this.frames.length ; i++) {
+      serializedFrames.push(this.frames[i].serialize());
+    }
+    return '[' + serializedFrames.join(",") + ']';
+    //return JSON.stringify(frames);
+  };
 
-	/**
-	 * Load a framesheet from a model that might have been persisted in db / localstorage
-	 * Overrides existing frames.
-	 * @param {String} serialized
-	 */
-	ns.FrameSheet.prototype.deserialize = function (serialized) {
-		try {
-			this.load(JSON.parse(serialized));
-		} catch (e) {
-			throw "Could not load serialized framesheet : " + e.message;
-		}	
-	};
+  /**
+   * Load a framesheet from a model that might have been persisted in db / localstorage
+   * Overrides existing frames.
+   * @param {String} serialized
+   */
+  ns.FrameSheet.prototype.deserialize = function (serialized) {
+    try {
+      this.load(JSON.parse(serialized));
+    } catch (e) {
+      throw "Could not load serialized framesheet : " + e.message;
+    } 
+  };
 
 
-	/**
-	 * Load a framesheet from a model that might have been persisted in db / localstorage
-	 * Overrides existing frames.
-	 * @param {String} serialized
-	 */
-	ns.FrameSheet.prototype.load = function (framesheet) {
-		this.frames = [];
-		for (var i = 0 ; i < framesheet.length ; i++) {
-			var frameCfg = framesheet[i];
-			this.addFrame(new ns.Frame(frameCfg));
-		}
+  /**
+   * Load a framesheet from a model that might have been persisted in db / localstorage
+   * Overrides existing frames.
+   * @param {String} serialized
+   */
+  ns.FrameSheet.prototype.load = function (framesheet) {
+    this.frames = [];
+    for (var i = 0 ; i < framesheet.length ; i++) {
+      var frameCfg = framesheet[i];
+      this.addFrame(new ns.Frame(frameCfg));
+    }
 
-		if (this.hasFrameAtIndex(0)) {
-			this.height = this.getFrameByIndex(0).getHeight();
-			this.width = this.getFrameByIndex(0).getWidth();
-			this.setCurrentFrameIndex(0);
-			$.publish(Events.FRAME_SIZE_CHANGED);
-		}
+    if (this.hasFrameAtIndex(0)) {
+      this.height = this.getFrameByIndex(0).getHeight();
+      this.width = this.getFrameByIndex(0).getWidth();
+      this.setCurrentFrameIndex(0);
+      $.publish(Events.FRAME_SIZE_CHANGED);
+    }
 
-		$.publish(Events.FRAMESHEET_RESET);
-	};
+    $.publish(Events.FRAMESHEET_RESET);
+  };
 
-	
-	ns.FrameSheet.prototype.hasFrameAtIndex = function(index) {
-		return (index >= 0 && index < this.getFrameCount());
-	};
+  
+  ns.FrameSheet.prototype.hasFrameAtIndex = function(index) {
+    return (index >= 0 && index < this.getFrameCount());
+  };
 
-	ns.FrameSheet.prototype.getFrameByIndex = function(index) {
-		if (isNaN(index)) {
-			throw "Bad argument value for getFrameByIndex method: <" + index + ">";
-		} 
+  ns.FrameSheet.prototype.getFrameByIndex = function(index) {
+    if (isNaN(index)) {
+      throw "Bad argument value for getFrameByIndex method: <" + index + ">";
+    } 
 
-		if (!this.hasFrameAtIndex(index)) {
-			throw "Out of bound index for frameSheet object.";
-		}
+    if (!this.hasFrameAtIndex(index)) {
+      throw "Out of bound index for frameSheet object.";
+    }
 
-		return this.frames[index];
-	};
+    return this.frames[index];
+  };
 
-	ns.FrameSheet.prototype.removeFrameByIndex = function(index) {
-		if(!this.hasFrameAtIndex(index)) {
-			throw "Out of bound index for frameSheet object.";
-		}
-		this.frames.splice(index, 1);
+  ns.FrameSheet.prototype.removeFrameByIndex = function(index) {
+    if(!this.hasFrameAtIndex(index)) {
+      throw "Out of bound index for frameSheet object.";
+    }
+    this.frames.splice(index, 1);
 
-		// Current frame index might not be valid anymore
-		if (!this.hasFrameAtIndex(this.currentFrameIndex)) {
-			// if not select last frame available
-			this.setCurrentFrameIndex(this.getFrameCount() - 1);
-		}
+    // Current frame index might not be valid anymore
+    if (!this.hasFrameAtIndex(this.currentFrameIndex)) {
+      // if not select last frame available
+      this.setCurrentFrameIndex(this.getFrameCount() - 1);
+    }
 
-		$.publish(Events.FRAMESHEET_RESET);
-	};
+    $.publish(Events.FRAMESHEET_RESET);
+  };
 
-	ns.FrameSheet.prototype.duplicateFrameByIndex = function(index) {
-		var frame = this.getFrameByIndex(index);
-		this.frames.splice(index + 1, 0, frame.clone());
-	};
+  ns.FrameSheet.prototype.duplicateFrameByIndex = function(index) {
+    var frame = this.getFrameByIndex(index);
+    this.frames.splice(index + 1, 0, frame.clone());
+  };
 
-	ns.FrameSheet.prototype.moveFrame = function(originIndex, destinationIndex) {
-		this.frames.splice(destinationIndex, 0, this.frames.splice(originIndex, 1)[0]);
-	};
+  ns.FrameSheet.prototype.moveFrame = function(originIndex, destinationIndex) {
+    this.frames.splice(destinationIndex, 0, this.frames.splice(originIndex, 1)[0]);
+  };
 
-	ns.FrameSheet.prototype.swapFrames = function(indexFrame1, indexFrame2) {
-		if(isNaN(indexFrame1) || isNaN(indexFrame1) ||
-			(!this.hasFrameAtIndex(indexFrame1) && !this.hasFrameAtIndex(indexFrame2))) {
-			throw "Bad indexes for swapFrames Framesheet function.";
-		}
-		if(indexFrame1 == indexFrame2) {
-			return;
-		}
-		else {
-			var swapFrame = this.frames[indexFrame1];
-			this.frames[indexFrame1] = this.frames[indexFrame2];
-			this.frames[indexFrame2] = swapFrame;
-		}
-	};
+  ns.FrameSheet.prototype.swapFrames = function(indexFrame1, indexFrame2) {
+    if(isNaN(indexFrame1) || isNaN(indexFrame1) ||
+      (!this.hasFrameAtIndex(indexFrame1) && !this.hasFrameAtIndex(indexFrame2))) {
+      throw "Bad indexes for swapFrames Framesheet function.";
+    }
+    if(indexFrame1 == indexFrame2) {
+      return;
+    }
+    else {
+      var swapFrame = this.frames[indexFrame1];
+      this.frames[indexFrame1] = this.frames[indexFrame2];
+      this.frames[indexFrame2] = swapFrame;
+    }
+  };
 })();;(function () {
-	var ns = $.namespace("pskl.selection");
+  var ns = $.namespace("pskl.selection");
 
-	
-	ns.SelectionManager = function (framesheet) {
-		
-		this.framesheet = framesheet;
-		
-		this.currentSelection = null;
-	};
+  ns.SelectionManager = function (framesheet) {
+    
+    this.framesheet = framesheet;
+    
+    this.currentSelection = null;
+  };
 
-	ns.SelectionManager.prototype.init = function () {
-		$.subscribe(Events.SELECTION_CREATED, $.proxy(this.onSelectionCreated_, this));
-		$.subscribe(Events.SELECTION_DISMISSED, $.proxy(this.onSelectionDismissed_, this));	
-		$.subscribe(Events.SELECTION_MOVE_REQUEST, $.proxy(this.onSelectionMoved_, this));
-		
-		$.subscribe(Events.PASTE, $.proxy(this.onPaste_, this));
-		$.subscribe(Events.COPY, $.proxy(this.onCopy_, this));
-		$.subscribe(Events.CUT, $.proxy(this.onCut_, this));
+  ns.SelectionManager.prototype.init = function () {
+    $.subscribe(Events.SELECTION_CREATED, $.proxy(this.onSelectionCreated_, this));
+    $.subscribe(Events.SELECTION_DISMISSED, $.proxy(this.onSelectionDismissed_, this)); 
+    $.subscribe(Events.SELECTION_MOVE_REQUEST, $.proxy(this.onSelectionMoved_, this));
+    
+    $.subscribe(Events.PASTE, $.proxy(this.onPaste_, this));
+    $.subscribe(Events.COPY, $.proxy(this.onCopy_, this));
+    $.subscribe(Events.CUT, $.proxy(this.onCut_, this));
 
-		$.subscribe(Events.TOOL_SELECTED, $.proxy(this.onToolSelected_, this)); 
-	};
+    $.subscribe(Events.TOOL_SELECTED, $.proxy(this.onToolSelected_, this)); 
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.cleanSelection_ = function() {
-		if(this.currentSelection) {
-			this.currentSelection.reset();
-		}
-	};
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.cleanSelection_ = function() {
+    if(this.currentSelection) {
+      this.currentSelection.reset();
+    }
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.onToolSelected_ = function(evt, tool) {
-		var isSelectionTool = tool instanceof pskl.drawingtools.BaseSelect;
-		if(!isSelectionTool) {
-			this.cleanSelection_();
-		}
-	};
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.onToolSelected_ = function(evt, tool) {
+    var isSelectionTool = tool instanceof pskl.drawingtools.BaseSelect;
+    if(!isSelectionTool) {
+      this.cleanSelection_();
+    }
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.onSelectionDismissed_ = function(evt) {
-		this.cleanSelection_();
-	};
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.onSelectionDismissed_ = function(evt) {
+    this.cleanSelection_();
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.onCut_ = function(evt) {
-		if(this.currentSelection) {
-			// Put cut target into the selection:
-			this.currentSelection.fillSelectionFromFrame(this.framesheet.getCurrentFrame());
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.onCut_ = function(evt) {
+    if(this.currentSelection) {
+      // Put cut target into the selection:
+      this.currentSelection.fillSelectionFromFrame(this.framesheet.getCurrentFrame());
 
-			var pixels = this.currentSelection.pixels;
-			var currentFrame = this.framesheet.getCurrentFrame();
-			for(var i=0, l=pixels.length; i<l; i++) {
-				try {
-					currentFrame.setPixel(pixels[i].col, pixels[i].row, Constants.TRANSPARENT_COLOR);
-				}
-				catch(e) {
-					// Catchng out of frame's bound pixels without testing
-				}
-			}
-		}
-		else {
-			throw "Bad state for CUT callback in SelectionManager";
-		}
-	};
+      var pixels = this.currentSelection.pixels;
+      var currentFrame = this.framesheet.getCurrentFrame();
+      for(var i=0, l=pixels.length; i<l; i++) {
+        try {
+          currentFrame.setPixel(pixels[i].col, pixels[i].row, Constants.TRANSPARENT_COLOR);
+        }
+        catch(e) {
+          // Catchng out of frame's bound pixels without testing
+        }
+      }
+    }
+    else {
+      throw "Bad state for CUT callback in SelectionManager";
+    }
+  };
 
-	ns.SelectionManager.prototype.onPaste_ = function(evt) {
-		if(this.currentSelection && this.currentSelection.hasPastedContent) {
-			var pixels = this.currentSelection.pixels;
-			var currentFrame = this.framesheet.getCurrentFrame();
-			for(var i=0, l=pixels.length; i<l; i++) {
-				try {
-					currentFrame.setPixel(
-						pixels[i].col, pixels[i].row, 
-						pixels[i].copiedColor);
-				}
-				catch(e) {
-					// Catchng out of frame's bound pixels without testing
-				}
-			}
-		}
-	};
+  ns.SelectionManager.prototype.onPaste_ = function(evt) {
+    if(this.currentSelection && this.currentSelection.hasPastedContent) {
+      var pixels = this.currentSelection.pixels;
+      var currentFrame = this.framesheet.getCurrentFrame();
+      for(var i=0, l=pixels.length; i<l; i++) {
+        try {
+          currentFrame.setPixel(
+            pixels[i].col, pixels[i].row, 
+            pixels[i].copiedColor);
+        }
+        catch(e) {
+          // Catchng out of frame's bound pixels without testing
+        }
+      }
+    }
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.onCopy_ = function(evt) {
-		if(this.currentSelection && this.framesheet.getCurrentFrame()) {
-			this.currentSelection.fillSelectionFromFrame(this.framesheet.getCurrentFrame());
-		}
-		else {
-			throw "Bad state for CUT callback in SelectionManager";
-		}
-	};
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.onCopy_ = function(evt) {
+    if(this.currentSelection && this.framesheet.getCurrentFrame()) {
+      this.currentSelection.fillSelectionFromFrame(this.framesheet.getCurrentFrame());
+    }
+    else {
+      throw "Bad state for CUT callback in SelectionManager";
+    }
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.onSelectionCreated_ = function(evt, selection) {
-		if(selection) {
-			this.currentSelection = selection;
-		} else {
-			throw "No selection set in SelectionManager";
-		}
-	};
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.onSelectionCreated_ = function(evt, selection) {
+    if(selection) {
+      this.currentSelection = selection;
+    } else {
+      throw "No selection set in SelectionManager";
+    }
+  };
 
-	/**
-	 * @private
-	 */
-	ns.SelectionManager.prototype.onSelectionMoved_ = function(evt, colDiff, rowDiff) {
-		if(this.currentSelection) {
-			this.currentSelection.move(colDiff, rowDiff);
-		}
-		else {
-			throw "Bad state: No currentSelection set when trying to move it in SelectionManager";
-		}
-	};
+  /**
+   * @private
+   */
+  ns.SelectionManager.prototype.onSelectionMoved_ = function(evt, colDiff, rowDiff) {
+    if(this.currentSelection) {
+      this.currentSelection.move(colDiff, rowDiff);
+    }
+    else {
+      throw "Bad state: No currentSelection set when trying to move it in SelectionManager";
+    }
+  };
 })();
 ;(function () {
-	var ns = $.namespace("pskl.selection");
+  var ns = $.namespace("pskl.selection");
 
-	ns.BaseSelection = function () {
-		this.reset();
-	};
+  ns.BaseSelection = function () {
+    this.reset();
+  };
 
-	ns.BaseSelection.prototype.reset = function () {
-		this.pixels = [];
-		this.hasPastedContent = false;
-	};
+  ns.BaseSelection.prototype.reset = function () {
+    this.pixels = [];
+    this.hasPastedContent = false;
+  };
 
-	ns.BaseSelection.prototype.move = function (colDiff, rowDiff) {
-		var movedPixel, movedPixels = [];
+  ns.BaseSelection.prototype.move = function (colDiff, rowDiff) {
+    var movedPixel, movedPixels = [];
 
-		for(var i=0, l=this.pixels.length; i<l; i++) {
-			movedPixel = this.pixels[i];
-			movedPixel.col += colDiff;
-			movedPixel.row += rowDiff;
-			movedPixels.push(movedPixel);
-		}
-		this.pixels = movedPixels;
-	};
+    for(var i=0, l=this.pixels.length; i<l; i++) {
+      movedPixel = this.pixels[i];
+      movedPixel.col += colDiff;
+      movedPixel.row += rowDiff;
+      movedPixels.push(movedPixel);
+    }
+    this.pixels = movedPixels;
+  };
 
-	ns.BaseSelection.prototype.fillSelectionFromFrame = function (targetFrame) {
-		var pixelWithCopiedColor;
-		for(var i=0, l=this.pixels.length; i<l; i++) {
-			pixelWithCopiedColor = this.pixels[i];
-			pixelWithCopiedColor.copiedColor =
-				targetFrame.getPixel(pixelWithCopiedColor.col, pixelWithCopiedColor.row);
-		}
-		this.hasPastedContent = true;
-	};
+  ns.BaseSelection.prototype.fillSelectionFromFrame = function (targetFrame) {
+    var pixelWithCopiedColor;
+    for(var i=0, l=this.pixels.length; i<l; i++) {
+      pixelWithCopiedColor = this.pixels[i];
+      pixelWithCopiedColor.copiedColor =
+        targetFrame.getPixel(pixelWithCopiedColor.col, pixelWithCopiedColor.row);
+    }
+    this.hasPastedContent = true;
+  };
 })();;(function () {
-	var ns = $.namespace("pskl.selection");
+  var ns = $.namespace("pskl.selection");
 
-	ns.RectangularSelection = function (x0, y0, x1, y1) {
-		this.pixels = pskl.PixelUtils.getRectanglePixels(x0, y0, x1, y1);
-	};
+  ns.RectangularSelection = function (x0, y0, x1, y1) {
+    this.pixels = pskl.PixelUtils.getRectanglePixels(x0, y0, x1, y1);
+  };
 
-	pskl.utils.inherit(ns.RectangularSelection, ns.BaseSelection);
+  pskl.utils.inherit(ns.RectangularSelection, ns.BaseSelection);
 })();;(function () {
-	var ns = $.namespace("pskl.selection");
+  var ns = $.namespace("pskl.selection");
 
-	ns.ShapeSelection = function (pixels) {
-		this.pixels = pixels;
-	};
+  ns.ShapeSelection = function (pixels) {
+    this.pixels = pixels;
+  };
 
-	pskl.utils.inherit(ns.ShapeSelection, ns.BaseSelection);
+  pskl.utils.inherit(ns.ShapeSelection, ns.BaseSelection);
 })();;(function () {
 
-	var ns = $.namespace("pskl.rendering");
-	ns.CanvasRenderer = function (frame, dpi) {
-		this.frame = frame;
-		this.dpi = dpi;
-	};
+  var ns = $.namespace("pskl.rendering");
+  ns.CanvasRenderer = function (frame, dpi) {
+    this.frame = frame;
+    this.dpi = dpi;
+  };
 
-	ns.CanvasRenderer.prototype.render = function  (frame, dpi) {
-		var canvas = this.createCanvas_();
-		var context = canvas.getContext('2d');
-		for(var col = 0, width = this.frame.getWidth(); col < width; col++) {
-			for(var row = 0, height = this.frame.getHeight(); row < height; row++) {
-				var color = this.frame.getPixel(col, row);
-				this.renderPixel_(color, col, row, context);
-			}
-		}
+  ns.CanvasRenderer.prototype.render = function  (frame, dpi) {
+    var canvas = this.createCanvas_();
+    var context = canvas.getContext('2d');
+    for(var col = 0, width = this.frame.getWidth(); col < width; col++) {
+      for(var row = 0, height = this.frame.getHeight(); row < height; row++) {
+        var color = this.frame.getPixel(col, row);
+        this.renderPixel_(color, col, row, context);
+      }
+    }
 
-		return context;
-	};
+    return context;
+  };
 
-	ns.CanvasRenderer.prototype.renderPixel_ = function (color, col, row, context) {
-		if(color == Constants.TRANSPARENT_COLOR) {
-			color = "#FFF";
-		}
+  ns.CanvasRenderer.prototype.renderPixel_ = function (color, col, row, context) {
+    if(color == Constants.TRANSPARENT_COLOR) {
+      color = "#FFF";
+    }
 
-		context.fillStyle = color;
-		context.fillRect(col * this.dpi, row * this.dpi, this.dpi, this.dpi);
-	};
+    context.fillStyle = color;
+    context.fillRect(col * this.dpi, row * this.dpi, this.dpi, this.dpi);
+  };
 
-	ns.CanvasRenderer.prototype.createCanvas_ = function () {
-		var width = this.frame.getWidth() * this.dpi;
-		var height = this.frame.getHeight() * this.dpi;
-		return pskl.CanvasUtils.createCanvas(width, height);
-	};
+  ns.CanvasRenderer.prototype.createCanvas_ = function () {
+    var width = this.frame.getWidth() * this.dpi;
+    var height = this.frame.getHeight() * this.dpi;
+    return pskl.CanvasUtils.createCanvas(width, height);
+  };
 })();;(function () {
-    var ns = $.namespace("pskl.rendering");
+  var ns = $.namespace("pskl.rendering");
 
-    ns.FrameRenderer = function (container, renderingOptions, className) {
-        this.defaultRenderingOptions = {
-            'supportGridRendering' : false
-        };
-        renderingOptions = $.extend(true, {}, this.defaultRenderingOptions, renderingOptions);
+  ns.FrameRenderer = function (container, renderingOptions, className) {
+    this.defaultRenderingOptions = {
+      'supportGridRendering' : false
+    };
+    renderingOptions = $.extend(true, {}, this.defaultRenderingOptions, renderingOptions);
 
-        if(container === undefined) {
-            throw 'Bad FrameRenderer initialization. <container> undefined.';
-        }
+    if(container === undefined) {
+      throw 'Bad FrameRenderer initialization. <container> undefined.';
+    }
+    
+    if(isNaN(renderingOptions.dpi)) {
+      throw 'Bad FrameRenderer initialization. <dpi> not well defined.';
+    }
+
+    this.container = container;
+    this.dpi = renderingOptions.dpi;
+    this.className = className;
+    this.canvas = null;
+    this.supportGridRendering = renderingOptions.supportGridRendering;
+
+    this.enableGrid(pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID));
+
+    // Flag to know if the config was altered
+    this.canvasConfigDirty = true;
+    this.updateBackgroundClass_(pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND));
+    $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
+  };
+
+  ns.FrameRenderer.prototype.updateDPI = function (newDPI) {
+    this.dpi = newDPI;
+    this.canvasConfigDirty = true;
+  };
+
+  /**
+   * @private
+   */
+  ns.FrameRenderer.prototype.onUserSettingsChange_ = function (evt, settingName, settingValue) {
+    
+    if(settingName == pskl.UserSettings.SHOW_GRID) {
+      this.enableGrid(settingValue);
+    }
+    else if (settingName == pskl.UserSettings.CANVAS_BACKGROUND) {
+      this.updateBackgroundClass_(settingValue);
+    }
+  };
+
+  /**
+   * @private
+   */
+  ns.FrameRenderer.prototype.updateBackgroundClass_ = function (newClass) {
+    var currentClass = this.container.data('current-background-class');
+    if (currentClass) {
+      this.container.removeClass(currentClass);
+    }   
+    this.container.addClass(newClass);
+    this.container.data('current-background-class', newClass);
+  };
+
+  ns.FrameRenderer.prototype.enableGrid = function (flag) {
+    this.gridStrokeWidth = (flag && this.supportGridRendering) ? Constants.GRID_STROKE_WIDTH : 0;
+    this.canvasConfigDirty = true;
+  };
+
+  ns.FrameRenderer.prototype.render = function (frame) {
+    this.clear(frame);
+    var context = this.getCanvas_(frame).getContext('2d');
+    for(var col = 0, width = frame.getWidth(); col < width; col++) {
+      for(var row = 0, height = frame.getHeight(); row < height; row++) {
+        var color = frame.getPixel(col, row);
+        this.renderPixel_(color, col, row, context);
+      }
+    }
+    this.lastRenderedFrame = frame;
+  };
+
+  ns.FrameRenderer.prototype.renderPixel_ = function (color, col, row, context) {
+    if(color != Constants.TRANSPARENT_COLOR) {
+      context.fillStyle = color;
+      context.fillRect(this.getFramePos_(col), this.getFramePos_(row), this.dpi, this.dpi);
+    }
+  };
+
+  ns.FrameRenderer.prototype.clear = function (frame) {
+    var canvas = this.getCanvas_(frame);
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  /**
+   * Transform a screen pixel-based coordinate (relative to the top-left corner of the rendered
+   * frame) into a sprite coordinate in column and row.
+   * @public
+   */
+  ns.FrameRenderer.prototype.convertPixelCoordinatesIntoSpriteCoordinate = function(coords) {
+    var cellSize = this.dpi + this.gridStrokeWidth;
+    return {
+      "col" : (coords.x - coords.x % cellSize) / cellSize,
+      "row" : (coords.y - coords.y % cellSize) / cellSize
+    };
+  };
+
+  /**
+   * @private
+   */
+  ns.FrameRenderer.prototype.getFramePos_ = function(index) {
+    return index * this.dpi + ((index - 1) * this.gridStrokeWidth);
+  };
+
+  /**
+   * @private
+   */
+  ns.FrameRenderer.prototype.drawGrid_ = function(canvas, width, height, col, row) {
+    var ctx = canvas.getContext("2d");
+    ctx.lineWidth = Constants.GRID_STROKE_WIDTH;
+    ctx.strokeStyle = Constants.GRID_STROKE_COLOR;
+    for(var c=1; c < col; c++) {            
+      ctx.moveTo(this.getFramePos_(c), 0);
+      ctx.lineTo(this.getFramePos_(c), height);
+      ctx.stroke();
+    }
+    
+    for(var r=1; r < row; r++) {
+      ctx.moveTo(0, this.getFramePos_(r));
+      ctx.lineTo(width, this.getFramePos_(r));
+      ctx.stroke();
+    }
+  };
+
+  /**
+   * @private
+   */
+  ns.FrameRenderer.prototype.getCanvas_ = function (frame) {
+    if(this.canvasConfigDirty) {
+      $(this.canvas).remove();
+      
+      var col = frame.getWidth(),
+        row = frame.getHeight();
+      
+      var pixelWidth =  col * this.dpi + this.gridStrokeWidth * (col - 1);
+      var pixelHeight =  row * this.dpi + this.gridStrokeWidth * (row - 1);
+      var classes = ['canvas'];
+      if (this.className) {
+        classes.push(this.className);  
+      }
+      var canvas = pskl.CanvasUtils.createCanvas(pixelWidth, pixelHeight, classes);
+
+      this.container.append(canvas);
+
+      if(this.gridStrokeWidth > 0) {
+        this.drawGrid_(canvas, pixelWidth, pixelHeight, col, row);
+      }
         
-        if(isNaN(renderingOptions.dpi)) {
-            throw 'Bad FrameRenderer initialization. <dpi> not well defined.';
-        }
+      this.canvas = canvas;
+      this.canvasConfigDirty = false;
+    }
+    return this.canvas;
+  };
+})();;(function () {
 
-        this.container = container;
-        this.dpi = renderingOptions.dpi;
-        this.className = className;
-        this.canvas = null;
-        this.supportGridRendering = renderingOptions.supportGridRendering;
+  var ns = $.namespace("pskl.rendering");
 
-        this.enableGrid(pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID));
+  ns.SpritesheetRenderer = function (framesheet) {
+    this.framesheet = framesheet;
+  };
 
-        // Flag to know if the config was altered
-        this.canvasConfigDirty = true;
-        this.updateBackgroundClass_(pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND));
-        $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
+  ns.SpritesheetRenderer.prototype.renderAsImageDataSpritesheetPNG = function () {
+    var canvas = this.createCanvas_();
+    for (var i = 0 ; i < this.framesheet.getFrameCount() ; i++) {
+      var frame = this.framesheet.getFrameByIndex(i);
+      this.drawFrameInCanvas_(frame, canvas, i * this.framesheet.getWidth(), 0);
+    }
+    return canvas.toDataURL("image/png");
+  };
+
+  ns.SpritesheetRenderer.prototype.blobToBase64_ = function(blob, cb) {
+    var reader = new FileReader();
+    reader.onload = function() {
+      var dataUrl = reader.result;
+      cb(dataUrl);
     };
+    reader.readAsDataURL(blob);
+  };
 
-    ns.FrameRenderer.prototype.updateDPI = function (newDPI) {
-        this.dpi = newDPI;
-        this.canvasConfigDirty = true;
-    };
+  ns.SpritesheetRenderer.prototype.renderAsImageDataAnimatedGIF = function(fps, cb) {
+    var dpi = 10;
+    var gif = new window.GIF({
+      workers: 2,
+      quality: 10,
+      width: 320,
+      height: 320
+    });
 
-    /**
-     * @private
-     */
-    ns.FrameRenderer.prototype.onUserSettingsChange_ = function (evt, settingName, settingValue) {
-        
-        if(settingName == pskl.UserSettings.SHOW_GRID) {
-            this.enableGrid(settingValue);
-        }
-        else if (settingName == pskl.UserSettings.CANVAS_BACKGROUND) {
-            this.updateBackgroundClass_(settingValue);
-        }
-    };
+    for (var i = 0; i < this.framesheet.frames.length; i++) {
+      var frame = this.framesheet.frames[i];
+      var renderer = new pskl.rendering.CanvasRenderer(frame, dpi);
+      gif.addFrame(renderer.render(), {
+        delay: 1000 / fps
+      });
+    }
 
-    /**
-     * @private
-     */
-    ns.FrameRenderer.prototype.updateBackgroundClass_ = function (newClass) {
-        var currentClass = this.container.data('current-background-class');
-        if (currentClass) {
-            this.container.removeClass(currentClass);
-        }   
-        this.container.addClass(newClass);
-        this.container.data('current-background-class', newClass);
-    };
+    gif.on('finished', function(blob) {
+      this.blobToBase64_(blob, cb);
+    }.bind(this));
 
-    ns.FrameRenderer.prototype.enableGrid = function (flag) {
-        this.gridStrokeWidth = (flag && this.supportGridRendering) ? Constants.GRID_STROKE_WIDTH : 0;
-        this.canvasConfigDirty = true;
-    };
+    gif.render();
+  };
 
-    ns.FrameRenderer.prototype.render = function (frame) {
-        this.clear(frame);
-        var context = this.getCanvas_(frame).getContext('2d');
-        for(var col = 0, width = frame.getWidth(); col < width; col++) {
-            for(var row = 0, height = frame.getHeight(); row < height; row++) {
-                var color = frame.getPixel(col, row);
-                this.renderPixel_(color, col, row, context);
-            }
-        }
-        this.lastRenderedFrame = frame;
-    };
 
-    ns.FrameRenderer.prototype.renderPixel_ = function (color, col, row, context) {
+  /**
+   * TODO(juliandescottes): Mutualize with code already present in FrameRenderer
+   */
+  ns.SpritesheetRenderer.prototype.drawFrameInCanvas_ = function (frame, canvas, offsetWidth, offsetHeight) {
+    var context = canvas.getContext('2d');
+    for(var col = 0, width = frame.getWidth(); col < width; col++) {
+      for(var row = 0, height = frame.getHeight(); row < height; row++) {
+        var color = frame.getPixel(col, row);
         if(color != Constants.TRANSPARENT_COLOR) {
-            context.fillStyle = color;
-            context.fillRect(this.getFramePos_(col), this.getFramePos_(row), this.dpi, this.dpi);
+          context.fillStyle = color;
+          context.fillRect(col + offsetWidth, row + offsetHeight, 1, 1);
         }
-    };
+      }
+    }
+  };
 
-    ns.FrameRenderer.prototype.clear = function (frame) {
-        var canvas = this.getCanvas_(frame);
-        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-    };
-
-    /**
-     * Transform a screen pixel-based coordinate (relative to the top-left corner of the rendered
-     * frame) into a sprite coordinate in column and row.
-     * @public
-     */
-    ns.FrameRenderer.prototype.convertPixelCoordinatesIntoSpriteCoordinate = function(coords) {
-        var cellSize = this.dpi + this.gridStrokeWidth;
-        return {
-            "col" : (coords.x - coords.x % cellSize) / cellSize,
-            "row" : (coords.y - coords.y % cellSize) / cellSize
-        };
-    };
-
-    /**
-     * @private
-     */
-    ns.FrameRenderer.prototype.getFramePos_ = function(index) {
-        return index * this.dpi + ((index - 1) * this.gridStrokeWidth);
-    };
-
-    /**
-     * @private
-     */
-    ns.FrameRenderer.prototype.drawGrid_ = function(canvas, width, height, col, row) {
-        var ctx = canvas.getContext("2d");
-        ctx.lineWidth = Constants.GRID_STROKE_WIDTH;
-        ctx.strokeStyle = Constants.GRID_STROKE_COLOR;
-        for(var c=1; c < col; c++) {            
-            ctx.moveTo(this.getFramePos_(c), 0);
-            ctx.lineTo(this.getFramePos_(c), height);
-            ctx.stroke();
-        }
-        
-        for(var r=1; r < row; r++) {
-            ctx.moveTo(0, this.getFramePos_(r));
-            ctx.lineTo(width, this.getFramePos_(r));
-            ctx.stroke();
-        }
-    };
-
-    /**
-     * @private
-     */
-    ns.FrameRenderer.prototype.getCanvas_ = function (frame) {
-        if(this.canvasConfigDirty) {
-            $(this.canvas).remove();
-            
-            var col = frame.getWidth(),
-                row = frame.getHeight();
-            
-            var pixelWidth =  col * this.dpi + this.gridStrokeWidth * (col - 1);
-            var pixelHeight =  row * this.dpi + this.gridStrokeWidth * (row - 1);
-            var classes = ['canvas'];
-            if (this.className) {
-              classes.push(this.className);  
-            }
-            var canvas = pskl.CanvasUtils.createCanvas(pixelWidth, pixelHeight, classes);
-
-            this.container.append(canvas);
-
-            if(this.gridStrokeWidth > 0) {
-                this.drawGrid_(canvas, pixelWidth, pixelHeight, col, row);
-            }
-                
-            this.canvas = canvas;
-            this.canvasConfigDirty = false;
-        }
-        return this.canvas;
-    };
-})();;(function () {
-
-	var ns = $.namespace("pskl.rendering");
-
-	ns.SpritesheetRenderer = function (framesheet) {
-		this.framesheet = framesheet;
-	};
-
-	ns.SpritesheetRenderer.prototype.renderAsImageDataSpritesheetPNG = function () {
-		var canvas = this.createCanvas_();
-		for (var i = 0 ; i < this.framesheet.getFrameCount() ; i++) {
-			var frame = this.framesheet.getFrameByIndex(i);
-			this.drawFrameInCanvas_(frame, canvas, i * this.framesheet.getWidth(), 0);
-		}
-		return canvas.toDataURL("image/png");
-	};
-
-	ns.SpritesheetRenderer.prototype.renderAsImageDataAnimatedGIF = function (fps) {
-		var encoder = new GIFEncoder(), dpi = 10;
-        encoder.setRepeat(0);
-        encoder.setDelay(1000/fps);
-
-        encoder.start();
-        encoder.setSize(this.framesheet.getWidth() * dpi, this.framesheet.getHeight() * dpi);
-        for (var i = 0 ; i < this.framesheet.frames.length ; i++) {
-          var frame = this.framesheet.frames[i];
-          var renderer = new pskl.rendering.CanvasRenderer(frame, dpi);
-          encoder.addFrame(renderer.render());
-        }
-        encoder.finish();
-
-        var imageData = 'data:image/gif;base64,' + encode64(encoder.stream().getData());
-        return imageData;
-	};
-
-
-	/**
-	 * TODO(juliandescottes): Mutualize with code already present in FrameRenderer
-	 */
-	ns.SpritesheetRenderer.prototype.drawFrameInCanvas_ = function (frame, canvas, offsetWidth, offsetHeight) {
-		var context = canvas.getContext('2d');
-		for(var col = 0, width = frame.getWidth(); col < width; col++) {
-			for(var row = 0, height = frame.getHeight(); row < height; row++) {
-				var color = frame.getPixel(col, row);
-				if(color != Constants.TRANSPARENT_COLOR) {
-					context.fillStyle = color;
-					context.fillRect(col + offsetWidth, row + offsetHeight, 1, 1);
-				}
-			}
-		}
-	};
-
-	ns.SpritesheetRenderer.prototype.createCanvas_ = function () {
-		var frameCount = this.framesheet.getFrameCount();
-		if (frameCount > 0){
-			var width = frameCount * this.framesheet.getWidth();
-			var height = this.framesheet.getHeight();
-			return pskl.CanvasUtils.createCanvas(width, height);
-		} else {
-			throw "Cannot render empty Spritesheet";
-		}
-	};
+  ns.SpritesheetRenderer.prototype.createCanvas_ = function () {
+    var frameCount = this.framesheet.getFrameCount();
+    if (frameCount > 0){
+      var width = frameCount * this.framesheet.getWidth();
+      var height = this.framesheet.getHeight();
+      return pskl.CanvasUtils.createCanvas(width, height);
+    } else {
+      throw "Cannot render empty Spritesheet";
+    }
+  };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
   ns.DrawingController = function (framesheet, container) {
@@ -15543,21 +13988,21 @@ jscolor.install();
 
   ns.DrawingController.prototype.initMouseBehavior = function() {
     var body = $('body');
-        this.container.mousedown($.proxy(this.onMousedown_, this));
-        this.container.mousemove($.proxy(this.onMousemove_, this));
-        body.mouseup($.proxy(this.onMouseup_, this));
-        
-        // Deactivate right click:
-        body.contextmenu(this.onCanvasContextMenu_);
+    this.container.mousedown($.proxy(this.onMousedown_, this));
+    this.container.mousemove($.proxy(this.onMousemove_, this));
+    body.mouseup($.proxy(this.onMouseup_, this));
+    
+    // Deactivate right click:
+    body.contextmenu(this.onCanvasContextMenu_);
   };
 
 
 
   ns.DrawingController.prototype.startDPIUpdateTimer_ = function () {
-      if (this.dpiUpdateTimer) {
-        window.clearInterval(this.dpiUpdateTimer);
-      }
-      this.dpiUpdateTimer = window.setTimeout($.proxy(this.updateDPI_, this), 200);
+    if (this.dpiUpdateTimer) {
+      window.clearInterval(this.dpiUpdateTimer);
+    }
+    this.dpiUpdateTimer = window.setTimeout($.proxy(this.updateDPI_, this), 200);
   },
 
   /**
@@ -15573,144 +14018,144 @@ jscolor.install();
    * @private
    */
   ns.DrawingController.prototype.onMousedown_ = function (event) {
-      this.isClicked = true;
-      
-      if(event.button == 2) { // right click
-        this.isRightClicked = true;
-        $.publish(Events.CANVAS_RIGHT_CLICKED);
-      }
+    this.isClicked = true;
+    
+    if(event.button == 2) { // right click
+      this.isRightClicked = true;
+      $.publish(Events.CANVAS_RIGHT_CLICKED);
+    }
 
-      var coords = this.getSpriteCoordinates(event);
+    var coords = this.getSpriteCoordinates(event);
+    
+    this.currentToolBehavior.applyToolAt(
+      coords.col, coords.row,
+      this.getCurrentColor_(),
+      this.framesheet.getCurrentFrame(),
+      this.overlayFrame,
+      this.wrapEvtInfo_(event)
+    );      
       
-      this.currentToolBehavior.applyToolAt(
-        coords.col, coords.row,
-        this.getCurrentColor_(),
-        this.framesheet.getCurrentFrame(),
-        this.overlayFrame,
-        this.wrapEvtInfo_(event)
-      );      
-        
-      $.publish(Events.LOCALSTORAGE_REQUEST);
-    };
+    $.publish(Events.LOCALSTORAGE_REQUEST);
+  };
 
-    /**
+  /**
    * @private
    */
-    ns.DrawingController.prototype.onMousemove_ = function (event) {
-      var currentTime = new Date().getTime();
-      // Throttling of the mousemove event:
-      if ((currentTime - this.previousMousemoveTime) > 40 ) {
-        var coords = this.getSpriteCoordinates(event);
-        if (this.isClicked) {
-       
-          this.currentToolBehavior.moveToolAt(
-            coords.col, coords.row,
-            this.getCurrentColor_(),
-            this.framesheet.getCurrentFrame(),
-            this.overlayFrame,
-            this.wrapEvtInfo_(event)
-          );
-      
-          // TODO(vincz): Find a way to move that to the model instead of being at the interaction level.
-          // Eg when drawing, it may make sense to have it here. However for a non drawing tool,
-          // you don't need to draw anything when mousemoving and you request useless localStorage.
-          $.publish(Events.LOCALSTORAGE_REQUEST);
-        } else {
-
-          this.currentToolBehavior.moveUnactiveToolAt(
-            coords.col, coords.row,
-            this.getCurrentColor_(),
-            this.framesheet.getCurrentFrame(),
-            this.overlayFrame,
-            this.wrapEvtInfo_(event)
-          );
-        }
-        this.previousMousemoveTime = currentTime;
-      }
-    };
-
-    /**
-     * @private
-     */
-    ns.DrawingController.prototype.onMouseup_ = function (event) {
-      if(this.isClicked || this.isRightClicked) {
-        // A mouse button was clicked on the drawing canvas before this mouseup event,
-        // the user was probably drawing on the canvas.
-        // Note: The mousemove movement (and the mouseup) may end up outside
-        // of the drawing canvas.
-
-        this.isClicked = false;
-        this.isRightClicked = false;
-
-        var coords = this.getSpriteCoordinates(event);
-        //console.log("mousemove: col: " + spriteCoordinate.col + " - row: " + spriteCoordinate.row);
-        this.currentToolBehavior.releaseToolAt(
+  ns.DrawingController.prototype.onMousemove_ = function (event) {
+    var currentTime = new Date().getTime();
+    // Throttling of the mousemove event:
+    if ((currentTime - this.previousMousemoveTime) > 40 ) {
+      var coords = this.getSpriteCoordinates(event);
+      if (this.isClicked) {
+     
+        this.currentToolBehavior.moveToolAt(
           coords.col, coords.row,
           this.getCurrentColor_(),
           this.framesheet.getCurrentFrame(),
           this.overlayFrame,
           this.wrapEvtInfo_(event)
         );
-
-        $.publish(Events.TOOL_RELEASED);
-      }
-    },
-
-    /**
-     * @private
-     */
-    ns.DrawingController.prototype.wrapEvtInfo_ = function (event) {
-      var evtInfo = {};
-      if (event.button === 0) {
-        evtInfo.button = Constants.LEFT_BUTTON;
-      } else if (event.button == 2) {
-        evtInfo.button = Constants.RIGHT_BUTTON;
-      }
-      return evtInfo;
-    },    
-
-    /**
-     * @private
-     */
-    ns.DrawingController.prototype.getRelativeCoordinates = function (clientX, clientY) {
-      var canvasPageOffset = this.container.offset();
-      return {
-        x : clientX - canvasPageOffset.left,
-        y : clientY - canvasPageOffset.top
-      };
-    };
-
-    /**
-     * @private
-     */
-    ns.DrawingController.prototype.getSpriteCoordinates = function(event) {
-        var coords = this.getRelativeCoordinates(event.clientX, event.clientY);
-        return this.renderer.convertPixelCoordinatesIntoSpriteCoordinate(coords);
-    };
-
-    /**
-     * @private
-     */
-    ns.DrawingController.prototype.getCurrentColor_ = function () {
-      if(this.isRightClicked) {
-        return this.secondaryColor;
+    
+        // TODO(vincz): Find a way to move that to the model instead of being at the interaction level.
+        // Eg when drawing, it may make sense to have it here. However for a non drawing tool,
+        // you don't need to draw anything when mousemoving and you request useless localStorage.
+        $.publish(Events.LOCALSTORAGE_REQUEST);
       } else {
-        return this.primaryColor;
-      }
-    };
 
-    /**
-     * @private
-     */
-    ns.DrawingController.prototype.onCanvasContextMenu_ = function (event) {
-      if ($(event.target).closest('#drawing-canvas-container').length) {
-        // Deactivate right click on drawing canvas only.
-        event.preventDefault();
-        event.stopPropagation();
-        event.cancelBubble = true;
-        return false;
-      }   
+        this.currentToolBehavior.moveUnactiveToolAt(
+          coords.col, coords.row,
+          this.getCurrentColor_(),
+          this.framesheet.getCurrentFrame(),
+          this.overlayFrame,
+          this.wrapEvtInfo_(event)
+        );
+      }
+      this.previousMousemoveTime = currentTime;
+    }
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.onMouseup_ = function (event) {
+    if(this.isClicked || this.isRightClicked) {
+      // A mouse button was clicked on the drawing canvas before this mouseup event,
+      // the user was probably drawing on the canvas.
+      // Note: The mousemove movement (and the mouseup) may end up outside
+      // of the drawing canvas.
+
+      this.isClicked = false;
+      this.isRightClicked = false;
+
+      var coords = this.getSpriteCoordinates(event);
+      //console.log("mousemove: col: " + spriteCoordinate.col + " - row: " + spriteCoordinate.row);
+      this.currentToolBehavior.releaseToolAt(
+        coords.col, coords.row,
+        this.getCurrentColor_(),
+        this.framesheet.getCurrentFrame(),
+        this.overlayFrame,
+        this.wrapEvtInfo_(event)
+      );
+
+      $.publish(Events.TOOL_RELEASED);
+    }
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.wrapEvtInfo_ = function (event) {
+    var evtInfo = {};
+    if (event.button === 0) {
+      evtInfo.button = Constants.LEFT_BUTTON;
+    } else if (event.button == 2) {
+      evtInfo.button = Constants.RIGHT_BUTTON;
+    }
+    return evtInfo;
+  }; 
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.getRelativeCoordinates = function (clientX, clientY) {
+    var canvasPageOffset = this.container.offset();
+    return {
+      x : clientX - canvasPageOffset.left,
+      y : clientY - canvasPageOffset.top
     };
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.getSpriteCoordinates = function(event) {
+    var coords = this.getRelativeCoordinates(event.clientX, event.clientY);
+    return this.renderer.convertPixelCoordinatesIntoSpriteCoordinate(coords);
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.getCurrentColor_ = function () {
+    if(this.isRightClicked) {
+      return this.secondaryColor;
+    } else {
+      return this.primaryColor;
+    }
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.onCanvasContextMenu_ = function (event) {
+    if ($(event.target).closest('#drawing-canvas-container').length) {
+      // Deactivate right click on drawing canvas only.
+      event.preventDefault();
+      event.stopPropagation();
+      event.cancelBubble = true;
+      return false;
+    }   
+  };
 
   ns.DrawingController.prototype.render = function () {
     this.renderFrame();
@@ -15746,11 +14191,11 @@ jscolor.install();
    */
   ns.DrawingController.prototype.calculateDPI_ = function() {
     var availableViewportHeight = $('#main-wrapper').height(),
-        leftSectionWidth = $('.left-column').outerWidth(true),
-        rightSectionWidth = $('.right-column').outerWidth(true),
-        availableViewportWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth,
-        framePixelHeight = this.framesheet.getCurrentFrame().getHeight(),
-        framePixelWidth = this.framesheet.getCurrentFrame().getWidth();
+      leftSectionWidth = $('.left-column').outerWidth(true),
+      rightSectionWidth = $('.right-column').outerWidth(true),
+      availableViewportWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth,
+      framePixelHeight = this.framesheet.getCurrentFrame().getHeight(),
+      framePixelWidth = this.framesheet.getCurrentFrame().getWidth();
 
     if (pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID)) {
       availableViewportWidth = availableViewportWidth - (framePixelWidth * Constants.GRID_STROKE_WIDTH);
@@ -15774,7 +14219,7 @@ jscolor.install();
     var currentFrameHeight =  this.framesheet.getCurrentFrame().getHeight();
     var canvasHeight = currentFrameHeight * dpi;
     if (pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID)) {
-        canvasHeight += Constants.GRID_STROKE_WIDTH * currentFrameHeight;
+      canvasHeight += Constants.GRID_STROKE_WIDTH * currentFrameHeight;
     }
     
     var verticalGapInPixel = Math.floor(($('#main-wrapper').height() - canvasHeight) / 2);
@@ -15786,388 +14231,396 @@ jscolor.install();
     this.forceRendering_();
   };
 })();;(function () {
-    var ns = $.namespace("pskl.controller");
-    ns.PreviewFilmController = function (framesheet, container, dpi) {
+  var ns = $.namespace("pskl.controller");
+  ns.PreviewFilmController = function (framesheet, container, dpi) {
 
-        this.framesheet = framesheet;
-        this.container = container;
-        this.dpi = this.calculateDPI_();
+    this.framesheet = framesheet;
+    this.container = container;
+    this.dpi = this.calculateDPI_();
 
-        this.redrawFlag = true;
-    };
+    this.redrawFlag = true;
+  };
 
-    ns.PreviewFilmController.prototype.init = function() {
-        $.subscribe(Events.TOOL_RELEASED, this.flagForRedraw_.bind(this));
-        $.subscribe(Events.FRAMESHEET_RESET, this.flagForRedraw_.bind(this));
-        $.subscribe(Events.FRAMESHEET_RESET, this.refreshDPI_.bind(this));
+  ns.PreviewFilmController.prototype.init = function() {
+    $.subscribe(Events.TOOL_RELEASED, this.flagForRedraw_.bind(this));
+    $.subscribe(Events.FRAMESHEET_RESET, this.flagForRedraw_.bind(this));
+    $.subscribe(Events.FRAMESHEET_RESET, this.refreshDPI_.bind(this));
 
-        $('#preview-list-scroller').scroll(this.updateScrollerOverflows.bind(this));
-        this.updateScrollerOverflows();
-    };
+    $('#preview-list-scroller').scroll(this.updateScrollerOverflows.bind(this));
+    this.updateScrollerOverflows();
+  };
 
-    ns.PreviewFilmController.prototype.addFrame = function () {
-        this.framesheet.addEmptyFrame();
-        this.framesheet.setCurrentFrameIndex(this.framesheet.getFrameCount() - 1);
-        this.updateScrollerOverflows();
-    };
+  ns.PreviewFilmController.prototype.addFrame = function () {
+    this.framesheet.addEmptyFrame();
+    this.framesheet.setCurrentFrameIndex(this.framesheet.getFrameCount() - 1);
+    this.updateScrollerOverflows();
+  };
 
-    ns.PreviewFilmController.prototype.flagForRedraw_ = function () {
-        this.redrawFlag = true;
-    };
+  ns.PreviewFilmController.prototype.flagForRedraw_ = function () {
+    this.redrawFlag = true;
+  };
 
-    ns.PreviewFilmController.prototype.refreshDPI_ = function () {
-        this.dpi = this.calculateDPI_();
-    };
+  ns.PreviewFilmController.prototype.refreshDPI_ = function () {
+    this.dpi = this.calculateDPI_();
+  };
 
-    ns.PreviewFilmController.prototype.render = function () {
-        if (this.redrawFlag) {
-            // TODO(vincz): Full redraw on any drawing modification, optimize.
-            this.createPreviews_();
-            this.redrawFlag = false;
-        }
-    };
+  ns.PreviewFilmController.prototype.render = function () {
+    if (this.redrawFlag) {
+      // TODO(vincz): Full redraw on any drawing modification, optimize.
+      this.createPreviews_();
+      this.redrawFlag = false;
+    }
+  };
 
-    ns.PreviewFilmController.prototype.updateScrollerOverflows = function () {
-        var scroller = $('#preview-list-scroller');
-        var scrollerHeight = scroller.height();
-        var scrollTop = scroller.scrollTop();
-        var scrollerContentHeight = $('#preview-list').height();
-        var treshold = $('.top-overflow').height();
-        var overflowTop = false,
-            overflowBottom = false;
-        if (scrollerHeight < scrollerContentHeight) {
-            if (scrollTop > treshold) {
-                overflowTop = true;
-            }
-            var scrollBottom = (scrollerContentHeight - scrollTop) - scrollerHeight;
-            if (scrollBottom > treshold) {
-                overflowBottom = true;
-            }
-        }
-        var wrapper = $('#preview-list-wrapper');
-        wrapper.toggleClass('top-overflow-visible', overflowTop);
-        wrapper.toggleClass('bottom-overflow-visible', overflowBottom);
-    };
+  ns.PreviewFilmController.prototype.updateScrollerOverflows = function () {
+    var scroller = $('#preview-list-scroller');
+    var scrollerHeight = scroller.height();
+    var scrollTop = scroller.scrollTop();
+    var scrollerContentHeight = $('#preview-list').height();
+    var treshold = $('.top-overflow').height();
+    var overflowTop = false,
+      overflowBottom = false;
+    if (scrollerHeight < scrollerContentHeight) {
+      if (scrollTop > treshold) {
+        overflowTop = true;
+      }
+      var scrollBottom = (scrollerContentHeight - scrollTop) - scrollerHeight;
+      if (scrollBottom > treshold) {
+        overflowBottom = true;
+      }
+    }
+    var wrapper = $('#preview-list-wrapper');
+    wrapper.toggleClass('top-overflow-visible', overflowTop);
+    wrapper.toggleClass('bottom-overflow-visible', overflowBottom);
+  };
 
-    ns.PreviewFilmController.prototype.createPreviews_ = function () {
-        
-        this.container.html("");
-        // Manually remove tooltips since mouseout events were shortcut by the DOM refresh:
-        $(".tooltip").remove();
-
-        var frameCount = this.framesheet.getFrameCount();
-
-        for (var i = 0, l = frameCount; i < l ; i++) {
-            this.container.append(this.createPreviewTile_(i));
-        }
-        // Append 'new empty frame' button
-        var newFrameButton = document.createElement("div");
-        newFrameButton.id = "add-frame-action";
-        newFrameButton.className = "add-frame-action";
-        newFrameButton.innerHTML = "<p class='label'>Add new frame</p>";
-        this.container.append(newFrameButton);
-
-        $(newFrameButton).click(this.addFrame.bind(this));
-
-        var needDragndropBehavior = (frameCount > 1);
-        if(needDragndropBehavior) {
-            this.initDragndropBehavior_();
-        }
-        this.updateScrollerOverflows();
-    };
-
-
-    /**
-     * @private
-     */
-    ns.PreviewFilmController.prototype.initDragndropBehavior_ = function () {
-        
-        $("#preview-list").sortable({
-          placeholder: "preview-tile-drop-proxy",
-          update: $.proxy(this.onUpdate_, this),
-          items: ".preview-tile"
-        });
-        $("#preview-list").disableSelection();
-    };
-
-    /**
-     * @private
-     */
-    ns.PreviewFilmController.prototype.onUpdate_ = function( event, ui ) {
-        var originFrameId = parseInt(ui.item.data("tile-number"), 10);
-        var targetInsertionId = $('.preview-tile').index(ui.item);
-
-        this.framesheet.moveFrame(originFrameId, targetInsertionId);
-        this.framesheet.setCurrentFrameIndex(targetInsertionId);
-
-        // TODO(grosbouddha): move localstorage request to the model layer?
-        $.publish(Events.LOCALSTORAGE_REQUEST);
-    };
-
-
-    /**
-     * @private
-     * TODO(vincz): clean this giant rendering function & remove listeners.
-     */
-    ns.PreviewFilmController.prototype.createPreviewTile_ = function(tileNumber) {
-        var currentFrame = this.framesheet.getFrameByIndex(tileNumber);
-        
-        var previewTileRoot = document.createElement("li");
-        var classname = "preview-tile";
-        previewTileRoot.setAttribute("data-tile-number", tileNumber);
-
-        if (this.framesheet.getCurrentFrame() == currentFrame) {
-            classname += " selected";
-        }
-        previewTileRoot.className = classname;
-
-        var canvasContainer = document.createElement("div");
-        canvasContainer.className = "canvas-container";
-        
-        var canvasBackground = document.createElement("div");
-        canvasBackground.className = "canvas-background";
-        canvasContainer.appendChild(canvasBackground);
-        
-        previewTileRoot.addEventListener('click', this.onPreviewClick_.bind(this, tileNumber));
-
-        var cloneFrameButton = document.createElement("button");
-        cloneFrameButton.setAttribute('rel', 'tooltip');
-        cloneFrameButton.setAttribute('data-placement', 'right');
-        cloneFrameButton.setAttribute('title', 'Duplicate this frame');
-        cloneFrameButton.className = "tile-overlay duplicate-frame-action";
-        previewTileRoot.appendChild(cloneFrameButton);
-        cloneFrameButton.addEventListener('click', this.onAddButtonClick_.bind(this, tileNumber));
-
-        // TODO(vincz): Eventually optimize this part by not recreating a FrameRenderer. Note that the real optim
-        // is to make this update function (#createPreviewTile) less aggressive.
-        var renderingOptions = {"dpi": this.dpi };
-        var currentFrameRenderer = new pskl.rendering.FrameRenderer($(canvasContainer), renderingOptions, "tile-view");
-        currentFrameRenderer.render(currentFrame);
-        
-        previewTileRoot.appendChild(canvasContainer);
-
-        if(tileNumber > 0 || this.framesheet.getFrameCount() > 1) {
-            // Add 'remove frame' button.
-            var deleteButton = document.createElement("button");
-            deleteButton.setAttribute('rel', 'tooltip');
-            deleteButton.setAttribute('data-placement', 'right');
-            deleteButton.setAttribute('title', 'Delete this frame');
-            deleteButton.className = "tile-overlay delete-frame-action";
-            deleteButton.addEventListener('click', this.onDeleteButtonClick_.bind(this, tileNumber));
-            previewTileRoot.appendChild(deleteButton);
-
-            // Add 'dragndrop handle'.
-            var dndHandle = document.createElement("div");
-            dndHandle.className = "tile-overlay dnd-action";
-            previewTileRoot.appendChild(dndHandle);
-        }
-        var tileCount = document.createElement("div");
-        tileCount.className = "tile-overlay tile-count";
-        tileCount.innerHTML = tileNumber;
-        previewTileRoot.appendChild(tileCount);
-        
-
-        return previewTileRoot;
-    };
-
-    ns.PreviewFilmController.prototype.onPreviewClick_ = function (index, evt) {
-        // has not class tile-action:
-        if(!evt.target.classList.contains('tile-overlay')) {
-            this.framesheet.setCurrentFrameIndex(index);
-        }    
-    };
-
-    ns.PreviewFilmController.prototype.onDeleteButtonClick_ = function (index, evt) {
-        this.framesheet.removeFrameByIndex(index);
-        $.publish(Events.LOCALSTORAGE_REQUEST); // Should come from model
-        this.updateScrollerOverflows();
-    };
-
-    ns.PreviewFilmController.prototype.onAddButtonClick_ = function (index, evt) {
-        this.framesheet.duplicateFrameByIndex(index);
-        $.publish(Events.LOCALSTORAGE_REQUEST);  // Should come from model
-        this.framesheet.setCurrentFrameIndex(index + 1);
-        this.updateScrollerOverflows();
-    };
-
-    /**
-     * Calculate the preview DPI depending on the framesheet size
-     */
-    ns.PreviewFilmController.prototype.calculateDPI_ = function () {
-        var curFrame = this.framesheet.getCurrentFrame(),
-            frameHeight = curFrame.getHeight(),
-            frameWidth = curFrame.getWidth(),
-            maxFrameDim = Math.max(frameWidth, frameHeight);
-
-        var previewHeight = Constants.PREVIEW_FILM_SIZE * frameHeight / maxFrameDim;
-        var previewWidth = Constants.PREVIEW_FILM_SIZE * frameWidth / maxFrameDim;
-
-        return pskl.PixelUtils.calculateDPI(previewHeight, previewWidth, frameHeight, frameWidth) || 1;
-    };
-})();;(function () {
-    var ns = $.namespace("pskl.controller");
-    ns.AnimatedPreviewController = function (framesheet, container, dpi) {
-        this.framesheet = framesheet;
-        this.container = container;
-
-        this.elapsedTime = 0;
-        this.currentIndex = 0;
-
-        this.fps = parseInt($("#preview-fps")[0].value, 10);
-        
-        var renderingOptions = {
-            "dpi": this.calculateDPI_()
-        };
-        this.renderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions);
-
-        $.subscribe(Events.FRAME_SIZE_CHANGED, this.updateDPI_.bind(this));
-    };
-
-    ns.AnimatedPreviewController.prototype.init = function () {
-        // the oninput event won't work on IE10 unfortunately, but at least will provide a
-        // consistent behavior across all other browsers that support the input type range
-        // see https://bugzilla.mozilla.org/show_bug.cgi?id=853670
-        $("#preview-fps")[0].addEventListener('change', this.onFPSSliderChange.bind(this));
-    };
-
-    ns.AnimatedPreviewController.prototype.onFPSSliderChange = function (evt) {
-        this.setFPS(parseInt($("#preview-fps")[0].value, 10));
-    };
-
-    ns.AnimatedPreviewController.prototype.setFPS = function (fps) {
-        this.fps = fps;
-        $("#preview-fps").val(this.fps);
-        $("#display-fps").html(this.fps + " FPS");
-    };
-
-    ns.AnimatedPreviewController.prototype.render = function (delta) {
-        this.elapsedTime += delta;
-        var index = Math.floor(this.elapsedTime / (1000/this.fps));
-        if (index != this.currentIndex) {
-            this.currentIndex = index;
-            if (!this.framesheet.hasFrameAtIndex(this.currentIndex)) {
-                this.currentIndex = 0;
-                this.elapsedTime = 0;
-            }
-            this.renderer.render(this.framesheet.getFrameByIndex(this.currentIndex));
-        }
-    };
-
-    /**
-     * Calculate the preview DPI depending on the framesheet size
-     */
-    ns.AnimatedPreviewController.prototype.calculateDPI_ = function () {
-        var previewSize = 200,
-            framePixelHeight = this.framesheet.getCurrentFrame().getHeight(),
-            framePixelWidth = this.framesheet.getCurrentFrame().getWidth();
-        // TODO (julz) : should have a utility to get a Size from framesheet easily (what about empty framesheets though ?)
-        
-        //return pskl.PixelUtils.calculateDPIForContainer($(".preview-container"), framePixelHeight, framePixelWidth);
-        return pskl.PixelUtils.calculateDPI(previewSize, previewSize, framePixelHeight, framePixelWidth);
-    };
-
-    ns.AnimatedPreviewController.prototype.updateDPI_ = function () {
-        this.dpi = this.calculateDPI_();
-        this.renderer.updateDPI(this.dpi);
-    };
-})();;(function () {
-    var ns = $.namespace("pskl.controller");
-
+  ns.PreviewFilmController.prototype.createPreviews_ = function () {
     
-    ns.ToolController = function () {
-	
-        this.toolInstances = {
-            "simplePen" : new pskl.drawingtools.SimplePen(),
-            "verticalMirrorPen" : new pskl.drawingtools.VerticalMirrorPen(),
-            "eraser" : new pskl.drawingtools.Eraser(),
-            "paintBucket" : new pskl.drawingtools.PaintBucket(),
-            "stroke" : new pskl.drawingtools.Stroke(),
-            "rectangle" : new pskl.drawingtools.Rectangle(),
-            "circle" : new pskl.drawingtools.Circle(),
-            "move" : new pskl.drawingtools.Move(),
-            "rectangleSelect" : new pskl.drawingtools.RectangleSelect(),
-            "shapeSelect" : new pskl.drawingtools.ShapeSelect(),
-            "colorPicker" : new pskl.drawingtools.ColorPicker()
-        };
+    this.container.html("");
+    // Manually remove tooltips since mouseout events were shortcut by the DOM refresh:
+    $(".tooltip").remove();
 
-        this.currentSelectedTool = this.toolInstances.simplePen;
-        this.previousSelectedTool = this.toolInstances.simplePen;
+    var frameCount = this.framesheet.getFrameCount();
+
+    for (var i = 0, l = frameCount; i < l ; i++) {
+      this.container.append(this.createPreviewTile_(i));
+    }
+    // Append 'new empty frame' button
+    var newFrameButton = document.createElement("div");
+    newFrameButton.id = "add-frame-action";
+    newFrameButton.className = "add-frame-action";
+    newFrameButton.innerHTML = "<p class='label'>Add new frame</p>";
+    this.container.append(newFrameButton);
+
+    $(newFrameButton).click(this.addFrame.bind(this));
+
+    var needDragndropBehavior = (frameCount > 1);
+    if(needDragndropBehavior) {
+      this.initDragndropBehavior_();
+    }
+    this.updateScrollerOverflows();
+  };
+
+
+  /**
+   * @private
+   */
+  ns.PreviewFilmController.prototype.initDragndropBehavior_ = function () {
+    
+    $("#preview-list").sortable({
+      placeholder: "preview-tile-drop-proxy",
+      update: $.proxy(this.onUpdate_, this),
+      items: ".preview-tile"
+    });
+    $("#preview-list").disableSelection();
+  };
+
+  /**
+   * @private
+   */
+  ns.PreviewFilmController.prototype.onUpdate_ = function( event, ui ) {
+    var originFrameId = parseInt(ui.item.data("tile-number"), 10);
+    var targetInsertionId = $('.preview-tile').index(ui.item);
+
+    this.framesheet.moveFrame(originFrameId, targetInsertionId);
+    this.framesheet.setCurrentFrameIndex(targetInsertionId);
+
+    // TODO(grosbouddha): move localstorage request to the model layer?
+    $.publish(Events.LOCALSTORAGE_REQUEST);
+  };
+
+
+  /**
+   * @private
+   * TODO(vincz): clean this giant rendering function & remove listeners.
+   */
+  ns.PreviewFilmController.prototype.createPreviewTile_ = function(tileNumber) {
+    var currentFrame = this.framesheet.getFrameByIndex(tileNumber);
+    
+    var previewTileRoot = document.createElement("li");
+    var classname = "preview-tile";
+    previewTileRoot.setAttribute("data-tile-number", tileNumber);
+
+    if (this.framesheet.getCurrentFrame() == currentFrame) {
+      classname += " selected";
+    }
+    previewTileRoot.className = classname;
+
+    var canvasContainer = document.createElement("div");
+    canvasContainer.className = "canvas-container";
+    
+    var canvasBackground = document.createElement("div");
+    canvasBackground.className = "canvas-background";
+    canvasContainer.appendChild(canvasBackground);
+    
+    previewTileRoot.addEventListener('click', this.onPreviewClick_.bind(this, tileNumber));
+
+    var cloneFrameButton = document.createElement("button");
+    cloneFrameButton.setAttribute('rel', 'tooltip');
+    cloneFrameButton.setAttribute('data-placement', 'right');
+    cloneFrameButton.setAttribute('title', 'Duplicate this frame');
+    cloneFrameButton.className = "tile-overlay duplicate-frame-action";
+    previewTileRoot.appendChild(cloneFrameButton);
+    cloneFrameButton.addEventListener('click', this.onAddButtonClick_.bind(this, tileNumber));
+
+    // TODO(vincz): Eventually optimize this part by not recreating a FrameRenderer. Note that the real optim
+    // is to make this update function (#createPreviewTile) less aggressive.
+    var renderingOptions = {"dpi": this.dpi };
+    var currentFrameRenderer = new pskl.rendering.FrameRenderer($(canvasContainer), renderingOptions, "tile-view");
+    currentFrameRenderer.render(currentFrame);
+    
+    previewTileRoot.appendChild(canvasContainer);
+
+    if(tileNumber > 0 || this.framesheet.getFrameCount() > 1) {
+      // Add 'remove frame' button.
+      var deleteButton = document.createElement("button");
+      deleteButton.setAttribute('rel', 'tooltip');
+      deleteButton.setAttribute('data-placement', 'right');
+      deleteButton.setAttribute('title', 'Delete this frame');
+      deleteButton.className = "tile-overlay delete-frame-action";
+      deleteButton.addEventListener('click', this.onDeleteButtonClick_.bind(this, tileNumber));
+      previewTileRoot.appendChild(deleteButton);
+
+      // Add 'dragndrop handle'.
+      var dndHandle = document.createElement("div");
+      dndHandle.className = "tile-overlay dnd-action";
+      previewTileRoot.appendChild(dndHandle);
+    }
+    var tileCount = document.createElement("div");
+    tileCount.className = "tile-overlay tile-count";
+    tileCount.innerHTML = tileNumber;
+    previewTileRoot.appendChild(tileCount);
+    
+
+    return previewTileRoot;
+  };
+
+  ns.PreviewFilmController.prototype.onPreviewClick_ = function (index, evt) {
+    // has not class tile-action:
+    if(!evt.target.classList.contains('tile-overlay')) {
+      this.framesheet.setCurrentFrameIndex(index);
+    }    
+  };
+
+  ns.PreviewFilmController.prototype.onDeleteButtonClick_ = function (index, evt) {
+    this.framesheet.removeFrameByIndex(index);
+    $.publish(Events.LOCALSTORAGE_REQUEST); // Should come from model
+    this.updateScrollerOverflows();
+  };
+
+  ns.PreviewFilmController.prototype.onAddButtonClick_ = function (index, evt) {
+    this.framesheet.duplicateFrameByIndex(index);
+    $.publish(Events.LOCALSTORAGE_REQUEST);  // Should come from model
+    this.framesheet.setCurrentFrameIndex(index + 1);
+    this.updateScrollerOverflows();
+  };
+
+  /**
+   * Calculate the preview DPI depending on the framesheet size
+   */
+  ns.PreviewFilmController.prototype.calculateDPI_ = function () {
+    var curFrame = this.framesheet.getCurrentFrame(),
+      frameHeight = curFrame.getHeight(),
+      frameWidth = curFrame.getWidth(),
+      maxFrameDim = Math.max(frameWidth, frameHeight);
+
+    var previewHeight = Constants.PREVIEW_FILM_SIZE * frameHeight / maxFrameDim;
+    var previewWidth = Constants.PREVIEW_FILM_SIZE * frameWidth / maxFrameDim;
+
+    return pskl.PixelUtils.calculateDPI(previewHeight, previewWidth, frameHeight, frameWidth) || 1;
+  };
+})();;(function () {
+  var ns = $.namespace("pskl.controller");
+  ns.AnimatedPreviewController = function (framesheet, container, dpi) {
+    this.framesheet = framesheet;
+    this.container = container;
+
+    this.elapsedTime = 0;
+    this.currentIndex = 0;
+
+    this.fps = parseInt($("#preview-fps")[0].value, 10);
+    
+    var renderingOptions = {
+      "dpi": this.calculateDPI_()
+    };
+    this.renderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions);
+
+    $.subscribe(Events.FRAME_SIZE_CHANGED, this.updateDPI_.bind(this));
+  };
+
+  ns.AnimatedPreviewController.prototype.init = function () {
+    // the oninput event won't work on IE10 unfortunately, but at least will provide a
+    // consistent behavior across all other browsers that support the input type range
+    // see https://bugzilla.mozilla.org/show_bug.cgi?id=853670
+    $("#preview-fps")[0].addEventListener('change', this.onFPSSliderChange.bind(this));
+  };
+
+  ns.AnimatedPreviewController.prototype.onFPSSliderChange = function (evt) {
+    this.setFPS(parseInt($("#preview-fps")[0].value, 10));
+  };
+
+  ns.AnimatedPreviewController.prototype.setFPS = function (fps) {
+    this.fps = fps;
+    $("#preview-fps").val(this.fps);
+    $("#display-fps").html(this.fps + " FPS");
+  };
+
+  ns.AnimatedPreviewController.prototype.render = function (delta) {
+    this.elapsedTime += delta;
+    var index = Math.floor(this.elapsedTime / (1000/this.fps));
+    if (index != this.currentIndex) {
+      this.currentIndex = index;
+      if (!this.framesheet.hasFrameAtIndex(this.currentIndex)) {
+        this.currentIndex = 0;
+        this.elapsedTime = 0;
+      }
+      this.renderer.render(this.framesheet.getFrameByIndex(this.currentIndex));
+    }
+  };
+
+  /**
+   * Calculate the preview DPI depending on the framesheet size
+   */
+  ns.AnimatedPreviewController.prototype.calculateDPI_ = function () {
+    var previewSize = 200,
+      framePixelHeight = this.framesheet.getCurrentFrame().getHeight(),
+      framePixelWidth = this.framesheet.getCurrentFrame().getWidth();
+    // TODO (julz) : should have a utility to get a Size from framesheet easily (what about empty framesheets though ?)
+    
+    //return pskl.PixelUtils.calculateDPIForContainer($(".preview-container"), framePixelHeight, framePixelWidth);
+    return pskl.PixelUtils.calculateDPI(previewSize, previewSize, framePixelHeight, framePixelWidth);
+  };
+
+  ns.AnimatedPreviewController.prototype.updateDPI_ = function () {
+    this.dpi = this.calculateDPI_();
+    this.renderer.updateDPI(this.dpi);
+  };
+})();;(function () {
+  var ns = $.namespace("pskl.controller");
+
+  
+  ns.ToolController = function () {
+  
+    this.toolInstances = {
+      "simplePen" : new pskl.drawingtools.SimplePen(),
+      "verticalMirrorPen" : new pskl.drawingtools.VerticalMirrorPen(),
+      "eraser" : new pskl.drawingtools.Eraser(),
+      "paintBucket" : new pskl.drawingtools.PaintBucket(),
+      "stroke" : new pskl.drawingtools.Stroke(),
+      "rectangle" : new pskl.drawingtools.Rectangle(),
+      "circle" : new pskl.drawingtools.Circle(),
+      "move" : new pskl.drawingtools.Move(),
+      "rectangleSelect" : new pskl.drawingtools.RectangleSelect(),
+      "shapeSelect" : new pskl.drawingtools.ShapeSelect(),
+      "colorPicker" : new pskl.drawingtools.ColorPicker()
     };
 
-    /**
-     * @public
-     */
-    ns.ToolController.prototype.init = function() {
+    this.currentSelectedTool = this.toolInstances.simplePen;
+    this.previousSelectedTool = this.toolInstances.simplePen;
+  };
 
-        this.createToolMarkup_();
+  /**
+   * @public
+   */
+  ns.ToolController.prototype.init = function() {
+    this.createToolMarkup_();
 
-        // Initialize tool:
-        // Set SimplePen as default selected tool:
-        this.selectTool_(this.toolInstances.simplePen);
-        // Activate listener on tool panel:
-        $("#tool-section").click($.proxy(this.onToolIconClicked_, this));
-    };
+    // Initialize tool:
+    // Set SimplePen as default selected tool:
+    this.selectTool_(this.toolInstances.simplePen);
+    // Activate listener on tool panel:
+    $("#tool-section").click($.proxy(this.onToolIconClicked_, this));
+  };
 
-    /**
-     * @private
-     */
-    ns.ToolController.prototype.activateToolOnStage_ = function(tool) {
-        var stage = $("body");
-        var previousSelectedToolClass = stage.data("selected-tool-class");
-        if(previousSelectedToolClass) {
-          stage.removeClass(previousSelectedToolClass);
-        }
-        stage.addClass(tool.toolId);
-        stage.data("selected-tool-class", tool.toolId);
-    };
+  /**
+   * @private
+   */
+  ns.ToolController.prototype.activateToolOnStage_ = function(tool) {
+    var stage = $("body");
+    var previousSelectedToolClass = stage.data("selected-tool-class");
+    if(previousSelectedToolClass) {
+      stage.removeClass(previousSelectedToolClass);
+    }
+    stage.addClass(tool.toolId);
+    stage.data("selected-tool-class", tool.toolId);
+  };
 
-    /**
-     * @private
-     */
-    ns.ToolController.prototype.selectTool_ = function(tool) {
-        console.log("Selecting Tool:" , this.currentSelectedTool);
-        this.currentSelectedTool = tool;
-        this.activateToolOnStage_(this.currentSelectedTool);
-        $.publish(Events.TOOL_SELECTED, [tool]);
-    };
+  /**
+   * @private
+   */
+  ns.ToolController.prototype.selectTool_ = function(tool) {
+    console.log("Selecting Tool:" , this.currentSelectedTool);
+    this.currentSelectedTool = tool;
+    this.activateToolOnStage_(this.currentSelectedTool);
+    $.publish(Events.TOOL_SELECTED, [tool]);
+  };
 
-    /**
-     * @private
-     */
-    ns.ToolController.prototype.onToolIconClicked_ = function(evt) {
-        var target = $(evt.target);
-        var clickedTool = target.closest(".tool-icon");
+  /**
+   * @private
+   */
+  ns.ToolController.prototype.onToolIconClicked_ = function(evt) {
+    var target = $(evt.target);
+    var clickedTool = target.closest(".tool-icon");
 
-        if(clickedTool.length) {
-            for(var tool in this.toolInstances) {
-                if (this.toolInstances[tool].toolId == clickedTool.data().toolId) {
-                    this.selectTool_(this.toolInstances[tool]);
+    if(clickedTool.length) {
+      var toolId = clickedTool.data().toolId;
+      var tool = this.getToolById_(toolId);
+      if (tool) {
+        this.selectTool_(tool);
 
-                    // Show tool as selected:
-                    $('#tool-section .tool-icon.selected').removeClass('selected');
-                    clickedTool.addClass('selected');
-                }
-            }
-        }
-    };
+        // Show tool as selected:
+        $('#tool-section .tool-icon.selected').removeClass('selected');
+        clickedTool.addClass('selected');
+      }
+    }
+  };
 
-    /**
-     * @private
-     */
-    ns.ToolController.prototype.createToolMarkup_ = function() {
-        var currentTool, toolMarkup = '', extraClass;
-        // TODO(vincz): Tools rendering order is not enforced by the data stucture (this.toolInstances), fix that.
-        for (var toolKey in this.toolInstances) {
-            currentTool = this.toolInstances[toolKey];
-            extraClass = currentTool.toolId;
-            if (this.currentSelectedTool == currentTool) {
-                extraClass = extraClass + " selected";
-            }
-            toolMarkup += '<li rel="tooltip" data-placement="right" class="tool-icon ' + extraClass + '" data-tool-id="' + currentTool.toolId +
-                            '" title="' + currentTool.helpText + '"></li>';
-        }
-        $('#tools-container').html(toolMarkup);
-    };
+  ns.ToolController.prototype.getToolById_ = function (toolId) {
+    for(var key in this.toolInstances) {
+      if (this.toolInstances[key].toolId == toolId) {
+        return this.toolInstances[key];
+      }
+    }
+    return null;
+  };
+
+  /**
+   * @private
+   */
+  ns.ToolController.prototype.createToolMarkup_ = function() {
+    var currentTool, toolMarkup = '', extraClass;
+    // TODO(vincz): Tools rendering order is not enforced by the data stucture (this.toolInstances), fix that.
+    for (var toolKey in this.toolInstances) {
+      currentTool = this.toolInstances[toolKey];
+      extraClass = currentTool.toolId;
+      if (this.currentSelectedTool == currentTool) {
+        extraClass = extraClass + " selected";
+      }
+      toolMarkup += '<li rel="tooltip" data-placement="right" class="tool-icon ' + extraClass + '" data-tool-id="' + currentTool.toolId +
+              '" title="' + currentTool.helpText + '"></li>';
+    }
+    $('#tools-container').html(toolMarkup);
+  };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
 
@@ -16324,56 +14777,56 @@ jscolor.install();
   };
 })();
 ;(function () {
-    var ns = $.namespace("pskl.controller");
+  var ns = $.namespace("pskl.controller");
   
-    ns.SettingsController = function () {};
+  ns.SettingsController = function () {};
 
-    /**
-     * @public
-     */
-    ns.SettingsController.prototype.init = function() {
+  /**
+   * @public
+   */
+  ns.SettingsController.prototype.init = function() {
 
-        // Highlight selected background picker:
-        var backgroundClass = pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND);
-        $('#background-picker-wrapper')
-            .find('.background-picker[data-background-class=' + backgroundClass + ']')
-            .addClass('selected');
+    // Highlight selected background picker:
+    var backgroundClass = pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND);
+    $('#background-picker-wrapper')
+      .find('.background-picker[data-background-class=' + backgroundClass + ']')
+      .addClass('selected');
 
-        // Initial state for grid display:
-        var show_grid = pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID);
-        $('#show-grid').prop('checked', show_grid);
+    // Initial state for grid display:
+    var show_grid = pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID);
+    $('#show-grid').prop('checked', show_grid);
 
-        // Expand drawer when clicking 'Settings' tab.
-        $('#settings').click(function(evt) {
-            $('.right-sticky-section').toggleClass('expanded');
-            $('#settings').toggleClass('has-expanded-drawer');
-        });
+    // Expand drawer when clicking 'Settings' tab.
+    $('#settings').click(function(evt) {
+      $('.right-sticky-section').toggleClass('expanded');
+      $('#settings').toggleClass('has-expanded-drawer');
+    });
 
-        // Handle grid display changes:
-        $('#show-grid').change($.proxy(function(evt) {
-            var checked = $('#show-grid').prop('checked');
-            pskl.UserSettings.set(pskl.UserSettings.SHOW_GRID, checked);
-        }, this));
+    // Handle grid display changes:
+    $('#show-grid').change($.proxy(function(evt) {
+      var checked = $('#show-grid').prop('checked');
+      pskl.UserSettings.set(pskl.UserSettings.SHOW_GRID, checked);
+    }, this));
 
-        // Handle canvas background changes:
-        $('#background-picker-wrapper').click(function(evt) {
-          var target = $(evt.target).closest('.background-picker');
-          if (target.length) {
-            var backgroundClass = target.data('background-class');
-            pskl.UserSettings.set(pskl.UserSettings.CANVAS_BACKGROUND, backgroundClass);
+    // Handle canvas background changes:
+    $('#background-picker-wrapper').click(function(evt) {
+      var target = $(evt.target).closest('.background-picker');
+      if (target.length) {
+        var backgroundClass = target.data('background-class');
+        pskl.UserSettings.set(pskl.UserSettings.CANVAS_BACKGROUND, backgroundClass);
 
-            $('.background-picker').removeClass('selected');
-            target.addClass('selected');
-          }
-        });
-    };
+        $('.background-picker').removeClass('selected');
+        target.addClass('selected');
+      }
+    });
+  };
 })();;(function () {
   var ns = $.namespace("pskl.service");
 
   ns.LocalStorageService = function (framesheet_) {
 
     if(framesheet_ === undefined) {
-        throw "Bad LocalStorageService initialization: <undefined frameSheet>";
+      throw "Bad LocalStorageService initialization: <undefined frameSheet>";
     }
     this.framesheet = framesheet_;
     this.localStorageThrottler_ = null;
@@ -16455,17 +14908,17 @@ jscolor.install();
     }
   };
 })();;(function () {
-	var ns = $.namespace("pskl.service");
-	ns.HistoryService = function (framesheet) {
+  var ns = $.namespace("pskl.service");
+  ns.HistoryService = function (framesheet) {
     this.framesheet = framesheet; 
   };
 
-	ns.HistoryService.prototype.init = function () {
+  ns.HistoryService.prototype.init = function () {
     
     $.subscribe(Events.TOOL_RELEASED, this.saveState.bind(this));
     $.subscribe(Events.UNDO, this.undo.bind(this));
     $.subscribe(Events.REDO, this.redo.bind(this));
-	};
+  };
 
   ns.HistoryService.prototype.saveState = function () {
     this.framesheet.getCurrentFrame().saveState();
@@ -16482,139 +14935,139 @@ jscolor.install();
   };
 
 })();;(function () {
-	var ns = $.namespace("pskl.service");
+  var ns = $.namespace("pskl.service");
 
-	ns.KeyboardEventService = function () {};
+  ns.KeyboardEventService = function () {};
 
-	/**
-	 * @private
-	 */
-	ns.KeyboardEventService.prototype.KeyboardActions_ = {
+  /**
+   * @private
+   */
+  ns.KeyboardEventService.prototype.KeyboardActions_ = {
 
-		"ctrl" : {
-			"z" : Events.UNDO,
-			"y" : Events.REDO,
-			"x" : Events.CUT,
-			"c" : Events.COPY,
-			"v" : Events.PASTE
-		}
-	};
+    "ctrl" : {
+      "z" : Events.UNDO,
+      "y" : Events.REDO,
+      "x" : Events.CUT,
+      "c" : Events.COPY,
+      "v" : Events.PASTE
+    }
+  };
 
-	/**
-	 * @private
-	 */
-	ns.KeyboardEventService.prototype.CharCodeToKeyCodeMap_ = {
+  /**
+   * @private
+   */
+  ns.KeyboardEventService.prototype.CharCodeToKeyCodeMap_ = {
 
-		90 : "z",
-		89 : "y",
-		88 : "x",
-		67 : "c",
-		86 : "v"
-	};
+    90 : "z",
+    89 : "y",
+    88 : "x",
+    67 : "c",
+    86 : "v"
+  };
 
-	/**
-	 * @private
-	 */
-	ns.KeyboardEventService.prototype.onKeyUp_ = function(evt) {
-		var isMac = false;
-		if (navigator.appVersion.indexOf("Mac")!=-1) {
-			// Welcome in mac world where vowels are consons and meta used instead of ctrl:
-			isMac = true;
-		}
-		
-		if (isMac ? evt.metaKey : evt.ctrlKey) {
-			// Get key pressed:
-			var letter = this.CharCodeToKeyCodeMap_[evt.which];
-			if(letter) {
-				var eventToTrigger = this.KeyboardActions_.ctrl[letter];
-				if(eventToTrigger) {
-					$.publish(eventToTrigger);
+  /**
+   * @private
+   */
+  ns.KeyboardEventService.prototype.onKeyUp_ = function(evt) {
+    var isMac = false;
+    if (navigator.appVersion.indexOf("Mac")!=-1) {
+      // Welcome in mac world where vowels are consons and meta used instead of ctrl:
+      isMac = true;
+    }
+    
+    if (isMac ? evt.metaKey : evt.ctrlKey) {
+      // Get key pressed:
+      var letter = this.CharCodeToKeyCodeMap_[evt.which];
+      if(letter) {
+        var eventToTrigger = this.KeyboardActions_.ctrl[letter];
+        if(eventToTrigger) {
+          $.publish(eventToTrigger);
 
-					evt.preventDefault();
-					return false;
-				}
-			}
-		}
-	};
+          evt.preventDefault();
+          return false;
+        }
+      }
+    }
+  };
 
-	/**
-	 * @public
-	 */
-	ns.KeyboardEventService.prototype.init = function() {
-		$(document.body).keydown($.proxy(this.onKeyUp_, this));
-	};
-	
+  /**
+   * @public
+   */
+  ns.KeyboardEventService.prototype.init = function() {
+    $(document.body).keydown($.proxy(this.onKeyUp_, this));
+  };
+  
 })();;/*
  * @provide pskl.drawingtools.BaseTool
  *
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.BaseTool = function() {};
+  ns.BaseTool = function() {};
 
-	ns.BaseTool.prototype.applyToolAt = function(col, row, color, frame, overlay) {};
-	
-	ns.BaseTool.prototype.moveToolAt = function(col, row, color, frame, overlay) {};
+  ns.BaseTool.prototype.applyToolAt = function(col, row, color, frame, overlay) {};
+  
+  ns.BaseTool.prototype.moveToolAt = function(col, row, color, frame, overlay) {};
 
-	ns.BaseTool.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
-		if (overlay.containsPixel(col, row)) {
-			if (!isNaN(this.highlightedPixelCol) &&
-				!isNaN(this.highlightedPixelRow) &&
-				(this.highlightedPixelRow != row ||
-					this.highlightedPixelCol != col)) {
+  ns.BaseTool.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
+    if (overlay.containsPixel(col, row)) {
+      if (!isNaN(this.highlightedPixelCol) &&
+        !isNaN(this.highlightedPixelRow) &&
+        (this.highlightedPixelRow != row ||
+          this.highlightedPixelCol != col)) {
 
-				// Clean the previously highlighted pixel:
-				overlay.clear();
-			}
+        // Clean the previously highlighted pixel:
+        overlay.clear();
+      }
 
-			// Show the current pixel targeted by the tool:
-			overlay.setPixel(col, row, Constants.TOOL_TARGET_HIGHLIGHT_COLOR);
+      // Show the current pixel targeted by the tool:
+      overlay.setPixel(col, row, Constants.TOOL_TARGET_HIGHLIGHT_COLOR);
 
-			this.highlightedPixelCol = col;
-			this.highlightedPixelRow = row;	
-		}
-	};
+      this.highlightedPixelCol = col;
+      this.highlightedPixelRow = row; 
+    }
+  };
 
-	ns.BaseTool.prototype.releaseToolAt = function(col, row, color, frame, overlay) {};
+  ns.BaseTool.prototype.releaseToolAt = function(col, row, color, frame, overlay) {};
 
-	/**
-	 * Bresenham line algorihtm: Get an array of pixels from
-	 * start and end coordinates.
-	 *
-	 * http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
-	 * http://stackoverflow.com/questions/4672279/bresenham-algorithm-in-javascript
-	 *
-	 * @private
-	 */
-	ns.BaseTool.prototype.getLinePixels_ = function(x0, x1, y0, y1) {
-		
-		var pixels = [];
-		var dx = Math.abs(x1-x0);
-		var dy = Math.abs(y1-y0);
-		var sx = (x0 < x1) ? 1 : -1;
-		var sy = (y0 < y1) ? 1 : -1;
-		var err = dx-dy;
+  /**
+   * Bresenham line algorihtm: Get an array of pixels from
+   * start and end coordinates.
+   *
+   * http://en.wikipedia.org/wiki/Bresenham's_line_algorithm
+   * http://stackoverflow.com/questions/4672279/bresenham-algorithm-in-javascript
+   *
+   * @private
+   */
+  ns.BaseTool.prototype.getLinePixels_ = function(x0, x1, y0, y1) {
+    
+    var pixels = [];
+    var dx = Math.abs(x1-x0);
+    var dy = Math.abs(y1-y0);
+    var sx = (x0 < x1) ? 1 : -1;
+    var sy = (y0 < y1) ? 1 : -1;
+    var err = dx-dy;
 
-		while(true){
+    while(true){
 
-			// Do what you need to for this
-			pixels.push({"col": x0, "row": y0});
+      // Do what you need to for this
+      pixels.push({"col": x0, "row": y0});
 
-			if ((x0==x1) && (y0==y1)) break;
-			var e2 = 2*err;
-			if (e2>-dy){
-				err -= dy;
-				x0  += sx;
-			}
-			if (e2 < dx) {
-				err += dx;
-				y0  += sy;
-			}
-		}
-		return pixels;
-	};
+      if ((x0==x1) && (y0==y1)) break;
+      var e2 = 2*err;
+      if (e2>-dy){
+        err -= dy;
+        x0  += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0  += sy;
+      }
+    }
+    return pixels;
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.SimplePen
@@ -16622,94 +15075,94 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.SimplePen = function() {
-		this.toolId = "tool-pen";
-		this.helpText = "Pen tool";
+  ns.SimplePen = function() {
+    this.toolId = "tool-pen";
+    this.helpText = "Pen tool";
 
-		this.previousCol = null;
-		this.previousRow = null;
+    this.previousCol = null;
+    this.previousRow = null;
 
-	};
+  };
 
-	pskl.utils.inherit(ns.SimplePen, ns.BaseTool);
-	
-	/**
-	 * @override
-	 */
-	ns.SimplePen.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		if (frame.containsPixel(col, row)) {
-			frame.setPixel(col, row, color);
-		}
-		this.previousCol = col;
-		this.previousRow = row;
-	};
+  pskl.utils.inherit(ns.SimplePen, ns.BaseTool);
+  
+  /**
+   * @override
+   */
+  ns.SimplePen.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    if (frame.containsPixel(col, row)) {
+      frame.setPixel(col, row, color);
+    }
+    this.previousCol = col;
+    this.previousRow = row;
+  };
 
-	ns.SimplePen.prototype.moveToolAt = function(col, row, color, frame, overlay) {
-		if((Math.abs(col - this.previousCol) > 1) || (Math.abs(row - this.previousRow) > 1)) {
-			// The pen movement is too fast for the mousemove frequency, there is a gap between the
-			// current point and the previously drawn one.
-			// We fill the gap by calculating missing dots (simple linear interpolation) and draw them.
-			var interpolatedPixels = this.getLinePixels_(col, this.previousCol, row, this.previousRow);
-			for(var i=0, l=interpolatedPixels.length; i<l; i++) {
-				var coords = interpolatedPixels[i];
-				this.applyToolAt(coords.col, coords.row, color, frame, overlay);
-			}
-		}
-		else {
-			this.applyToolAt(col, row, color, frame, overlay);
-		}
+  ns.SimplePen.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+    if((Math.abs(col - this.previousCol) > 1) || (Math.abs(row - this.previousRow) > 1)) {
+      // The pen movement is too fast for the mousemove frequency, there is a gap between the
+      // current point and the previously drawn one.
+      // We fill the gap by calculating missing dots (simple linear interpolation) and draw them.
+      var interpolatedPixels = this.getLinePixels_(col, this.previousCol, row, this.previousRow);
+      for(var i=0, l=interpolatedPixels.length; i<l; i++) {
+        var coords = interpolatedPixels[i];
+        this.applyToolAt(coords.col, coords.row, color, frame, overlay);
+      }
+    }
+    else {
+      this.applyToolAt(col, row, color, frame, overlay);
+    }
 
-		this.previousCol = col;
-		this.previousRow = row;
-	};
+    this.previousCol = col;
+    this.previousRow = row;
+  };
 })();
 ;(function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.VerticalMirrorPen = function() {
-		this.toolId = "tool-vertical-mirror-pen";
-		this.helpText = "vertical mirror pen tool";
+  ns.VerticalMirrorPen = function() {
+    this.toolId = "tool-vertical-mirror-pen";
+    this.helpText = "vertical mirror pen tool";
 
-		this.swap = null;
-		this.mirroredPreviousCol = null;
-		this.mirroredPreviousRow = null;
-	};
+    this.swap = null;
+    this.mirroredPreviousCol = null;
+    this.mirroredPreviousRow = null;
+  };
 
-	pskl.utils.inherit(ns.VerticalMirrorPen, ns.SimplePen);
-	
+  pskl.utils.inherit(ns.VerticalMirrorPen, ns.SimplePen);
+  
 
-	ns.VerticalMirrorPen.prototype.setMirrorContext = function() {
-		this.swap = this.previousCol;
-		this.previousCol = this.mirroredPreviousCol;
-	};
+  ns.VerticalMirrorPen.prototype.setMirrorContext = function() {
+    this.swap = this.previousCol;
+    this.previousCol = this.mirroredPreviousCol;
+  };
 
-	ns.VerticalMirrorPen.prototype.unsetMirrorContext = function() {
-		this.mirroredPreviousCol = this.previousCol;
-		this.previousCol = this.swap;
-	};
+  ns.VerticalMirrorPen.prototype.unsetMirrorContext = function() {
+    this.mirroredPreviousCol = this.previousCol;
+    this.previousCol = this.swap;
+  };
 
-	/**
-	 * @override
-	 */
-	ns.VerticalMirrorPen.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.superclass.applyToolAt.call(this, col, row, color, frame, overlay);
+  /**
+   * @override
+   */
+  ns.VerticalMirrorPen.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.superclass.applyToolAt.call(this, col, row, color, frame, overlay);
 
-		var mirroredCol = this.getSymmetricCol_(col, frame);
-		this.mirroredPreviousCol = mirroredCol;
+    var mirroredCol = this.getSymmetricCol_(col, frame);
+    this.mirroredPreviousCol = mirroredCol;
 
-		this.setMirrorContext();
-		this.superclass.applyToolAt.call(this, mirroredCol, row, color, frame, overlay);
-		this.unsetMirrorContext();
-	};
+    this.setMirrorContext();
+    this.superclass.applyToolAt.call(this, mirroredCol, row, color, frame, overlay);
+    this.unsetMirrorContext();
+  };
 
-	/**
-	 * @private
-	 */
-	ns.VerticalMirrorPen.prototype.getSymmetricCol_ = function(col, frame) {
-		return frame.getWidth() - col - 1; 
-	};
+  /**
+   * @private
+   */
+  ns.VerticalMirrorPen.prototype.getSymmetricCol_ = function(col, frame) {
+    return frame.getWidth() - col - 1; 
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.Eraser
@@ -16717,101 +15170,101 @@ jscolor.install();
  * @require Constants
  * @require pskl.utils
  */
- (function() {
-	var ns = $.namespace("pskl.drawingtools");
+(function() {
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.Eraser = function() {
-		this.toolId = "tool-eraser";
-		this.helpText = "Eraser tool";
-	};
+  ns.Eraser = function() {
+    this.toolId = "tool-eraser";
+    this.helpText = "Eraser tool";
+  };
 
-	pskl.utils.inherit(ns.Eraser, ns.SimplePen);
+  pskl.utils.inherit(ns.Eraser, ns.SimplePen);
 
-	/**
-	 * @override
-	 */
-	ns.Eraser.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.superclass.applyToolAt.call(this, col, row, Constants.TRANSPARENT_COLOR, frame, overlay);
-	};
+  /**
+   * @override
+   */
+  ns.Eraser.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.superclass.applyToolAt.call(this, col, row, Constants.TRANSPARENT_COLOR, frame, overlay);
+  };
 })();;/*
  * @provide pskl.drawingtools.Stroke
  *
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.Stroke = function() {
-		this.toolId = "tool-stroke";
-		this.helpText = "Stroke tool";
+  ns.Stroke = function() {
+    this.toolId = "tool-stroke";
+    this.helpText = "Stroke tool";
 
-		// Stroke's first point coordinates (set in applyToolAt)
-		this.startCol = null;
-		this.startRow = null;
-	};
+    // Stroke's first point coordinates (set in applyToolAt)
+    this.startCol = null;
+    this.startRow = null;
+  };
 
-	pskl.utils.inherit(ns.Stroke, ns.BaseTool);
-	
-	/**
-	 * @override
-	 */
-	ns.Stroke.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.startCol = col;
-		this.startRow = row;
-		
-		// When drawing a stroke we don't change the model instantly, since the
-		// user can move his cursor to change the stroke direction and length
-		// dynamically. Instead we draw the (preview) stroke in a fake canvas that
-		// overlay the drawing canvas.
-		// We wait for the releaseToolAt callback to impact both the
-		// frame model and canvas rendering.
+  pskl.utils.inherit(ns.Stroke, ns.BaseTool);
+  
+  /**
+   * @override
+   */
+  ns.Stroke.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.startCol = col;
+    this.startRow = row;
+    
+    // When drawing a stroke we don't change the model instantly, since the
+    // user can move his cursor to change the stroke direction and length
+    // dynamically. Instead we draw the (preview) stroke in a fake canvas that
+    // overlay the drawing canvas.
+    // We wait for the releaseToolAt callback to impact both the
+    // frame model and canvas rendering.
 
-		// The fake canvas where we will draw the preview of the stroke:
-		// Drawing the first point of the stroke in the fake overlay canvas:
-		overlay.setPixel(col, row, color);
-	};
+    // The fake canvas where we will draw the preview of the stroke:
+    // Drawing the first point of the stroke in the fake overlay canvas:
+    overlay.setPixel(col, row, color);
+  };
 
-	ns.Stroke.prototype.moveToolAt = function(col, row, color, frame, overlay) {
-		overlay.clear();
+  ns.Stroke.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+    overlay.clear();
 
-		// When the user moussemove (before releasing), we dynamically compute the 
-		// pixel to draw the line and draw this line in the overlay canvas:
-		var strokePoints = this.getLinePixels_(this.startCol, col, this.startRow, row);
-		
-		// Drawing current stroke:
-		for(var i = 0; i< strokePoints.length; i++) {
+    // When the user moussemove (before releasing), we dynamically compute the 
+    // pixel to draw the line and draw this line in the overlay canvas:
+    var strokePoints = this.getLinePixels_(this.startCol, col, this.startRow, row);
+    
+    // Drawing current stroke:
+    for(var i = 0; i< strokePoints.length; i++) {
 
-			if(color == Constants.TRANSPARENT_COLOR) {
-				// When mousemoving the stroke tool, we draw in the canvas overlay above the drawing canvas.
-				// If the stroke color is transparent, we won't be
-				// able to see it during the movement.
-				// We set it to a semi-opaque white during the tool mousemove allowing to see colors below the stroke.
-				// When the stroke tool will be released, It will draw a transparent stroke, 
-				// eg deleting the equivalent of a stroke.		
-				color = Constants.SELECTION_TRANSPARENT_COLOR;
-			}			
-			overlay.setPixel(strokePoints[i].col, strokePoints[i].row, color);
-		}
-	};
+      if(color == Constants.TRANSPARENT_COLOR) {
+        // When mousemoving the stroke tool, we draw in the canvas overlay above the drawing canvas.
+        // If the stroke color is transparent, we won't be
+        // able to see it during the movement.
+        // We set it to a semi-opaque white during the tool mousemove allowing to see colors below the stroke.
+        // When the stroke tool will be released, It will draw a transparent stroke, 
+        // eg deleting the equivalent of a stroke.    
+        color = Constants.SELECTION_TRANSPARENT_COLOR;
+      }     
+      overlay.setPixel(strokePoints[i].col, strokePoints[i].row, color);
+    }
+  };
 
-	/**
-	 * @override
-	 */
-	ns.Stroke.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
-		// If the stroke tool is released outside of the canvas, we cancel the stroke:
-		// TODO: Mutualize this check in common method
-		if(frame.containsPixel(col, row)) {
-			// The user released the tool to draw a line. We will compute the pixel coordinate, impact
-			// the model and draw them in the drawing canvas (not the fake overlay anymore)
-			var strokePoints = this.getLinePixels_(this.startCol, col, this.startRow, row);
-			for(var i = 0; i< strokePoints.length; i++) {
-				// Change model:
-				frame.setPixel(strokePoints[i].col, strokePoints[i].row, color);
-			}
-		} 
-		// For now, we are done with the stroke tool and don't need an overlay anymore:
-		overlay.clear();   
-	};
+  /**
+   * @override
+   */
+  ns.Stroke.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+    // If the stroke tool is released outside of the canvas, we cancel the stroke:
+    // TODO: Mutualize this check in common method
+    if(frame.containsPixel(col, row)) {
+      // The user released the tool to draw a line. We will compute the pixel coordinate, impact
+      // the model and draw them in the drawing canvas (not the fake overlay anymore)
+      var strokePoints = this.getLinePixels_(this.startCol, col, this.startRow, row);
+      for(var i = 0; i< strokePoints.length; i++) {
+        // Change model:
+        frame.setPixel(strokePoints[i].col, strokePoints[i].row, color);
+      }
+    } 
+    // For now, we are done with the stroke tool and don't need an overlay anymore:
+    overlay.clear();   
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.PaintBucket
@@ -16819,22 +15272,22 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.PaintBucket = function() {
-		this.toolId = "tool-paint-bucket";
-		this.helpText = "Paint bucket tool";
-	};
+  ns.PaintBucket = function() {
+    this.toolId = "tool-paint-bucket";
+    this.helpText = "Paint bucket tool";
+  };
 
-	pskl.utils.inherit(ns.PaintBucket, ns.BaseTool);
+  pskl.utils.inherit(ns.PaintBucket, ns.BaseTool);
 
-	/**
-	 * @override
-	 */
-	ns.PaintBucket.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  /**
+   * @override
+   */
+  ns.PaintBucket.prototype.applyToolAt = function(col, row, color, frame, overlay) {
 
-		pskl.PixelUtils.paintSimilarConnectedPixelsFromFrame(frame, col, row, color);
-	};
+    pskl.PixelUtils.paintSimilarConnectedPixelsFromFrame(frame, col, row, color);
+  };
 })();
 
 
@@ -16855,58 +15308,58 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.Rectangle = function() {
-		this.toolId = "tool-rectangle";
-		this.helpText = "Rectangle tool";
-		
-		// Rectangle's first point coordinates (set in applyToolAt)
-		this.startCol = null;
-		this.startRow = null;
-	};
+  ns.Rectangle = function() {
+    this.toolId = "tool-rectangle";
+    this.helpText = "Rectangle tool";
+    
+    // Rectangle's first point coordinates (set in applyToolAt)
+    this.startCol = null;
+    this.startRow = null;
+  };
 
-	pskl.utils.inherit(ns.Rectangle, ns.BaseTool);
-	
-	/**
-	 * @override
-	 */
-	ns.Rectangle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.startCol = col;
-		this.startRow = row;
-		
-		// Drawing the first point of the rectangle in the fake overlay canvas:
-		overlay.setPixel(col, row, color);
-	};
+  pskl.utils.inherit(ns.Rectangle, ns.BaseTool);
+  
+  /**
+   * @override
+   */
+  ns.Rectangle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.startCol = col;
+    this.startRow = row;
+    
+    // Drawing the first point of the rectangle in the fake overlay canvas:
+    overlay.setPixel(col, row, color);
+  };
 
-	ns.Rectangle.prototype.moveToolAt = function(col, row, color, frame, overlay) {
-		overlay.clear();
-		if(color == Constants.TRANSPARENT_COLOR) {
-			color = Constants.SELECTION_TRANSPARENT_COLOR;
-		}
+  ns.Rectangle.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+    overlay.clear();
+    if(color == Constants.TRANSPARENT_COLOR) {
+      color = Constants.SELECTION_TRANSPARENT_COLOR;
+    }
 
-		// draw in overlay
-		this.drawRectangle_(col, row, color, overlay);
-	};
+    // draw in overlay
+    this.drawRectangle_(col, row, color, overlay);
+  };
 
-	/**
-	 * @override
-	 */
-	ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {		
-		overlay.clear();
-		if(frame.containsPixel(col, row)) { // cancel if outside of canvas
-			// draw in frame to finalize
-			this.drawRectangle_(col, row, color, frame);
-		}
-	};
+  /**
+   * @override
+   */
+  ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {    
+    overlay.clear();
+    if(frame.containsPixel(col, row)) { // cancel if outside of canvas
+      // draw in frame to finalize
+      this.drawRectangle_(col, row, color, frame);
+    }
+  };
 
-	ns.Rectangle.prototype.drawRectangle_ = function (col, row, color, targetFrame) {
-		var strokePoints = pskl.PixelUtils.getBoundRectanglePixels(this.startCol, this.startRow, col, row);
-		for(var i = 0; i< strokePoints.length; i++) {
-			// Change model:
-			targetFrame.setPixel(strokePoints[i].col, strokePoints[i].row, color);
-		}
-	};
+  ns.Rectangle.prototype.drawRectangle_ = function (col, row, color, targetFrame) {
+    var strokePoints = pskl.PixelUtils.getBoundRectanglePixels(this.startCol, this.startRow, col, row);
+    for(var i = 0; i< strokePoints.length; i++) {
+      // Change model:
+      targetFrame.setPixel(strokePoints[i].col, strokePoints[i].row, color);
+    }
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.Circle
@@ -16914,84 +15367,84 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.Circle = function() {
-		this.toolId = "tool-circle";
-		this.helpText = "Circle tool";
-		
-		// Circle's first point coordinates (set in applyToolAt)
-		this.startCol = null;
-		this.startRow = null;
-	};
+  ns.Circle = function() {
+    this.toolId = "tool-circle";
+    this.helpText = "Circle tool";
+    
+    // Circle's first point coordinates (set in applyToolAt)
+    this.startCol = null;
+    this.startRow = null;
+  };
 
-	pskl.utils.inherit(ns.Circle, ns.BaseTool);
-	
-	/**
-	 * @override
-	 */
-	ns.Circle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.startCol = col;
-		this.startRow = row;
-		
-		// Drawing the first point of the rectangle in the fake overlay canvas:
-		overlay.setPixel(col, row, color);
-	};
+  pskl.utils.inherit(ns.Circle, ns.BaseTool);
+  
+  /**
+   * @override
+   */
+  ns.Circle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.startCol = col;
+    this.startRow = row;
+    
+    // Drawing the first point of the rectangle in the fake overlay canvas:
+    overlay.setPixel(col, row, color);
+  };
 
-	ns.Circle.prototype.moveToolAt = function(col, row, color, frame, overlay) {
-		overlay.clear();
-		if(color == Constants.TRANSPARENT_COLOR) {
-			color = Constants.SELECTION_TRANSPARENT_COLOR;
-		}
+  ns.Circle.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+    overlay.clear();
+    if(color == Constants.TRANSPARENT_COLOR) {
+      color = Constants.SELECTION_TRANSPARENT_COLOR;
+    }
 
-		// draw in overlay
-		this.drawCircle_(col, row, color, overlay);
-	};
+    // draw in overlay
+    this.drawCircle_(col, row, color, overlay);
+  };
 
-	/**
-	 * @override
-	 */
-	ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {		
-		overlay.clear();
-		if(frame.containsPixel(col, row)) { // cancel if outside of canvas
-			// draw in frame to finalize
-			this.drawCircle_(col, row, color, frame);
-		}
-	};
+  /**
+   * @override
+   */
+  ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {   
+    overlay.clear();
+    if(frame.containsPixel(col, row)) { // cancel if outside of canvas
+      // draw in frame to finalize
+      this.drawCircle_(col, row, color, frame);
+    }
+  };
 
-	ns.Circle.prototype.drawCircle_ = function (col, row, color, targetFrame) {
-		var circlePoints = this.getCirclePixels_(this.startCol, this.startRow, col, row);
-		for(var i = 0; i< circlePoints.length; i++) {
-			// Change model:
-			targetFrame.setPixel(circlePoints[i].col, circlePoints[i].row, color);
-		}
-	};
+  ns.Circle.prototype.drawCircle_ = function (col, row, color, targetFrame) {
+    var circlePoints = this.getCirclePixels_(this.startCol, this.startRow, col, row);
+    for(var i = 0; i< circlePoints.length; i++) {
+      // Change model:
+      targetFrame.setPixel(circlePoints[i].col, circlePoints[i].row, color);
+    }
+  };
 
-	ns.Circle.prototype.getCirclePixels_ = function (x0, y0, x1, y1) {
-		var coords = pskl.PixelUtils.getOrderedRectangleCoordinates(x0, y0, x1, y1);
-		var xC = (coords.x0 + coords.x1)/2;
-		var yC = (coords.y0 + coords.y1)/2;
-		
-		var rX = coords.x1 - xC;
-		var rY = coords.y1 - yC;
+  ns.Circle.prototype.getCirclePixels_ = function (x0, y0, x1, y1) {
+    var coords = pskl.PixelUtils.getOrderedRectangleCoordinates(x0, y0, x1, y1);
+    var xC = (coords.x0 + coords.x1)/2;
+    var yC = (coords.y0 + coords.y1)/2;
+    
+    var rX = coords.x1 - xC;
+    var rY = coords.y1 - yC;
 
-		var pixels = [];
-		var x, y, angle;
-		for (x = coords.x0 ; x < coords.x1 ; x++) {
-			angle = Math.acos((x - xC)/rX);
-			y = Math.round(rY * Math.sin(angle) + yC);
-			pixels.push({"col": x, "row": y});
-			pixels.push({"col": 2*xC - x, "row": 2*yC - y});
-		}
+    var pixels = [];
+    var x, y, angle;
+    for (x = coords.x0 ; x < coords.x1 ; x++) {
+      angle = Math.acos((x - xC)/rX);
+      y = Math.round(rY * Math.sin(angle) + yC);
+      pixels.push({"col": x, "row": y});
+      pixels.push({"col": 2*xC - x, "row": 2*yC - y});
+    }
 
-		for (y = coords.y0 ; y < coords.y1 ; y++) {
-			angle = Math.asin((y - yC)/rY);
-			x = Math.round(rX * Math.cos(angle) + xC);
-			pixels.push({"col": x, "row": y});
-			pixels.push({"col": 2*xC - x, "row": 2*yC - y});
-		}
-		return pixels;
-	};
+    for (y = coords.y0 ; y < coords.y1 ; y++) {
+      angle = Math.asin((y - yC)/rY);
+      x = Math.round(rX * Math.cos(angle) + xC);
+      pixels.push({"col": x, "row": y});
+      pixels.push({"col": 2*xC - x, "row": 2*yC - y});
+    }
+    return pixels;
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.Move
@@ -16999,53 +15452,53 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.Move = function() {
-		this.toolId = "tool-move";
-		this.helpText = "Move tool";
-		
-		// Stroke's first point coordinates (set in applyToolAt)
-		this.startCol = null;
-		this.startRow = null;
-	};
+  ns.Move = function() {
+    this.toolId = "tool-move";
+    this.helpText = "Move tool";
+    
+    // Stroke's first point coordinates (set in applyToolAt)
+    this.startCol = null;
+    this.startRow = null;
+  };
 
-	pskl.utils.inherit(ns.Move, ns.BaseTool);
-	
-	/**
-	 * @override
-	 */
-	ns.Move.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.startCol = col;
-		this.startRow = row;
-		this.frameClone = frame.clone();
-	};
+  pskl.utils.inherit(ns.Move, ns.BaseTool);
+  
+  /**
+   * @override
+   */
+  ns.Move.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.startCol = col;
+    this.startRow = row;
+    this.frameClone = frame.clone();
+  };
 
-	ns.Move.prototype.moveToolAt = function(col, row, color, frame, overlay) {	
-		var colDiff = col - this.startCol, rowDiff = row - this.startRow;
-		this.shiftFrame(colDiff, rowDiff, frame, this.frameClone);
-	};
+  ns.Move.prototype.moveToolAt = function(col, row, color, frame, overlay) {  
+    var colDiff = col - this.startCol, rowDiff = row - this.startRow;
+    this.shiftFrame(colDiff, rowDiff, frame, this.frameClone);
+  };
 
-	ns.Move.prototype.shiftFrame = function (colDiff, rowDiff, frame, reference) {
-		var color;
-		for (var col = 0 ; col < frame.getWidth() ; col++) {
-			for (var row = 0 ; row < frame.getHeight() ; row++) {
-				if (reference.containsPixel(col - colDiff, row - rowDiff)) {
-					color = reference.getPixel(col - colDiff, row - rowDiff);
-				} else {
-					color = Constants.TRANSPARENT_COLOR;
-				}
-				frame.setPixel(col, row, color);
-			}
-		}
-	};
+  ns.Move.prototype.shiftFrame = function (colDiff, rowDiff, frame, reference) {
+    var color;
+    for (var col = 0 ; col < frame.getWidth() ; col++) {
+      for (var row = 0 ; row < frame.getHeight() ; row++) {
+        if (reference.containsPixel(col - colDiff, row - rowDiff)) {
+          color = reference.getPixel(col - colDiff, row - rowDiff);
+        } else {
+          color = Constants.TRANSPARENT_COLOR;
+        }
+        frame.setPixel(col, row, color);
+      }
+    }
+  };
 
-	/**
-	 * @override
-	 */
-	ns.Move.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
-		this.moveToolAt(col, row, color, frame, overlay);
-	};
+  /**
+   * @override
+   */
+  ns.Move.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+    this.moveToolAt(col, row, color, frame, overlay);
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.BaseSelect
@@ -17053,160 +15506,159 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.BaseSelect = function() {
-		this.secondaryToolId = "tool-move";
-		this.BodyRoot = $('body');
-		
-		// Select's first point coordinates (set in applyToolAt)
-		this.startCol = null;
-		this.startRow = null;
-	};
+  ns.BaseSelect = function() {
+    this.secondaryToolId = "tool-move";
+    this.BodyRoot = $('body');
+    
+    // Select's first point coordinates (set in applyToolAt)
+    this.startCol = null;
+    this.startRow = null;
+  };
 
-	pskl.utils.inherit(ns.BaseSelect, ns.BaseTool);
+  pskl.utils.inherit(ns.BaseSelect, ns.BaseTool);
 
-	/**
-	 * @override
-	 */
-	ns.BaseSelect.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-		this.startCol = col;
-		this.startRow = row;
-		
-		this.lastCol = col;
-		this.lastRow = row;
-		
-		// The select tool can be in two different state.
-		// If the inital click of the tool is not on a selection, we go in "select"
-		// mode to create a selection.
-		// If the initial click is on a previous selection, we go in "moveSelection"
-		// mode to allow to move the selection by drag'n dropping it.
-		if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
-			
-			this.mode = "select";
-			this.onSelectStart_(col, row, color, frame, overlay);
-		}
-		else {
+  /**
+   * @override
+   */
+  ns.BaseSelect.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+    this.startCol = col;
+    this.startRow = row;
+    
+    this.lastCol = col;
+    this.lastRow = row;
+    
+    // The select tool can be in two different state.
+    // If the inital click of the tool is not on a selection, we go in "select"
+    // mode to create a selection.
+    // If the initial click is on a previous selection, we go in "moveSelection"
+    // mode to allow to move the selection by drag'n dropping it.
+    if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
+      
+      this.mode = "select";
+      this.onSelectStart_(col, row, color, frame, overlay);
+    }
+    else {
 
-			this.mode = "moveSelection";
-			this.onSelectionDragStart_(col, row, color, frame, overlay);
-		}
-	};
+      this.mode = "moveSelection";
+      this.onSelectionDragStart_(col, row, color, frame, overlay);
+    }
+  };
 
-	/**
-	 * @override
-	 */
-	ns.BaseSelect.prototype.moveToolAt = function(col, row, color, frame, overlay) {
-		if(this.mode == "select") {
-			
-			this.onSelect_(col, row, color, frame, overlay);
-		}
-		else if(this.mode == "moveSelection") {
-			
-			this.onSelectionDrag_(col, row, color, frame, overlay);
-		}
-	};
+  /**
+   * @override
+   */
+  ns.BaseSelect.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+    if(this.mode == "select") {
+      
+      this.onSelect_(col, row, color, frame, overlay);
+    }
+    else if(this.mode == "moveSelection") {
+      
+      this.onSelectionDrag_(col, row, color, frame, overlay);
+    }
+  };
 
-	/**
-	 * @override
-	 */
-	ns.BaseSelect.prototype.releaseToolAt = function(col, row, color, frame, overlay) {		
-		if(this.mode == "select") {
-			
-			this.onSelectEnd_(col, row, color, frame, overlay);
-		} else if(this.mode == "moveSelection") {
-			
-			this.onSelectionDragEnd_(col, row, color, frame, overlay);
-		}
-	};
-
-
-	/**
-	 * If we mouseover the selection draw inside the overlay frame, show the 'move' cursor
-	 * instead of the 'select' one. It indicates that we can move the selection by dragndroping it.
-	 * @override
-	 */
-	ns.BaseSelect.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
-		
-		if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
-			// We're hovering the selection, show the move tool:
-			this.BodyRoot.addClass(this.toolId);
-			this.BodyRoot.removeClass(this.secondaryToolId);
-		} else {
-			// We're not hovering the selection, show create selection tool:
-			this.BodyRoot.addClass(this.secondaryToolId);
-			this.BodyRoot.removeClass(this.toolId);
-		}
-	};
-
-	/**
-	 * For each pixel in the selection draw it in white transparent on the tool overlay
-	 * @protected
-	 */
-	ns.BaseSelect.prototype.drawSelectionOnOverlay_ = function (selection, overlay) {
-		var pixels = selection.pixels;
-		for(var i=0, l=pixels.length; i<l; i++) {
-			overlay.setPixel(pixels[i].col, pixels[i].row, Constants.SELECTION_TRANSPARENT_COLOR);
-		}
-	};
-
-	/**
-	 * Move the overlay frame filled with semi-transparent pixels that represent the selection.
-	 * @private
-	 */
-	ns.BaseSelect.prototype.shiftOverlayFrame_ = function (colDiff, rowDiff, overlayFrame, reference) {
-		var color;
-		for (var col = 0 ; col < overlayFrame.getWidth() ; col++) {
-			for (var row = 0 ; row < overlayFrame.getHeight() ; row++) {
-				if (reference.containsPixel(col - colDiff, row - rowDiff)) {
-					color = reference.getPixel(col - colDiff, row - rowDiff);
-				} else {
-					color = Constants.TRANSPARENT_COLOR;
-				}
-				overlayFrame.setPixel(col, row, color);
-			}
-		}
-	};
+  /**
+   * @override
+   */
+  ns.BaseSelect.prototype.releaseToolAt = function(col, row, color, frame, overlay) {   
+    if(this.mode == "select") {
+      this.onSelectEnd_(col, row, color, frame, overlay);
+    } else if(this.mode == "moveSelection") {
+      
+      this.onSelectionDragEnd_(col, row, color, frame, overlay);
+    }
+  };
 
 
-	// The list of callbacks to implement by specialized tools to implement the selection creation behavior.
-	/** @protected */
-	ns.BaseSelect.prototype.onSelectStart_ = function (col, row, color, frame, overlay) {};
-	/** @protected */
-	ns.BaseSelect.prototype.onSelect_ = function (col, row, color, frame, overlay) {};
-	/** @protected */
-	ns.BaseSelect.prototype.onSelectEnd_ = function (col, row, color, frame, overlay) {};
+  /**
+   * If we mouseover the selection draw inside the overlay frame, show the 'move' cursor
+   * instead of the 'select' one. It indicates that we can move the selection by dragndroping it.
+   * @override
+   */
+  ns.BaseSelect.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
+    
+    if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
+      // We're hovering the selection, show the move tool:
+      this.BodyRoot.addClass(this.toolId);
+      this.BodyRoot.removeClass(this.secondaryToolId);
+    } else {
+      // We're not hovering the selection, show create selection tool:
+      this.BodyRoot.addClass(this.secondaryToolId);
+      this.BodyRoot.removeClass(this.toolId);
+    }
+  };
+
+  /**
+   * For each pixel in the selection draw it in white transparent on the tool overlay
+   * @protected
+   */
+  ns.BaseSelect.prototype.drawSelectionOnOverlay_ = function (selection, overlay) {
+    var pixels = selection.pixels;
+    for(var i=0, l=pixels.length; i<l; i++) {
+      overlay.setPixel(pixels[i].col, pixels[i].row, Constants.SELECTION_TRANSPARENT_COLOR);
+    }
+  };
+
+  /**
+   * Move the overlay frame filled with semi-transparent pixels that represent the selection.
+   * @private
+   */
+  ns.BaseSelect.prototype.shiftOverlayFrame_ = function (colDiff, rowDiff, overlayFrame, reference) {
+    var color;
+    for (var col = 0 ; col < overlayFrame.getWidth() ; col++) {
+      for (var row = 0 ; row < overlayFrame.getHeight() ; row++) {
+        if (reference.containsPixel(col - colDiff, row - rowDiff)) {
+          color = reference.getPixel(col - colDiff, row - rowDiff);
+        } else {
+          color = Constants.TRANSPARENT_COLOR;
+        }
+        overlayFrame.setPixel(col, row, color);
+      }
+    }
+  };
 
 
-	// The list of callbacks that define the drag'n drop behavior of the selection.
-	/** @private */
-	ns.BaseSelect.prototype.onSelectionDragStart_ = function (col, row, color, frame, overlay) {
-		// Since we will move the overlayFrame in which  the current selection is rendered,
-		// we clone it to have a reference for the later shifting process.
-		this.overlayFrameReference = overlay.clone();
-	};
-	/** @private */
-	ns.BaseSelect.prototype.onSelectionDrag_ = function (col, row, color, frame, overlay) {
-		var deltaCol = col - this.lastCol;
-		var deltaRow = row - this.lastRow;
-		
-		var colDiff = col - this.startCol, rowDiff = row - this.startRow;
-		
-		// Shifting selection on overlay frame:
-		this.shiftOverlayFrame_(colDiff, rowDiff, overlay, this.overlayFrameReference);
-
-		// Update selection model:
-		$.publish(Events.SELECTION_MOVE_REQUEST, [deltaCol, deltaRow]);
-
-		this.lastCol = col;
-		this.lastRow = row;	
-	};
-	/** @private */
-	ns.BaseSelect.prototype.onSelectionDragEnd_ = function (col, row, color, frame, overlay) {
-		this.onSelectionDrag_(col, row, color, frame, overlay);
-	};
+  // The list of callbacks to implement by specialized tools to implement the selection creation behavior.
+  /** @protected */
+  ns.BaseSelect.prototype.onSelectStart_ = function (col, row, color, frame, overlay) {};
+  /** @protected */
+  ns.BaseSelect.prototype.onSelect_ = function (col, row, color, frame, overlay) {};
+  /** @protected */
+  ns.BaseSelect.prototype.onSelectEnd_ = function (col, row, color, frame, overlay) {};
 
 
+  // The list of callbacks that define the drag'n drop behavior of the selection.
+  /** @private */
+  ns.BaseSelect.prototype.onSelectionDragStart_ = function (col, row, color, frame, overlay) {
+    // Since we will move the overlayFrame in which  the current selection is rendered,
+    // we clone it to have a reference for the later shifting process.
+    this.overlayFrameReference = overlay.clone();
+  };
+  
+  /** @private */
+  ns.BaseSelect.prototype.onSelectionDrag_ = function (col, row, color, frame, overlay) {
+    var deltaCol = col - this.lastCol;
+    var deltaRow = row - this.lastRow;
+    
+    var colDiff = col - this.startCol, rowDiff = row - this.startRow;
+    
+    // Shifting selection on overlay frame:
+    this.shiftOverlayFrame_(colDiff, rowDiff, overlay, this.overlayFrameReference);
+
+    // Update selection model:
+    $.publish(Events.SELECTION_MOVE_REQUEST, [deltaCol, deltaRow]);
+
+    this.lastCol = col;
+    this.lastRow = row; 
+  };
+
+  /** @private */
+  ns.BaseSelect.prototype.onSelectionDragEnd_ = function (col, row, color, frame, overlay) {
+    this.onSelectionDrag_(col, row, color, frame, overlay);
+  };
 })();
 ;/*
  * @provide pskl.drawingtools.RectangleSelect
@@ -17214,50 +15666,50 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.RectangleSelect = function() {
-		this.toolId = "tool-rectangle-select";
-		this.helpText = "Rectangle selection tool";
-		
-		ns.BaseSelect.call(this);
-	};
+  ns.RectangleSelect = function() {
+    this.toolId = "tool-rectangle-select";
+    this.helpText = "Rectangle selection tool";
+    
+    ns.BaseSelect.call(this);
+  };
 
-	pskl.utils.inherit(ns.RectangleSelect, ns.BaseSelect);
-	
+  pskl.utils.inherit(ns.RectangleSelect, ns.BaseSelect);
+  
 
-	/**
-	 * @override
-	 */
-	ns.RectangleSelect.prototype.onSelectStart_ = function (col, row, color, frame, overlay) {
-		// Drawing the first point of the rectangle in the fake overlay canvas:
-		overlay.setPixel(col, row, color);
-	};
+  /**
+   * @override
+   */
+  ns.RectangleSelect.prototype.onSelectStart_ = function (col, row, color, frame, overlay) {
+    // Drawing the first point of the rectangle in the fake overlay canvas:
+    overlay.setPixel(col, row, color);
+  };
 
-	/**
-	 * When creating the rectangle selection, we clear the current overlayFrame and
-	 * redraw the current rectangle based on the orgin coordinate and
-	 * the current mouse coordiinate in sprite.
-	 * @override
-	 */
-	ns.RectangleSelect.prototype.onSelect_ = function (col, row, color, frame, overlay) {
-		overlay.clear();
-		if(this.startCol == col &&this.startRow == row) {
-			$.publish(Events.SELECTION_DISMISSED);
-		} else {
-			var selection = new pskl.selection.RectangularSelection(
-				this.startCol, this.startRow, col, row);
-			$.publish(Events.SELECTION_CREATED, [selection]);
-			this.drawSelectionOnOverlay_(selection, overlay);
-		}
-	};
+  /**
+   * When creating the rectangle selection, we clear the current overlayFrame and
+   * redraw the current rectangle based on the orgin coordinate and
+   * the current mouse coordiinate in sprite.
+   * @override
+   */
+  ns.RectangleSelect.prototype.onSelect_ = function (col, row, color, frame, overlay) {
+    overlay.clear();
+    if(this.startCol == col &&this.startRow == row) {
+      $.publish(Events.SELECTION_DISMISSED);
+    } else {
+      var selection = new pskl.selection.RectangularSelection(
+        this.startCol, this.startRow, col, row);
+      $.publish(Events.SELECTION_CREATED, [selection]);
+      this.drawSelectionOnOverlay_(selection, overlay);
+    }
+  };
 
-	/**
-	 * @override
-	 */
-	ns.RectangleSelect.prototype.onSelectEnd_ = function (col, row, color, frame, overlay) {
-		this.onSelect_(col, row, color, frame, overlay);
-	};
+  /**
+   * @override
+   */
+  ns.RectangleSelect.prototype.onSelectEnd_ = function (col, row, color, frame, overlay) {
+    this.onSelect_(col, row, color, frame, overlay);
+  };
 
 })();
 ;/*
@@ -17266,35 +15718,34 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.ShapeSelect = function() {
-		this.toolId = "tool-shape-select";
-		this.helpText = "Shape selection tool";
-		
-		ns.BaseSelect.call(this);
-	};
+  ns.ShapeSelect = function() {
+    this.toolId = "tool-shape-select";
+    this.helpText = "Shape selection tool";
+    
+    ns.BaseSelect.call(this);
+  };
 
-	pskl.utils.inherit(ns.ShapeSelect, ns.BaseSelect);
-	
+  pskl.utils.inherit(ns.ShapeSelect, ns.BaseSelect);
+  
+  /**
+   * For the shape select tool, you just need to click one time to create a selection.
+   * So we jsut need to implement onSelectStart_ (no need for onSelect_ & onSelectEnd_)
+   * @override
+   */
+  ns.ShapeSelect.prototype.onSelectStart_ = function (col, row, color, frame, overlay) {
+    // Clean previous selection:
+    $.publish(Events.SELECTION_DISMISSED);
+    overlay.clear();
+    
+    // From the pixel cliked, get shape using an algorithm similar to the paintbucket one:
+    var pixels = pskl.PixelUtils.getSimilarConnectedPixelsFromFrame(frame, col, row);
+    var selection = new pskl.selection.ShapeSelection(pixels);
 
-	/**
-	 * For the shape select tool, you just need to click one time to create a selection.
-	 * So we jsut need to implement onSelectStart_ (no need for onSelect_ & onSelectEnd_)
-	 * @override
-	 */
-	ns.ShapeSelect.prototype.onSelectStart_ = function (col, row, color, frame, overlay) {
-		// Clean previous selection:
-		$.publish(Events.SELECTION_DISMISSED);
-		overlay.clear();
-		
-		// From the pixel cliked, get shape using an algorithm similar to the paintbucket one:
-		var pixels = pskl.PixelUtils.getSimilarConnectedPixelsFromFrame(frame, col, row);
-		var selection = new pskl.selection.ShapeSelection(pixels);
-
-		$.publish(Events.SELECTION_CREATED, [selection]);
-		this.drawSelectionOnOverlay_(selection, overlay);
-	};
+    $.publish(Events.SELECTION_CREATED, [selection]);
+    this.drawSelectionOnOverlay_(selection, overlay);
+  };
 
 })();
 ;/*
@@ -17303,28 +15754,28 @@ jscolor.install();
  * @require pskl.utils
  */
 (function() {
-	var ns = $.namespace("pskl.drawingtools");
+  var ns = $.namespace("pskl.drawingtools");
 
-	ns.ColorPicker = function() {
-		this.toolId = "tool-colorpicker";
-		this.helpText = "Color picker";
-	};
+  ns.ColorPicker = function() {
+    this.toolId = "tool-colorpicker";
+    this.helpText = "Color picker";
+  };
 
-	pskl.utils.inherit(ns.ColorPicker, ns.BaseTool);
-	
-	/**
-	 * @override
-	 */
-	ns.ColorPicker.prototype.applyToolAt = function(col, row, color, frame, overlay, context) {
-		if (frame.containsPixel(col, row)) {
-			var sampledColor = frame.getPixel(col, row);
-			if (context.button == Constants.LEFT_BUTTON) {
-				$.publish(Events.PRIMARY_COLOR_SELECTED, [sampledColor]);
-			} else if (context.button == Constants.RIGHT_BUTTON) {
-				$.publish(Events.SECONDARY_COLOR_SELECTED, [sampledColor]);
-			}
-		}
-	};
+  pskl.utils.inherit(ns.ColorPicker, ns.BaseTool);
+  
+  /**
+   * @override
+   */
+  ns.ColorPicker.prototype.applyToolAt = function(col, row, color, frame, overlay, context) {
+    if (frame.containsPixel(col, row)) {
+      var sampledColor = frame.getPixel(col, row);
+      if (context.button == Constants.LEFT_BUTTON) {
+        $.publish(Events.PRIMARY_COLOR_SELECTED, [sampledColor]);
+      } else if (context.button == Constants.RIGHT_BUTTON) {
+        $.publish(Events.SECONDARY_COLOR_SELECTED, [sampledColor]);
+      }
+    }
+  };
 })();
 ;/**
  * @require Constants
@@ -17346,6 +15797,12 @@ jscolor.install();
       frameSheet = new pskl.model.FrameSheet(frameSize.height, frameSize.width);
       frameSheet.addEmptyFrame();
       frameSheet.setCurrentFrameIndex(0);
+
+      /**
+       * True when piskel is running in static mode (no back end needed).
+       * When started from APP Engine, appEngineToken_ (Boolean) should be set on window.pskl
+       */
+      this.isStaticVersion = !pskl.appEngineToken_;
 
       this.drawingController = new pskl.controller.DrawingController(frameSheet, $('#drawing-canvas-container'));
       this.drawingController.init();
@@ -17419,6 +15876,7 @@ jscolor.install();
       this.animationController.render(delta);
       this.previewsController.render(delta);
     },
+    
     readSizeFromURL_ : function () {
       var sizeParam = this.readUrlParameter_("size"),
         size;
@@ -17449,7 +15907,7 @@ jscolor.install();
       for (i = 0; i < params.length; i++) {
         val = params[i].split("=");
         if (val[0] == paramName) {
-          return unescape(val[1]);
+          return window.unescape(val[1]);
         }
       }
       return "";
@@ -17472,6 +15930,10 @@ jscolor.install();
       };
 
       xhr.send();
+    },
+
+    loadFramesheet : function (framesheet) {
+      frameSheet.load(framesheet);
     },
 
     getFirstFrameAsPNGData_ : function () {
@@ -17508,7 +15970,7 @@ jscolor.install();
         if (this.status == 200) {
           if (pskl.app.isStaticVersion) {
             var baseUrl = window.location.href.replace(window.location.search, "");
-           window.location.href = baseUrl + "?frameId=" + this.responseText;
+            window.location.href = baseUrl + "?frameId=" + this.responseText;
           } else {
             $.publish(Events.SHOW_NOTIFICATION, [{"content": "Successfully saved !"}]);
           }
@@ -17547,8 +16009,10 @@ jscolor.install();
 
     uploadAsAnimatedGIF : function () {
       var fps = pskl.app.animationController.fps;
-      var imageData = (new pskl.rendering.SpritesheetRenderer(frameSheet)).renderAsImageDataAnimatedGIF(fps);
-      this.uploadToScreenletstore(imageData);
+      var renderer = new pskl.rendering.SpritesheetRenderer(frameSheet);
+      var cb = this.uploadToScreenletstore.bind(this);
+
+      renderer.renderAsImageDataAnimatedGIF(fps, cb);
     },
 
     uploadAsSpritesheetPNG : function () {

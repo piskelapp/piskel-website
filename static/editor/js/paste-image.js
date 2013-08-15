@@ -42,7 +42,7 @@ var importFramesheetFromDataUrl = function (dataUrl) {
 		    }
 		  }
 		}
-		pskl.app.__fs_load([framesheet]);
+		pskl.app.loadFramesheet([framesheet]);
 	}
 	image.src = dataUrl;	
 };
