@@ -25,6 +25,11 @@ handlers:
 - url: /static
   static_dir: static
 
+- url: /p/(.*\.svg)
+  static_files: static/editor/\1
+  upload: static/editor/(.*\.svg)
+  mime_type: image/svg+xml
+
 - url: /p/(.*\.png)
   static_files: static/editor/\1
   upload: static/editor/(.*\.png)

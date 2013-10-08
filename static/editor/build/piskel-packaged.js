@@ -11792,19 +11792,22 @@ $.widget("ui.sortable", $.ui.mouse, {
 //# sourceMappingURL=gif.js.map
 // gif.js 0.1.4 - https://github.com/jnordberg/gif.js;// TODO(grosbouddha): put under pskl namespace.
 var Constants = {
-  DEFAULT_SIZE : {
-    height : 32,
-    width : 32
+  DEFAULT : {
+    HEIGHT : 32,
+    WIDTH : 32,
+    FPS : 12
   },
+
+  MODEL_VERSION : 1,
 
   MAX_HEIGHT : 128,
   MAX_WIDTH : 128,
 
   PREVIEW_FILM_SIZE : 120,
 
-  DEFAULT_PEN_COLOR : '#000000',  
+  DEFAULT_PEN_COLOR : '#000000',
   TRANSPARENT_COLOR : 'TRANSPARENT',
-  
+
   /*
    * Fake semi-transparent color used to highlight transparent
    * strokes and rectangles:
@@ -11816,20 +11819,21 @@ var Constants = {
    * pixel target with this color:
    */
   TOOL_TARGET_HIGHLIGHT_COLOR: 'rgba(255, 255, 255, 0.2)',
-  
+
   /*
    * Default entry point for piskel web service:
    */
   PISKEL_SERVICE_URL: 'http://3.piskel-app.appspot.com',
+  IMAGE_SERVICE_UPLOAD_URL : 'http://screenletstore.appspot.com/__/upload',
+  IMAGE_SERVICE_GET_URL : 'http://screenletstore.appspot.com/img/',
 
   GRID_STROKE_WIDTH: 1,
-  GRID_STROKE_COLOR: "lightgray",
 
-  LEFT_BUTTON : "left_button_1",
-  RIGHT_BUTTON : "right_button_2"
+  LEFT_BUTTON : 'left_button_1',
+  RIGHT_BUTTON : 'right_button_2'
 };;// TODO(grosbouddha): put under pskl namespace.
-Events = {
-  
+var Events = {
+
   TOOL_SELECTED : "TOOL_SELECTED",
   TOOL_RELEASED : "TOOL_RELEASED",
   PRIMARY_COLOR_SELECTED: "PRIMARY_COLOR_SELECTED",
@@ -11839,7 +11843,7 @@ Events = {
 
   /**
    *  When this event is emitted, a request is sent to the localstorage
-   *  Service to save the current framesheet. The storage service 
+   *  Service to save the current framesheet. The storage service
    *  may not immediately store data (internal throttling of requests).
    */
   LOCALSTORAGE_REQUEST: "LOCALSTORAGE_REQUEST",
@@ -11867,12 +11871,12 @@ Events = {
    *   2nd argument: New value
    */
   USER_SETTINGS_CHANGED: "USER_SETTINGS_CHANGED",
-  
+
   /**
    * The framesheet was reseted and is now probably drastically different.
    * Number of frames, content of frames, color used for the palette may have changed.
    */
-  FRAMESHEET_RESET: "FRAMESHEET_RESET",
+  PISKEL_RESET: "PISKEL_RESET",
 
   FRAME_SIZE_CHANGED : "FRAME_SIZE_CHANGED",
 
@@ -11881,7 +11885,7 @@ Events = {
   SELECTION_CREATED: "SELECTION_CREATED",
   SELECTION_MOVE_REQUEST: "SELECTION_MOVE_REQUEST",
   SELECTION_DISMISSED: "SELECTION_DISMISSED",
-  
+
   SHOW_NOTIFICATION: "SHOW_NOTIFICATION",
   HIDE_NOTIFICATION: "HIDE_NOTIFICATION",
 
@@ -11889,7 +11893,7 @@ Events = {
   REDO: "REDO",
   CUT: "CUT",
   COPY: "COPY",
-  PASTE: "PASTE"    
+  PASTE: "PASTE"
 };;jQuery.namespace = function() {
   var a=arguments, o=null, i, j, d;
   for (i=0; i<a.length; i=i+1) {
@@ -11916,7 +11920,7 @@ if (typeof Function.prototype.bind !== "function") {
   };
 }
 
-/*
+/**
  * @provide pskl.utils
  *
  * @require Constants
@@ -11926,8 +11930,10 @@ if (typeof Function.prototype.bind !== "function") {
   var ns = $.namespace("pskl.utils");
 
   ns.rgbToHex = function(r, g, b) {
-    if (r > 255 || g > 255 || b > 255)
+    if (r > 255 || g > 255 || b > 255) {
       throw "Invalid color component";
+    }
+    
     return ((r << 16) | (g << 8) | b).toString(16);
   };
 
@@ -11942,6 +11948,51 @@ if (typeof Function.prototype.bind !== "function") {
 ;(function () {
   var ns = $.namespace("pskl");
 
+  ns.CanvasUtils = {
+    createCanvas : function (width, height, classList) {
+      var canvas = document.createElement("canvas");
+      canvas.setAttribute("width", width);
+      canvas.setAttribute("height", height);
+
+      if (typeof classList == "string") {
+        classList = [classList];
+      }
+      if (Array.isArray(classList)) {
+        for (var i = 0 ; i < classList.length ; i++) {
+          canvas.classList.add(classList[i]);
+        }
+      }
+      
+      return canvas;
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+
+  ns.FrameUtils = {
+    merge : function (frames) {
+      var merged = null;
+      if (frames.length) {
+        merged = frames[0].clone();
+        var w = merged.getWidth(), h = merged.getHeight();
+        for (var i = 1 ; i < frames.length ; i++) {
+          pskl.utils.FrameUtils.mergeFrames_(merged, frames[i]);
+        }
+      }
+      return merged;
+    },
+
+    mergeFrames_ : function (frameA, frameB) {
+      frameB.forEachPixel(function (p, col, row) {
+        if (p != Constants.TRANSPARENT_COLOR) {
+          frameA.setPixel(col, row, p);
+        }
+      });
+    }
+  };
+})();;(function () {
+  var ns = $.namespace("pskl");
+
   ns.PixelUtils = {
 
     getRectanglePixels : function (x0, y0, x1, y1) {
@@ -11953,8 +12004,8 @@ if (typeof Function.prototype.bind !== "function") {
           pixels.push({"col": x, "row": y});
         }
       }
-      
-      return pixels;      
+
+      return pixels;
     },
 
     getBoundRectanglePixels : function (x0, y0, x1, y1) {
@@ -11971,32 +12022,32 @@ if (typeof Function.prototype.bind !== "function") {
         pixels.push({"col": rectangle.x0, "row": y});
         pixels.push({"col": rectangle.x1, "row": y});
       }
-      
-      return pixels;  
+
+      return pixels;
     },
 
     /**
      * Return an object of ordered rectangle coordinate.
-     * In returned object {x0, y0} => top left corner - {x1, y1} => bottom right corner 
+     * In returned object {x0, y0} => top left corner - {x1, y1} => bottom right corner
      * @private
      */
     getOrderedRectangleCoordinates : function (x0, y0, x1, y1) {
       return {
-        x0 : Math.min(x0, x1), 
+        x0 : Math.min(x0, x1),
         y0 : Math.min(y0, y1),
-        x1 : Math.max(x0, x1), 
-        y1 : Math.max(y0, y1),
+        x1 : Math.max(x0, x1),
+        y1 : Math.max(y0, y1)
       };
     },
 
     /**
-     * Return the list of pixels that would have been filled by a paintbucket tool applied 
+     * Return the list of pixels that would have been filled by a paintbucket tool applied
      * on pixel at coordinate (x,y).
-     * This function is not altering the Frame object argument. 
+     * This function is not altering the Frame object argument.
      *
      * @param frame pskl.model.Frame The frame target in which we want to paintbucket
-     * @param col number Column coordinate in the frame 
-     * @param row number Row coordinate in the frame 
+     * @param col number Column coordinate in the frame
+     * @param row number Row coordinate in the frame
      *
      * @return an array of the pixel coordinates paint with the replacement color
      */
@@ -12014,10 +12065,10 @@ if (typeof Function.prototype.bind !== "function") {
     /**
      * Apply the paintbucket tool in a frame at the (col, row) initial position
      * with the replacement color.
-     * 
+     *
      * @param frame pskl.model.Frame The frame target in which we want to paintbucket
-     * @param col number Column coordinate in the frame 
-     * @param row number Row coordinate in the frame 
+     * @param col number Column coordinate in the frame
+     * @param row number Row coordinate in the frame
      * @param replacementColor string Hexadecimal color used to fill the area
      *
      * @return an array of the pixel coordinates paint with the replacement color
@@ -12050,11 +12101,11 @@ if (typeof Function.prototype.bind !== "function") {
       } catch(e) {
         // Frame out of bound exception.
       }
-      
+
       if(targetColor == replacementColor) {
         return;
       }
-      
+
 
       queue.push({"col": col, "row": row});
       var loopCount = 0;
@@ -12081,7 +12132,7 @@ if (typeof Function.prototype.bind !== "function") {
         // Security loop breaker:
         if(loopCount > 10 * cellCount) {
           console.log("loop breaker called");
-          break;          
+          break;
         }
       }
       return paintedPixels;
@@ -12113,27 +12164,112 @@ if (typeof Function.prototype.bind !== "function") {
         widthBoundDpi = Math.floor(width / pictureWidth);
 
       return Math.min(heightBoundDpi, widthBoundDpi);
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+  ns.Serializer = {
+    serializePiskel : function (piskel) {
+      var serializedLayers = piskel.getLayers().map(function (l) {
+        return pskl.utils.Serializer.serializeLayer(l);
+      });
+      return JSON.stringify({
+        modelVersion : Constants.MODEL_VERSION,
+        piskel : {
+          height : piskel.getHeight(),
+          width : piskel.getWidth(),
+          layers : serializedLayers
+        }
+      });
     },
+
+    serializeLayer : function (layer) {
+      var serializedFrames = layer.getFrames().map(function (f) {
+        return f.serialize();
+      });
+      return JSON.stringify({
+        name : layer.getName(),
+        frames : serializedFrames
+      });
+    },
+
+    deserializePiskel : function (json) {
+      var piskel = null;
+      var data = JSON.parse(json);
+      if (data.modelVersion == Constants.MODEL_VERSION) {
+        var pData = data.piskel;
+        piskel = new pskl.model.Piskel(pData.width, pData.height);
+
+        pData.layers.forEach(function (serializedLayer) {
+          var layer = pskl.utils.Serializer.deserializeLayer(serializedLayer);
+          piskel.addLayer(layer);
+        });
+      } else {
+        piskel = pskl.utils.Serializer.backwardDeserializer_(data);
+      }
+
+      return piskel;
+    },
+
+    deserializeLayer : function (json) {
+      var lData = JSON.parse(json);
+      var layer = new pskl.model.Layer(lData.name);
+
+      lData.frames.forEach(function (serializedFrame) {
+        var frame = pskl.utils.Serializer.deserializeFrame(serializedFrame);
+        layer.addFrame(frame);
+      });
+
+      return layer;
+    },
+
+    deserializeFrame : function (json) {
+      var framePixelGrid = JSON.parse(json);
+      return pskl.model.Frame.fromPixelGrid(framePixelGrid);
+    },
+
+    /**
+     * Deserialize old piskel framesheets. Initially piskels were stored as arrays of frames : "[[pixelGrid],[pixelGrid],[pixelGrid]]".
+     */
+    backwardDeserializer_ : function (frames) {
+      var layer = new pskl.model.Layer('Layer 1');
+      frames.forEach(function (frame) {
+        layer.addFrame(pskl.model.Frame.fromPixelGrid(frame));
+      });
+      var width = layer.getFrameAt(0).getWidth(), height = layer.getFrameAt(0).getHeight();
+      var piskel = new pskl.model.Piskel(width, height);
+      piskel.addLayer(layer);
+
+      return piskel;
+    }
   };
 })();;(function () {
   var ns = $.namespace("pskl");
 
-  ns.CanvasUtils = {
-    createCanvas : function (width, height, classList) {
-      var canvas = document.createElement("canvas");
-      canvas.setAttribute("width", width);
-      canvas.setAttribute("height", height);
-
-      if (typeof classList == "string") {
-        classList = [classList];
+  ns.utils.Template = {
+    get : function (templateId) {
+      var template = document.getElementById(templateId);
+      if (template) {
+        return template.innerHTML;
+      } else {
+        console.error("Could not find template for id :", templateId);
       }
-      if (Array.isArray(classList)) {
-        for (var i = 0 ; i < classList.length ; i++) {
-          canvas.classList.add(classList[i]);
+    },
+
+    createFromHTML : function (html) {
+      var dummyEl = document.createElement("div");
+      dummyEl.innerHTML = html;
+      return dummyEl.children[0];
+    },
+
+    replace : function (template, dict) {
+      for (var key in dict) {
+        if (dict.hasOwnProperty(key)) {
+          var value = dict[key];
+          template = template.replace(new RegExp('\\{\\{'+key+'\\}\\}', 'g'), value);
         }
       }
-      
-      return canvas;
+      return template;
     }
   };
 })();;(function () {
@@ -12146,7 +12282,7 @@ if (typeof Function.prototype.bind !== "function") {
 
     KEY_TO_DEFAULT_VALUE_MAP_ : {
       'SHOW_GRID' : false,
-      'CANVAS_BACKGROUND' : 'medium-canvas-background' 
+      'CANVAS_BACKGROUND' : 'medium-canvas-background'
     },
 
     /**
@@ -12155,7 +12291,7 @@ if (typeof Function.prototype.bind !== "function") {
     cache_ : {},
 
     /**
-     * Static method to access a user defined settings value ot its default 
+     * Static method to access a user defined settings value ot its default
      * value if not defined yet.
      */
     get : function (key) {
@@ -12172,7 +12308,7 @@ if (typeof Function.prototype.bind !== "function") {
       this.cache_[key] = value;
       this.writeToLocalStorage_(key, value);
 
-      $.publish(Events.USER_SETTINGS_CHANGED, [key, value]);    
+      $.publish(Events.USER_SETTINGS_CHANGED, [key, value]);
     },
 
     /**
@@ -12233,7 +12369,11 @@ var jscolor = {
 
 
 	install : function() {
-		jscolor.addEvent(window, 'load', jscolor.init);
+		if (document.readyState === "complete") { 
+			jscolor.init(); 
+		} else {
+			jscolor.addEvent(window, 'load', jscolor.init);
+		}
 	},
 
 
@@ -13134,9 +13274,6 @@ var jscolor = {
 	}
 
 };
-
-
-jscolor.install();
 ;(function () {
   var ns = $.namespace("pskl.rendering");
 
@@ -13149,8 +13286,8 @@ jscolor.install();
 
   ns.DrawingLoop.prototype.addCallback = function (callback, scope, args) {
     var callbackObj = {
-      fn : callback, 
-      scope : scope, 
+      fn : callback,
+      scope : scope,
       args : args
     };
     this.callbacks.push(callbackObj);
@@ -13190,25 +13327,38 @@ jscolor.install();
 
   ns.DrawingLoop.prototype.getRequestAnimationFrameShim_ = function () {
     var requestAnimationFrame = window.requestAnimationFrame ||
-                  window.mozRequestAnimationFrame ||  
-                  window.webkitRequestAnimationFrame || 
-                  window.msRequestAnimationFrame || 
+                  window.mozRequestAnimationFrame ||
+                  window.webkitRequestAnimationFrame ||
+                  window.msRequestAnimationFrame ||
                   function (callback) { window.setTimeout(callback, 1000/60); };
 
     return requestAnimationFrame;
   };
 })();;(function () {
   var ns = $.namespace("pskl.model");
-  
-  ns.Frame = function (pixels) {
-    this.pixels = pixels;
-    this.previousStates = [this.getPixels()];
-    this.stateIndex = 0;
+
+  ns.Frame = function (width, height) {
+    if (width && height) {
+      this.width = width;
+      this.height = height;
+
+      this.pixels = ns.Frame.createEmptyPixelGrid_(width, height);
+      this.previousStates = [this.getPixels()];
+      this.stateIndex = 0;
+    } else {
+      throw 'Bad arguments in pskl.model.Frame constructor : ' + width + ', ' + height;
+    }
   };
 
-  ns.Frame.createEmpty = function (width, height) {
-    var pixels = ns.Frame.createEmptyPixelGrid_(width, height);
-    return new ns.Frame(pixels);
+  ns.Frame.fromPixelGrid = function (pixels) {
+    if (pixels.length && pixels[0].length) {
+      var w = pixels.length, h = pixels[0].length;
+      var frame = new pskl.model.Frame(w, h);
+      frame.setPixels(pixels);
+      return frame;
+    } else {
+      throw 'Bad arguments in pskl.model.Frame.fromPixelGrid : ' + pixels;
+    }
   };
 
   ns.Frame.createEmptyPixelGrid_ = function (width, height) {
@@ -13224,11 +13374,13 @@ jscolor.install();
   };
 
   ns.Frame.createEmptyFromFrame = function (frame) {
-    return ns.Frame.createEmpty(frame.getWidth(), frame.getHeight());
+    return new ns.Frame(frame.getWidth(), frame.getHeight());
   };
 
   ns.Frame.prototype.clone = function () {
-    return new ns.Frame(this.getPixels());
+    var clone = new ns.Frame(this.width, this.height);
+    clone.setPixels(this.getPixels());
+    return clone;
   };
 
   /**
@@ -13244,8 +13396,6 @@ jscolor.install();
   ns.Frame.prototype.setPixels = function (pixels) {
     this.pixels = this.clonePixels_(pixels);
   };
-
-
 
   ns.Frame.prototype.clear = function () {
     var pixels = ns.Frame.createEmptyPixelGrid_(this.getWidth(), this.getHeight());
@@ -13276,12 +13426,20 @@ jscolor.install();
     return this.pixels[col][row];
   };
 
+  ns.Frame.prototype.forEachPixel = function (callback) {
+    for (var col = 0 ; col < this.getWidth() ; col++) {
+      for (var row = 0 ; row < this.getHeight() ; row++) {
+        callback(this.getPixel(col, row), col, row);
+      }
+    }
+  };
+
   ns.Frame.prototype.getWidth = function () {
-    return this.pixels.length;
+    return this.width;
   };
 
   ns.Frame.prototype.getHeight = function () {
-    return this.pixels[0].length;
+    return this.height;
   };
 
   ns.Frame.prototype.containsPixel = function (col, row) {
@@ -13308,188 +13466,193 @@ jscolor.install();
     if (this.stateIndex < this.previousStates.length - 1) {
       this.stateIndex++;
       this.setPixels(this.previousStates[this.stateIndex]);
-    } 
+    }
   };
 
   ns.Frame.prototype.isSameSize = function (otherFrame) {
     return this.getHeight() == otherFrame.getHeight() && this.getWidth() == otherFrame.getWidth();
   };
 })();;(function () {
-  var ns = $.namespace("pskl.model");
-  ns.FrameSheet = function (height, width) {
-    this.width = width;
-    this.height = height;
-    this.frames = [];
-    this.currentFrameIndex = 0;
-  };
+  var ns = $.namespace('pskl.model');
 
-  ns.FrameSheet.prototype.getHeight = function () {
-    return this.height;
-  };
-
-  ns.FrameSheet.prototype.getWidth = function () {
-    return this.width;
-  };
-
-  ns.FrameSheet.prototype.addEmptyFrame = function () {
-    this.addFrame(ns.Frame.createEmpty(this.width, this.height));
-  };
-
-  ns.FrameSheet.prototype.addFrame = function (frame) {
-    this.frames.push(frame);
-  };
-
-  ns.FrameSheet.prototype.getFrameCount = function () {
-    return this.frames.length;
-  };
-
-  ns.FrameSheet.prototype.getCurrentFrame = function () {
-    return this.frames[this.currentFrameIndex];
-  };
-
-  ns.FrameSheet.prototype.setCurrentFrameIndex = function (index) {
-    this.currentFrameIndex = index;
-    $.publish(Events.CURRENT_FRAME_SET, [this.getCurrentFrame()]);
-    $.publish(Events.FRAMESHEET_RESET);  // Is it no to overkill to have this here ?
-  };
-
-  ns.FrameSheet.prototype.getUsedColors = function() {
-    var colors = {};
-    for (var frameIndex=0; frameIndex < this.frames.length; frameIndex++) {
-      var frame = this.frames[frameIndex];
-      for (var i = 0, width = frame.getWidth(); i < width  ; i++) {
-        var line = frame[i];
-        for (var j = 0, height = frame.getHeight() ; j < height ; j++) {
-          var pixel = frame.getPixel(i, j);
-          colors[pixel] = pixel;
-        }
-      }
+  ns.Layer = function (name) {
+    if (!name) {
+      throw 'Invalid arguments in Layer constructor : \'name\' is mandatory';
+    } else {
+      this.name = name;
+      this.frames = [];
     }
-    return colors;
   };
 
-  // Could be used to pass around model using long GET param (good enough for simple models) and 
-  // do some temporary locastorage
-  ns.FrameSheet.prototype.serialize = function() {
-    var serializedFrames = [];
-    for (var i = 0 ; i < this.frames.length ; i++) {
-      serializedFrames.push(this.frames[i].serialize());
-    }
-    return '[' + serializedFrames.join(",") + ']';
-    //return JSON.stringify(frames);
+  ns.Layer.prototype.getName = function () {
+    return this.name;
   };
 
-  /**
-   * Load a framesheet from a model that might have been persisted in db / localstorage
-   * Overrides existing frames.
-   * @param {String} serialized
-   */
-  ns.FrameSheet.prototype.deserialize = function (serialized) {
-    try {
-      this.load(JSON.parse(serialized));
-    } catch (e) {
-      throw "Could not load serialized framesheet : " + e.message;
-    } 
+  ns.Layer.prototype.getFrames = function () {
+    return this.frames;
   };
 
-
-  /**
-   * Load a framesheet from a model that might have been persisted in db / localstorage
-   * Overrides existing frames.
-   * @param {String} serialized
-   */
-  ns.FrameSheet.prototype.load = function (framesheet) {
-    this.frames = [];
-    for (var i = 0 ; i < framesheet.length ; i++) {
-      var frameCfg = framesheet[i];
-      this.addFrame(new ns.Frame(frameCfg));
-    }
-
-    if (this.hasFrameAtIndex(0)) {
-      this.height = this.getFrameByIndex(0).getHeight();
-      this.width = this.getFrameByIndex(0).getWidth();
-      this.setCurrentFrameIndex(0);
-      $.publish(Events.FRAME_SIZE_CHANGED);
-    }
-
-    $.publish(Events.FRAMESHEET_RESET);
-  };
-
-  
-  ns.FrameSheet.prototype.hasFrameAtIndex = function(index) {
-    return (index >= 0 && index < this.getFrameCount());
-  };
-
-  ns.FrameSheet.prototype.getFrameByIndex = function(index) {
-    if (isNaN(index)) {
-      throw "Bad argument value for getFrameByIndex method: <" + index + ">";
-    } 
-
-    if (!this.hasFrameAtIndex(index)) {
-      throw "Out of bound index for frameSheet object.";
-    }
-
+  ns.Layer.prototype.getFrameAt = function (index) {
     return this.frames[index];
   };
 
-  ns.FrameSheet.prototype.removeFrameByIndex = function(index) {
-    if(!this.hasFrameAtIndex(index)) {
-      throw "Out of bound index for frameSheet object.";
-    }
-    this.frames.splice(index, 1);
-
-    // Current frame index might not be valid anymore
-    if (!this.hasFrameAtIndex(this.currentFrameIndex)) {
-      // if not select last frame available
-      this.setCurrentFrameIndex(this.getFrameCount() - 1);
-    }
-
-    $.publish(Events.FRAMESHEET_RESET);
+  ns.Layer.prototype.addFrame = function (frame) {
+    this.frames.push(frame);
   };
 
-  ns.FrameSheet.prototype.duplicateFrameByIndex = function(index) {
-    var frame = this.getFrameByIndex(index);
-    this.frames.splice(index + 1, 0, frame.clone());
+  ns.Layer.prototype.addFrameAt = function (frame, index) {
+    this.frames.splice(index, 0, frame);
   };
 
-  ns.FrameSheet.prototype.moveFrame = function(originIndex, destinationIndex) {
-    this.frames.splice(destinationIndex, 0, this.frames.splice(originIndex, 1)[0]);
+  ns.Layer.prototype.removeFrame = function (frame) {
+    var index = this.frames.indexOf(frame);
+    this.removeFrameAt(index);
   };
 
-  ns.FrameSheet.prototype.swapFrames = function(indexFrame1, indexFrame2) {
-    if(isNaN(indexFrame1) || isNaN(indexFrame1) ||
-      (!this.hasFrameAtIndex(indexFrame1) && !this.hasFrameAtIndex(indexFrame2))) {
-      throw "Bad indexes for swapFrames Framesheet function.";
-    }
-    if(indexFrame1 == indexFrame2) {
-      return;
-    }
-    else {
-      var swapFrame = this.frames[indexFrame1];
-      this.frames[indexFrame1] = this.frames[indexFrame2];
-      this.frames[indexFrame2] = swapFrame;
+  ns.Layer.prototype.removeFrameAt = function (index) {
+    if (this.frames[index]) {
+      this.frames.splice(index, 1);
+    } else {
+      throw 'Invalid index in removeFrameAt : ' + index + ' (size : ' + this.length() + ')';
     }
   };
+
+  ns.Layer.prototype.moveFrame = function (fromIndex, toIndex) {
+    var frame = this.frames.splice(fromIndex, 1)[0];
+    this.frames.splice(toIndex, 0, frame);
+  };
+
+  ns.Layer.prototype.swapFramesAt = function (fromIndex, toIndex) {
+    var fromFrame = this.frames[fromIndex];
+    var toFrame = this.frames[toIndex];
+    if (fromFrame && toFrame) {
+      this.frames[toIndex] = fromFrame;
+      this.frames[fromIndex] = toFrame;
+    } else {
+      console.log('frames', this.frames);
+      console.log('fromIndex', fromIndex, 'toIndex', toIndex);
+      throw 'Frame not found in moveFrameAt';
+    }
+  };
+
+  ns.Layer.prototype.duplicateFrame = function (frame) {
+    var index = this.frames.indexOf(frame);
+    this.duplicateFrameAt();
+  };
+
+  ns.Layer.prototype.duplicateFrameAt = function (index) {
+    var frame = this.frames[index];
+    if (frame) {
+      var clone = frame.clone();
+      this.addFrameAt(clone, index);
+    } else {
+      throw 'Frame not found in duplicateFrameAt';
+    }
+  };
+
+  ns.Layer.prototype.length = function () {
+    return this.frames.length;
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.model');
+
+  /**
+   * @constructor
+   * @param {Number} width
+   * @param {Number} height
+   */
+  ns.Piskel = function (width, height) {
+    if (width && height) {
+      /** @type {Array} */
+      this.layers = [];
+
+      /** @type {Number} */
+      this.width = width;
+
+      /** @type {Number} */
+      this.height = height;
+    } else {
+      throw 'Missing arguments in Piskel constructor : ' + Array.prototype.join.call(arguments, ",");
+    }
+  };
+
+  ns.Piskel.prototype.getLayers = function () {
+    return this.layers;
+  };
+
+  ns.Piskel.prototype.getHeight = function () {
+    return this.height;
+  };
+
+  ns.Piskel.prototype.getWidth = function () {
+    return this.width;
+  };
+
+  ns.Piskel.prototype.getLayers = function () {
+    return this.layers;
+  };
+
+  ns.Piskel.prototype.getLayerAt = function (index) {
+    return this.layers[index];
+  };
+
+  ns.Piskel.prototype.getLayersByName = function (name) {
+    return this.layers.filter(function (l) {
+      return l.getName() == name;
+    });
+  };
+
+  ns.Piskel.prototype.addLayer = function (layer) {
+    this.layers.push(layer);
+  };
+
+  ns.Piskel.prototype.moveLayerUp = function (layer) {
+    var index = this.layers.indexOf(layer);
+    if (index > -1 && index < this.layers.length-1) {
+      this.layers[index] = this.layers[index+1];
+      this.layers[index+1] = layer;
+    }
+  };
+
+  ns.Piskel.prototype.moveLayerDown = function (layer) {
+    var index = this.layers.indexOf(layer);
+    if (index > 0) {
+      this.layers[index] = this.layers[index-1];
+      this.layers[index-1] = layer;
+    }
+  };
+
+  ns.Piskel.prototype.removeLayer = function (layer) {
+    var index = this.layers.indexOf(layer);
+    if (index != -1) {
+      this.layers.splice(index, 1);
+    }
+  };
+
+  ns.Piskel.prototype.removeLayerAt = function (index) {
+    this.layers.splice(index, 1);
+  };
+
 })();;(function () {
   var ns = $.namespace("pskl.selection");
 
-  ns.SelectionManager = function (framesheet) {
-    
-    this.framesheet = framesheet;
-    
+  ns.SelectionManager = function (piskelController) {
+
+    this.piskelController = piskelController;
+
     this.currentSelection = null;
   };
 
   ns.SelectionManager.prototype.init = function () {
     $.subscribe(Events.SELECTION_CREATED, $.proxy(this.onSelectionCreated_, this));
-    $.subscribe(Events.SELECTION_DISMISSED, $.proxy(this.onSelectionDismissed_, this)); 
+    $.subscribe(Events.SELECTION_DISMISSED, $.proxy(this.onSelectionDismissed_, this));
     $.subscribe(Events.SELECTION_MOVE_REQUEST, $.proxy(this.onSelectionMoved_, this));
-    
+
     $.subscribe(Events.PASTE, $.proxy(this.onPaste_, this));
     $.subscribe(Events.COPY, $.proxy(this.onCopy_, this));
     $.subscribe(Events.CUT, $.proxy(this.onCut_, this));
 
-    $.subscribe(Events.TOOL_SELECTED, $.proxy(this.onToolSelected_, this)); 
+    $.subscribe(Events.TOOL_SELECTED, $.proxy(this.onToolSelected_, this));
   };
 
   /**
@@ -13524,10 +13687,10 @@ jscolor.install();
   ns.SelectionManager.prototype.onCut_ = function(evt) {
     if(this.currentSelection) {
       // Put cut target into the selection:
-      this.currentSelection.fillSelectionFromFrame(this.framesheet.getCurrentFrame());
+      this.currentSelection.fillSelectionFromFrame(this.piskelController.getCurrentFrame());
 
       var pixels = this.currentSelection.pixels;
-      var currentFrame = this.framesheet.getCurrentFrame();
+      var currentFrame = this.piskelController.getCurrentFrame();
       for(var i=0, l=pixels.length; i<l; i++) {
         try {
           currentFrame.setPixel(pixels[i].col, pixels[i].row, Constants.TRANSPARENT_COLOR);
@@ -13545,11 +13708,11 @@ jscolor.install();
   ns.SelectionManager.prototype.onPaste_ = function(evt) {
     if(this.currentSelection && this.currentSelection.hasPastedContent) {
       var pixels = this.currentSelection.pixels;
-      var currentFrame = this.framesheet.getCurrentFrame();
+      var currentFrame = this.piskelController.getCurrentFrame();
       for(var i=0, l=pixels.length; i<l; i++) {
         try {
           currentFrame.setPixel(
-            pixels[i].col, pixels[i].row, 
+            pixels[i].col, pixels[i].row,
             pixels[i].copiedColor);
         }
         catch(e) {
@@ -13563,8 +13726,8 @@ jscolor.install();
    * @private
    */
   ns.SelectionManager.prototype.onCopy_ = function(evt) {
-    if(this.currentSelection && this.framesheet.getCurrentFrame()) {
-      this.currentSelection.fillSelectionFromFrame(this.framesheet.getCurrentFrame());
+    if(this.currentSelection && this.piskelController.getCurrentFrame()) {
+      this.currentSelection.fillSelectionFromFrame(this.piskelController.getCurrentFrame());
     }
     else {
       throw "Bad state for CUT callback in SelectionManager";
@@ -13649,9 +13812,19 @@ jscolor.install();
   ns.CanvasRenderer = function (frame, dpi) {
     this.frame = frame;
     this.dpi = dpi;
+    this.transparentColor_ = 'white';
   };
 
-  ns.CanvasRenderer.prototype.render = function  (frame, dpi) {
+  /**
+   * Decide which color should be used to represent transparent pixels
+   * Default : white
+   * @param  {String} color the color to use either as '#ABCDEF' or 'red' or 'rgb(x,y,z)' or 'rgba(x,y,z,a)'
+   */
+  ns.CanvasRenderer.prototype.drawTransparentAs = function (color) {
+    this.transparentColor_ = color;
+  };
+
+  ns.CanvasRenderer.prototype.render = function  () {
     var canvas = this.createCanvas_();
     var context = canvas.getContext('2d');
     for(var col = 0, width = this.frame.getWidth(); col < width; col++) {
@@ -13665,11 +13838,12 @@ jscolor.install();
   };
 
   ns.CanvasRenderer.prototype.renderPixel_ = function (color, col, row, context) {
-    if(color == Constants.TRANSPARENT_COLOR) {
-      color = "#FFF";
-    }
 
+    if(color == Constants.TRANSPARENT_COLOR) {
+      color = this.transparentColor_;
+    }
     context.fillStyle = color;
+
     context.fillRect(col * this.dpi, row * this.dpi, this.dpi, this.dpi);
   };
 
@@ -13681,7 +13855,13 @@ jscolor.install();
 })();;(function () {
   var ns = $.namespace("pskl.rendering");
 
-  ns.FrameRenderer = function (container, renderingOptions, className) {
+  /**
+   * FrameRenderer will display a given frame inside a canvas element.
+   * @param {HtmlElement} container HtmlElement to use as parentNode of the Frame
+   * @param {Object} renderingOptions
+   * @param {Array} classes array of strings to use for css classes
+   */
+  ns.FrameRenderer = function (container, renderingOptions, classes) {
     this.defaultRenderingOptions = {
       'supportGridRendering' : false
     };
@@ -13690,16 +13870,20 @@ jscolor.install();
     if(container === undefined) {
       throw 'Bad FrameRenderer initialization. <container> undefined.';
     }
-    
+
     if(isNaN(renderingOptions.dpi)) {
       throw 'Bad FrameRenderer initialization. <dpi> not well defined.';
     }
 
     this.container = container;
+
     this.dpi = renderingOptions.dpi;
-    this.className = className;
-    this.canvas = null;
     this.supportGridRendering = renderingOptions.supportGridRendering;
+
+    this.classes = classes || [];
+    this.classes.push('canvas');
+
+    this.canvas = null;
 
     this.enableGrid(pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID));
 
@@ -13709,8 +13893,8 @@ jscolor.install();
     $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
   };
 
-  ns.FrameRenderer.prototype.updateDPI = function (newDPI) {
-    this.dpi = newDPI;
+  ns.FrameRenderer.prototype.setDPI = function (dpi) {
+    this.dpi = dpi;
     this.canvasConfigDirty = true;
   };
 
@@ -13718,7 +13902,7 @@ jscolor.install();
    * @private
    */
   ns.FrameRenderer.prototype.onUserSettingsChange_ = function (evt, settingName, settingValue) {
-    
+
     if(settingName == pskl.UserSettings.SHOW_GRID) {
       this.enableGrid(settingValue);
     }
@@ -13734,7 +13918,7 @@ jscolor.install();
     var currentClass = this.container.data('current-background-class');
     if (currentClass) {
       this.container.removeClass(currentClass);
-    }   
+    }
     this.container.addClass(newClass);
     this.container.data('current-background-class', newClass);
   };
@@ -13745,15 +13929,17 @@ jscolor.install();
   };
 
   ns.FrameRenderer.prototype.render = function (frame) {
-    this.clear(frame);
-    var context = this.getCanvas_(frame).getContext('2d');
-    for(var col = 0, width = frame.getWidth(); col < width; col++) {
-      for(var row = 0, height = frame.getHeight(); row < height; row++) {
-        var color = frame.getPixel(col, row);
-        this.renderPixel_(color, col, row, context);
+    if (frame) {
+      this.clear();
+      var context = this.getCanvas_(frame).getContext('2d');
+      for(var col = 0, width = frame.getWidth(); col < width; col++) {
+        for(var row = 0, height = frame.getHeight(); row < height; row++) {
+          var color = frame.getPixel(col, row);
+          this.renderPixel_(color, col, row, context);
+        }
       }
+      this.lastRenderedFrame = frame;
     }
-    this.lastRenderedFrame = frame;
   };
 
   ns.FrameRenderer.prototype.renderPixel_ = function (color, col, row, context) {
@@ -13763,9 +13949,10 @@ jscolor.install();
     }
   };
 
-  ns.FrameRenderer.prototype.clear = function (frame) {
-    var canvas = this.getCanvas_(frame);
-    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  ns.FrameRenderer.prototype.clear = function () {
+    if (this.canvas) {
+      this.canvas.getContext("2d").clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
   };
 
   /**
@@ -13791,47 +13978,19 @@ jscolor.install();
   /**
    * @private
    */
-  ns.FrameRenderer.prototype.drawGrid_ = function(canvas, width, height, col, row) {
-    var ctx = canvas.getContext("2d");
-    ctx.lineWidth = Constants.GRID_STROKE_WIDTH;
-    ctx.strokeStyle = Constants.GRID_STROKE_COLOR;
-    for(var c=1; c < col; c++) {            
-      ctx.moveTo(this.getFramePos_(c), 0);
-      ctx.lineTo(this.getFramePos_(c), height);
-      ctx.stroke();
-    }
-    
-    for(var r=1; r < row; r++) {
-      ctx.moveTo(0, this.getFramePos_(r));
-      ctx.lineTo(width, this.getFramePos_(r));
-      ctx.stroke();
-    }
-  };
-
-  /**
-   * @private
-   */
   ns.FrameRenderer.prototype.getCanvas_ = function (frame) {
     if(this.canvasConfigDirty) {
       $(this.canvas).remove();
-      
+
       var col = frame.getWidth(),
         row = frame.getHeight();
-      
+
       var pixelWidth =  col * this.dpi + this.gridStrokeWidth * (col - 1);
       var pixelHeight =  row * this.dpi + this.gridStrokeWidth * (row - 1);
-      var classes = ['canvas'];
-      if (this.className) {
-        classes.push(this.className);  
-      }
-      var canvas = pskl.CanvasUtils.createCanvas(pixelWidth, pixelHeight, classes);
 
+      var canvas = pskl.CanvasUtils.createCanvas(pixelWidth, pixelHeight, this.classes);
       this.container.append(canvas);
 
-      if(this.gridStrokeWidth > 0) {
-        this.drawGrid_(canvas, pixelWidth, pixelHeight, col, row);
-      }
-        
       this.canvas = canvas;
       this.canvasConfigDirty = false;
     }
@@ -13841,52 +14000,18 @@ jscolor.install();
 
   var ns = $.namespace("pskl.rendering");
 
-  ns.SpritesheetRenderer = function (framesheet) {
-    this.framesheet = framesheet;
+  ns.SpritesheetRenderer = function (piskelController) {
+    this.piskelController = piskelController;
   };
 
   ns.SpritesheetRenderer.prototype.renderAsImageDataSpritesheetPNG = function () {
     var canvas = this.createCanvas_();
-    for (var i = 0 ; i < this.framesheet.getFrameCount() ; i++) {
-      var frame = this.framesheet.getFrameByIndex(i);
-      this.drawFrameInCanvas_(frame, canvas, i * this.framesheet.getWidth(), 0);
+    for (var i = 0 ; i < this.piskelController.getFrameCount() ; i++) {
+      var frame = this.piskelController.getFrameAt(i);
+      this.drawFrameInCanvas_(frame, canvas, i * this.piskelController.getWidth(), 0);
     }
     return canvas.toDataURL("image/png");
   };
-
-  ns.SpritesheetRenderer.prototype.blobToBase64_ = function(blob, cb) {
-    var reader = new FileReader();
-    reader.onload = function() {
-      var dataUrl = reader.result;
-      cb(dataUrl);
-    };
-    reader.readAsDataURL(blob);
-  };
-
-  ns.SpritesheetRenderer.prototype.renderAsImageDataAnimatedGIF = function(fps, cb) {
-    var dpi = 10;
-    var gif = new window.GIF({
-      workers: 2,
-      quality: 10,
-      width: 320,
-      height: 320
-    });
-
-    for (var i = 0; i < this.framesheet.frames.length; i++) {
-      var frame = this.framesheet.frames[i];
-      var renderer = new pskl.rendering.CanvasRenderer(frame, dpi);
-      gif.addFrame(renderer.render(), {
-        delay: 1000 / fps
-      });
-    }
-
-    gif.on('finished', function(blob) {
-      this.blobToBase64_(blob, cb);
-    }.bind(this));
-
-    gif.render();
-  };
-
 
   /**
    * TODO(juliandescottes): Mutualize with code already present in FrameRenderer
@@ -13905,42 +14030,245 @@ jscolor.install();
   };
 
   ns.SpritesheetRenderer.prototype.createCanvas_ = function () {
-    var frameCount = this.framesheet.getFrameCount();
+    var frameCount = this.piskelController.getFrameCount();
     if (frameCount > 0){
-      var width = frameCount * this.framesheet.getWidth();
-      var height = this.framesheet.getHeight();
+      var width = frameCount * this.piskelController.getWidth();
+      var height = this.piskelController.getHeight();
       return pskl.CanvasUtils.createCanvas(width, height);
     } else {
       throw "Cannot render empty Spritesheet";
     }
   };
 })();;(function () {
+  var ns = $.namespace('pskl.controller');
+
+  ns.PiskelController = function (piskel) {
+    this.setPiskel(piskel);
+  };
+
+  ns.PiskelController.prototype.setPiskel = function (piskel) {
+    this.piskel = piskel;
+    this.currentLayerIndex = 0;
+    this.currentFrameIndex = 0;
+
+    this.layerIdCounter = 1;
+
+    $.publish(Events.PISKEL_RESET);
+    $.publish(Events.FRAME_SIZE_CHANGED);
+  };
+
+  ns.PiskelController.prototype.getHeight = function () {
+    return this.piskel.getHeight();
+  };
+
+  ns.PiskelController.prototype.getWidth = function () {
+    return this.piskel.getWidth();
+  };
+
+  /**
+   * TODO : this should be removed
+   * FPS should be stored in the Piskel model and not in the
+   * animationController
+   * Then piskelController should be able to return this information
+   * @return {Number} Frames per second for the current animation
+   */
+  ns.PiskelController.prototype.getFPS = function () {
+    return pskl.app.animationController.getFPS();
+  };
+
+  ns.PiskelController.prototype.getLayers = function () {
+    return this.piskel.getLayers();
+  };
+
+  ns.PiskelController.prototype.getCurrentLayer = function () {
+    return this.piskel.getLayerAt(this.currentLayerIndex);
+  };
+
+  ns.PiskelController.prototype.getCurrentFrame = function () {
+    var layer = this.getCurrentLayer();
+    return layer.getFrameAt(this.currentFrameIndex);
+  };
+
+  ns.PiskelController.prototype.getFrameAt = function (index) {
+    var frames = this.getLayers().map(function (l) {
+      return l.getFrameAt(index);
+    });
+    return pskl.utils.FrameUtils.merge(frames);
+  };
+
+  ns.PiskelController.prototype.hasFrameAt = function (index) {
+    return !!this.getCurrentLayer().getFrameAt(index);
+  };
+
+  // backward from framesheet
+  ns.PiskelController.prototype.getFrameByIndex =
+    ns.PiskelController.prototype.getMergedFrameAt;
+
+  ns.PiskelController.prototype.addEmptyFrame = function () {
+    var layers = this.getLayers();
+    layers.forEach(function (l) {
+      l.addFrame(this.createEmptyFrame_());
+    }.bind(this));
+  };
+
+  ns.PiskelController.prototype.createEmptyFrame_ = function () {
+    var w = this.piskel.getWidth(), h = this.piskel.getHeight();
+    return new pskl.model.Frame(w, h);
+  };
+
+  ns.PiskelController.prototype.removeFrameAt = function (index) {
+    var layers = this.getLayers();
+    layers.forEach(function (l) {
+      l.removeFrameAt(index);
+    });
+    // Current frame index is impacted if the removed frame was before the current frame
+    if (this.currentFrameIndex >= index) {
+      this.setCurrentFrameIndex(this.currentFrameIndex - 1);
+    }
+
+    $.publish(Events.PISKEL_RESET);
+  };
+
+  ns.PiskelController.prototype.duplicateFrameAt = function (index) {
+    var layers = this.getLayers();
+    layers.forEach(function (l) {
+      l.duplicateFrameAt(index);
+    });
+  };
+
+  ns.PiskelController.prototype.moveFrame = function (fromIndex, toIndex) {
+    var layers = this.getLayers();
+    layers.forEach(function (l) {
+      l.moveFrame(fromIndex, toIndex);
+    });
+  };
+
+  ns.PiskelController.prototype.getFrameCount = function () {
+    var layer = this.piskel.getLayerAt(0);
+    return layer.length();
+  };
+
+  ns.PiskelController.prototype.setCurrentFrameIndex = function (index) {
+    this.currentFrameIndex = index;
+    $.publish(Events.PISKEL_RESET);
+  };
+
+  ns.PiskelController.prototype.setCurrentLayerIndex = function (index) {
+    this.currentLayerIndex = index;
+    $.publish(Events.PISKEL_RESET);
+  };
+
+  ns.PiskelController.prototype.selectLayer = function (layer) {
+    var index = this.getLayers().indexOf(layer);
+    if (index != -1) {
+      this.setCurrentLayerIndex(index);
+    }
+  };
+
+  ns.PiskelController.prototype.selectLayerByName = function (name) {
+    if (this.hasLayerForName_(name)) {
+      var layer = this.piskel.getLayersByName(name)[0];
+      this.selectLayer(layer);
+    }
+  };
+
+  ns.PiskelController.prototype.generateLayerName_ = function () {
+    var name = "Layer " + this.layerIdCounter;
+    while (this.hasLayerForName_(name)) {
+      this.layerIdCounter++;
+      name = "Layer " + this.layerIdCounter;
+    }
+    return name;
+  };
+
+  ns.PiskelController.prototype.createLayer = function (name) {
+    if (!name) {
+      name = this.generateLayerName_();
+    }
+    if (!this.hasLayerForName_(name)) {
+      var layer = new pskl.model.Layer(name);
+      for (var i = 0 ; i < this.getFrameCount() ; i++) {
+        layer.addFrame(this.createEmptyFrame_());
+      }
+      this.piskel.addLayer(layer);
+      this.setCurrentLayerIndex(this.piskel.getLayers().length - 1);
+    } else {
+      throw 'Layer name should be unique';
+    }
+  };
+
+  ns.PiskelController.prototype.hasLayerForName_ = function (name) {
+    return this.piskel.getLayersByName(name).length > 0;
+  };
+
+  ns.PiskelController.prototype.moveLayerUp = function () {
+    var layer = this.getCurrentLayer();
+    this.piskel.moveLayerUp(layer);
+    this.selectLayer(layer);
+  };
+
+  ns.PiskelController.prototype.moveLayerDown = function () {
+    var layer = this.getCurrentLayer();
+    this.piskel.moveLayerDown(layer);
+    this.selectLayer(layer);
+  };
+
+  ns.PiskelController.prototype.removeCurrentLayer = function () {
+    if (this.getLayers().length > 1) {
+      var layer = this.getCurrentLayer();
+      this.piskel.removeLayer(layer);
+      this.setCurrentLayerIndex(0);
+    }
+  };
+
+  ns.PiskelController.prototype.serialize = function () {
+    return pskl.utils.Serializer.serializePiskel(this.piskel);
+  };
+
+  ns.PiskelController.prototype.load = function (data) {
+    this.deserialize(JSON.stringify(data));
+  };
+
+  ns.PiskelController.prototype.deserialize = function (jsonStr) {
+    try {
+      var piskel = pskl.utils.Serializer.deserializePiskel(jsonStr);
+      this.setPiskel(piskel);
+    } catch (e) {
+      console.error('Failed to deserialize');
+      console.error(e.stack);
+    }
+  };
+})();;(function () {
   var ns = $.namespace("pskl.controller");
-  ns.DrawingController = function (framesheet, container) {
+  ns.DrawingController = function (piskelController, container) {
     /**
      * @public
      */
-    this.framesheet = framesheet;
-    
+    this.piskelController = piskelController;
+
     /**
      * @public
      */
-    this.overlayFrame = pskl.model.Frame.createEmptyFromFrame(framesheet.getCurrentFrame());
+    this.overlayFrame = pskl.model.Frame.createEmptyFromFrame(piskelController.getCurrentFrame());
 
     /**
      * @private
      */
     this.container = container;
 
+    this.dpi = this.calculateDPI_();
+
     // TODO(vincz): Store user prefs in a localstorage string ?
     var renderingOptions = {
-      "dpi": this.calculateDPI_(),
+      "dpi": this.dpi,
       "supportGridRendering" : true
     };
-    
-    this.renderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, "drawing-canvas");
-    this.overlayRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, "canvas-overlay");
-    
+
+    this.overlayRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["canvas-overlay"]);
+    this.renderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["drawing-canvas"]);
+    this.layersBelowRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["layers-canvas", "layers-below-canvas"]);
+    this.layersAboveRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["layers-canvas", "layers-above-canvas"]);
+
 
     // State of drawing controller:
     this.isClicked = false;
@@ -13952,9 +14280,6 @@ jscolor.install();
   };
 
   ns.DrawingController.prototype.init = function () {
-    this.renderer.render(this.framesheet.getCurrentFrame());
-    this.overlayRenderer.render(this.overlayFrame);
-    
     this.initMouseBehavior();
 
     $.subscribe(Events.TOOL_SELECTED, $.proxy(function(evt, toolBehavior) {
@@ -13991,7 +14316,7 @@ jscolor.install();
     this.container.mousedown($.proxy(this.onMousedown_, this));
     this.container.mousemove($.proxy(this.onMousemove_, this));
     body.mouseup($.proxy(this.onMouseup_, this));
-    
+
     // Deactivate right click:
     body.contextmenu(this.onCanvasContextMenu_);
   };
@@ -14019,22 +14344,22 @@ jscolor.install();
    */
   ns.DrawingController.prototype.onMousedown_ = function (event) {
     this.isClicked = true;
-    
+
     if(event.button == 2) { // right click
       this.isRightClicked = true;
       $.publish(Events.CANVAS_RIGHT_CLICKED);
     }
 
     var coords = this.getSpriteCoordinates(event);
-    
+
     this.currentToolBehavior.applyToolAt(
       coords.col, coords.row,
       this.getCurrentColor_(),
-      this.framesheet.getCurrentFrame(),
+      this.piskelController.getCurrentFrame(),
       this.overlayFrame,
       this.wrapEvtInfo_(event)
-    );      
-      
+    );
+
     $.publish(Events.LOCALSTORAGE_REQUEST);
   };
 
@@ -14047,15 +14372,15 @@ jscolor.install();
     if ((currentTime - this.previousMousemoveTime) > 40 ) {
       var coords = this.getSpriteCoordinates(event);
       if (this.isClicked) {
-     
+
         this.currentToolBehavior.moveToolAt(
           coords.col, coords.row,
           this.getCurrentColor_(),
-          this.framesheet.getCurrentFrame(),
+          this.piskelController.getCurrentFrame(),
           this.overlayFrame,
           this.wrapEvtInfo_(event)
         );
-    
+
         // TODO(vincz): Find a way to move that to the model instead of being at the interaction level.
         // Eg when drawing, it may make sense to have it here. However for a non drawing tool,
         // you don't need to draw anything when mousemoving and you request useless localStorage.
@@ -14065,7 +14390,7 @@ jscolor.install();
         this.currentToolBehavior.moveUnactiveToolAt(
           coords.col, coords.row,
           this.getCurrentColor_(),
-          this.framesheet.getCurrentFrame(),
+          this.piskelController.getCurrentFrame(),
           this.overlayFrame,
           this.wrapEvtInfo_(event)
         );
@@ -14092,7 +14417,7 @@ jscolor.install();
       this.currentToolBehavior.releaseToolAt(
         coords.col, coords.row,
         this.getCurrentColor_(),
-        this.framesheet.getCurrentFrame(),
+        this.piskelController.getCurrentFrame(),
         this.overlayFrame,
         this.wrapEvtInfo_(event)
       );
@@ -14112,7 +14437,7 @@ jscolor.install();
       evtInfo.button = Constants.RIGHT_BUTTON;
     }
     return evtInfo;
-  }; 
+  };
 
   /**
    * @private
@@ -14154,17 +14479,18 @@ jscolor.install();
       event.stopPropagation();
       event.cancelBubble = true;
       return false;
-    }   
+    }
   };
 
   ns.DrawingController.prototype.render = function () {
+    this.renderLayers();
     this.renderFrame();
     this.renderOverlay();
   };
 
   ns.DrawingController.prototype.renderFrame = function () {
-    var frame = this.framesheet.getCurrentFrame();
-    var serializedFrame = frame.serialize();
+    var frame = this.piskelController.getCurrentFrame();
+    var serializedFrame = this.dpi + "-" + frame.serialize();
     if (this.serializedFrame != serializedFrame) {
       if (!frame.isSameSize(this.overlayFrame)) {
         this.overlayFrame = pskl.model.Frame.createEmptyFromFrame(frame);
@@ -14175,15 +14501,48 @@ jscolor.install();
   };
 
   ns.DrawingController.prototype.renderOverlay = function () {
-    var serializedOverlay = this.overlayFrame.serialize();
+    var serializedOverlay = this.dpi + "-" + this.overlayFrame.serialize();
     if (this.serializedOverlay != serializedOverlay) {
       this.serializedOverlay = serializedOverlay;
       this.overlayRenderer.render(this.overlayFrame);
     }
   };
 
-  ns.DrawingController.prototype.forceRendering_ = function () {
-    this.serializedFrame = this.serializedOverlay = null;
+  ns.DrawingController.prototype.renderLayers = function () {
+    var layers = this.piskelController.getLayers();
+    var currentFrameIndex = this.piskelController.currentFrameIndex;
+    var currentLayerIndex = this.piskelController.currentLayerIndex;
+
+    var serializedLayerFrame = [
+      this.dpi,
+      currentFrameIndex,
+      currentLayerIndex,
+      layers.length
+    ].join("-");
+
+    if (this.serializedLayerFrame != serializedLayerFrame) {
+      this.layersAboveRenderer.clear();
+      this.layersBelowRenderer.clear();
+
+      var downLayers = layers.slice(0, currentLayerIndex);
+      var downFrame = this.getFrameForLayersAt_(currentFrameIndex, downLayers);
+      this.layersBelowRenderer.render(downFrame);
+
+      if (currentLayerIndex + 1 < layers.length) {
+        var upLayers = layers.slice(currentLayerIndex + 1, layers.length);
+        var upFrame = this.getFrameForLayersAt_(currentFrameIndex, upLayers);
+        this.layersAboveRenderer.render(upFrame);
+      }
+
+      this.serializedLayerFrame = serializedLayerFrame;
+    }
+  };
+
+  ns.DrawingController.prototype.getFrameForLayersAt_ = function (frameIndex, layers) {
+    var frames = layers.map(function (l) {
+      return l.getFrameAt(frameIndex);
+    });
+    return pskl.utils.FrameUtils.merge(frames);
   };
 
   /**
@@ -14194,8 +14553,8 @@ jscolor.install();
       leftSectionWidth = $('.left-column').outerWidth(true),
       rightSectionWidth = $('.right-column').outerWidth(true),
       availableViewportWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth,
-      framePixelHeight = this.framesheet.getCurrentFrame().getHeight(),
-      framePixelWidth = this.framesheet.getCurrentFrame().getWidth();
+      framePixelHeight = this.piskelController.getCurrentFrame().getHeight(),
+      framePixelWidth = this.piskelController.getCurrentFrame().getWidth();
 
     if (pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID)) {
       availableViewportWidth = availableViewportWidth - (framePixelWidth * Constants.GRID_STROKE_WIDTH);
@@ -14212,29 +14571,30 @@ jscolor.install();
    * @private
    */
   ns.DrawingController.prototype.updateDPI_ = function() {
-    var dpi = this.calculateDPI_();
-    this.renderer.updateDPI(dpi);
-    this.overlayRenderer.updateDPI(dpi);
+    this.dpi = this.calculateDPI_();
 
-    var currentFrameHeight =  this.framesheet.getCurrentFrame().getHeight();
-    var canvasHeight = currentFrameHeight * dpi;
+    this.overlayRenderer.setDPI(this.dpi);
+    this.renderer.setDPI(this.dpi);
+    this.layersAboveRenderer.setDPI(this.dpi);
+    this.layersBelowRenderer.setDPI(this.dpi);
+
+    var currentFrameHeight =  this.piskelController.getCurrentFrame().getHeight();
+    var canvasHeight = currentFrameHeight * this.dpi;
     if (pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID)) {
       canvasHeight += Constants.GRID_STROKE_WIDTH * currentFrameHeight;
     }
-    
+
     var verticalGapInPixel = Math.floor(($('#main-wrapper').height() - canvasHeight) / 2);
     $('#column-wrapper').css({
       'top': verticalGapInPixel + 'px',
       'height': canvasHeight + 'px'
     });
-
-    this.forceRendering_();
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
-  ns.PreviewFilmController = function (framesheet, container, dpi) {
+  ns.PreviewFilmController = function (piskelController, container, dpi) {
 
-    this.framesheet = framesheet;
+    this.piskelController = piskelController;
     this.container = container;
     this.dpi = this.calculateDPI_();
 
@@ -14243,16 +14603,16 @@ jscolor.install();
 
   ns.PreviewFilmController.prototype.init = function() {
     $.subscribe(Events.TOOL_RELEASED, this.flagForRedraw_.bind(this));
-    $.subscribe(Events.FRAMESHEET_RESET, this.flagForRedraw_.bind(this));
-    $.subscribe(Events.FRAMESHEET_RESET, this.refreshDPI_.bind(this));
+    $.subscribe(Events.PISKEL_RESET, this.flagForRedraw_.bind(this));
+    $.subscribe(Events.PISKEL_RESET, this.refreshDPI_.bind(this));
 
     $('#preview-list-scroller').scroll(this.updateScrollerOverflows.bind(this));
     this.updateScrollerOverflows();
   };
 
   ns.PreviewFilmController.prototype.addFrame = function () {
-    this.framesheet.addEmptyFrame();
-    this.framesheet.setCurrentFrameIndex(this.framesheet.getFrameCount() - 1);
+    this.piskelController.addEmptyFrame();
+    this.piskelController.setCurrentFrameIndex(this.piskelController.getFrameCount() - 1);
     this.updateScrollerOverflows();
   };
 
@@ -14295,12 +14655,12 @@ jscolor.install();
   };
 
   ns.PreviewFilmController.prototype.createPreviews_ = function () {
-    
+
     this.container.html("");
     // Manually remove tooltips since mouseout events were shortcut by the DOM refresh:
     $(".tooltip").remove();
 
-    var frameCount = this.framesheet.getFrameCount();
+    var frameCount = this.piskelController.getFrameCount();
 
     for (var i = 0, l = frameCount; i < l ; i++) {
       this.container.append(this.createPreviewTile_(i));
@@ -14326,7 +14686,7 @@ jscolor.install();
    * @private
    */
   ns.PreviewFilmController.prototype.initDragndropBehavior_ = function () {
-    
+
     $("#preview-list").sortable({
       placeholder: "preview-tile-drop-proxy",
       update: $.proxy(this.onUpdate_, this),
@@ -14342,8 +14702,8 @@ jscolor.install();
     var originFrameId = parseInt(ui.item.data("tile-number"), 10);
     var targetInsertionId = $('.preview-tile').index(ui.item);
 
-    this.framesheet.moveFrame(originFrameId, targetInsertionId);
-    this.framesheet.setCurrentFrameIndex(targetInsertionId);
+    this.piskelController.moveFrame(originFrameId, targetInsertionId);
+    this.piskelController.setCurrentFrameIndex(targetInsertionId);
 
     // TODO(grosbouddha): move localstorage request to the model layer?
     $.publish(Events.LOCALSTORAGE_REQUEST);
@@ -14355,24 +14715,24 @@ jscolor.install();
    * TODO(vincz): clean this giant rendering function & remove listeners.
    */
   ns.PreviewFilmController.prototype.createPreviewTile_ = function(tileNumber) {
-    var currentFrame = this.framesheet.getFrameByIndex(tileNumber);
-    
+    var currentFrame = this.piskelController.getCurrentLayer().getFrameAt(tileNumber);
+
     var previewTileRoot = document.createElement("li");
     var classname = "preview-tile";
     previewTileRoot.setAttribute("data-tile-number", tileNumber);
 
-    if (this.framesheet.getCurrentFrame() == currentFrame) {
+    if (this.piskelController.getCurrentFrame() == currentFrame) {
       classname += " selected";
     }
     previewTileRoot.className = classname;
 
     var canvasContainer = document.createElement("div");
     canvasContainer.className = "canvas-container";
-    
+
     var canvasBackground = document.createElement("div");
     canvasBackground.className = "canvas-background";
     canvasContainer.appendChild(canvasBackground);
-    
+
     previewTileRoot.addEventListener('click', this.onPreviewClick_.bind(this, tileNumber));
 
     var cloneFrameButton = document.createElement("button");
@@ -14386,12 +14746,12 @@ jscolor.install();
     // TODO(vincz): Eventually optimize this part by not recreating a FrameRenderer. Note that the real optim
     // is to make this update function (#createPreviewTile) less aggressive.
     var renderingOptions = {"dpi": this.dpi };
-    var currentFrameRenderer = new pskl.rendering.FrameRenderer($(canvasContainer), renderingOptions, "tile-view");
+    var currentFrameRenderer = new pskl.rendering.FrameRenderer($(canvasContainer), renderingOptions, ["tile-view"]);
     currentFrameRenderer.render(currentFrame);
-    
+
     previewTileRoot.appendChild(canvasContainer);
 
-    if(tileNumber > 0 || this.framesheet.getFrameCount() > 1) {
+    if(tileNumber > 0 || this.piskelController.getFrameCount() > 1) {
       // Add 'remove frame' button.
       var deleteButton = document.createElement("button");
       deleteButton.setAttribute('rel', 'tooltip');
@@ -14410,7 +14770,7 @@ jscolor.install();
     tileCount.className = "tile-overlay tile-count";
     tileCount.innerHTML = tileNumber;
     previewTileRoot.appendChild(tileCount);
-    
+
 
     return previewTileRoot;
   };
@@ -14418,28 +14778,28 @@ jscolor.install();
   ns.PreviewFilmController.prototype.onPreviewClick_ = function (index, evt) {
     // has not class tile-action:
     if(!evt.target.classList.contains('tile-overlay')) {
-      this.framesheet.setCurrentFrameIndex(index);
-    }    
+      this.piskelController.setCurrentFrameIndex(index);
+    }
   };
 
   ns.PreviewFilmController.prototype.onDeleteButtonClick_ = function (index, evt) {
-    this.framesheet.removeFrameByIndex(index);
+    this.piskelController.removeFrameAt(index);
     $.publish(Events.LOCALSTORAGE_REQUEST); // Should come from model
     this.updateScrollerOverflows();
   };
 
   ns.PreviewFilmController.prototype.onAddButtonClick_ = function (index, evt) {
-    this.framesheet.duplicateFrameByIndex(index);
+    this.piskelController.duplicateFrameAt(index);
     $.publish(Events.LOCALSTORAGE_REQUEST);  // Should come from model
-    this.framesheet.setCurrentFrameIndex(index + 1);
+    this.piskelController.setCurrentFrameIndex(index + 1);
     this.updateScrollerOverflows();
   };
 
   /**
-   * Calculate the preview DPI depending on the framesheet size
+   * Calculate the preview DPI depending on the piskel size
    */
   ns.PreviewFilmController.prototype.calculateDPI_ = function () {
-    var curFrame = this.framesheet.getCurrentFrame(),
+    var curFrame = this.piskelController.getCurrentFrame(),
       frameHeight = curFrame.getHeight(),
       frameWidth = curFrame.getWidth(),
       maxFrameDim = Math.max(frameWidth, frameHeight);
@@ -14450,16 +14810,74 @@ jscolor.install();
     return pskl.PixelUtils.calculateDPI(previewHeight, previewWidth, frameHeight, frameWidth) || 1;
   };
 })();;(function () {
+  var ns = $.namespace('pskl.controller');
+
+  ns.LayersListController = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+  ns.LayersListController.prototype.init = function () {
+    this.layerItemTemplate_ = pskl.utils.Template.get('layer-item-template');
+    this.rootEl = document.querySelectorAll('.layers-list-container')[0];
+    this.layersListEl = document.querySelectorAll('.layers-list')[0];
+
+    this.rootEl.addEventListener('click', this.onClick_.bind(this));
+
+    $.subscribe(Events.PISKEL_RESET, this.renderLayerList_.bind(this));
+
+    this.renderLayerList_();
+  };
+
+  ns.LayersListController.prototype.renderLayerList_ = function () {
+    this.layersListEl.innerHTML = '';
+    var layers = this.piskelController.getLayers();
+    layers.forEach(this.addLayerItem.bind(this));
+  };
+
+  ns.LayersListController.prototype.addLayerItem = function (layer) {
+    var layerItemHtml = pskl.utils.Template.replace(this.layerItemTemplate_, {
+      layername : layer.getName()
+    });
+    var layerItem = pskl.utils.Template.createFromHTML(layerItemHtml);
+    if (this.piskelController.getCurrentLayer() === layer) {
+      layerItem.classList.add('current-layer-item');
+    }
+    this.layersListEl.insertBefore(layerItem, this.layersListEl.firstChild);
+  };
+
+  ns.LayersListController.prototype.onClick_ = function (evt) {
+    var el = evt.target || evt.srcElement;
+    if (el.nodeName == 'BUTTON') {
+      this.onButtonClick_(el);
+    } else if (el.nodeName == 'LI') {
+      var layerName = el.getAttribute('data-layer-name');
+      this.piskelController.selectLayerByName(layerName);
+    }
+  };
+
+  ns.LayersListController.prototype.onButtonClick_ = function (button) {
+    var action = button.getAttribute('data-action');
+    if (action == 'up') {
+      this.piskelController.moveLayerUp();
+    } else if (action == 'down') {
+      this.piskelController.moveLayerDown();
+    } else if (action == 'add') {
+      this.piskelController.createLayer();
+    } else if (action == 'delete') {
+      this.piskelController.removeCurrentLayer();
+    }
+  };
+})();;(function () {
   var ns = $.namespace("pskl.controller");
-  ns.AnimatedPreviewController = function (framesheet, container, dpi) {
-    this.framesheet = framesheet;
+  ns.AnimatedPreviewController = function (piskelController, container, dpi) {
+    this.piskelController = piskelController;
     this.container = container;
 
     this.elapsedTime = 0;
     this.currentIndex = 0;
 
-    this.fps = parseInt($("#preview-fps")[0].value, 10);
-    
+    this.setFPS(Constants.DEFAULT.FPS);
+
     var renderingOptions = {
       "dpi": this.calculateDPI_()
     };
@@ -14485,16 +14903,20 @@ jscolor.install();
     $("#display-fps").html(this.fps + " FPS");
   };
 
+  ns.AnimatedPreviewController.prototype.getFPS = function () {
+    return this.fps;
+  };
+
   ns.AnimatedPreviewController.prototype.render = function (delta) {
     this.elapsedTime += delta;
     var index = Math.floor(this.elapsedTime / (1000/this.fps));
     if (index != this.currentIndex) {
       this.currentIndex = index;
-      if (!this.framesheet.hasFrameAtIndex(this.currentIndex)) {
+      if (!this.piskelController.hasFrameAt(this.currentIndex)) {
         this.currentIndex = 0;
         this.elapsedTime = 0;
       }
-      this.renderer.render(this.framesheet.getFrameByIndex(this.currentIndex));
+      this.renderer.render(this.piskelController.getFrameAt(this.currentIndex));
     }
   };
 
@@ -14503,17 +14925,17 @@ jscolor.install();
    */
   ns.AnimatedPreviewController.prototype.calculateDPI_ = function () {
     var previewSize = 200,
-      framePixelHeight = this.framesheet.getCurrentFrame().getHeight(),
-      framePixelWidth = this.framesheet.getCurrentFrame().getWidth();
+      framePixelHeight = this.piskelController.getCurrentFrame().getHeight(),
+      framePixelWidth = this.piskelController.getCurrentFrame().getWidth();
     // TODO (julz) : should have a utility to get a Size from framesheet easily (what about empty framesheets though ?)
-    
+
     //return pskl.PixelUtils.calculateDPIForContainer($(".preview-container"), framePixelHeight, framePixelWidth);
     return pskl.PixelUtils.calculateDPI(previewSize, previewSize, framePixelHeight, framePixelWidth);
   };
 
   ns.AnimatedPreviewController.prototype.updateDPI_ = function () {
     this.dpi = this.calculateDPI_();
-    this.renderer.updateDPI(this.dpi);
+    this.renderer.setDPI(this.dpi);
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
@@ -14624,9 +15046,34 @@ jscolor.install();
 })();;(function () {
   var ns = $.namespace("pskl.controller");
 
-  ns.PaletteController = function () {
-    this.paletteRoot = null;
-    this.paletteColors = [];
+  ns.PaletteController = function () {};
+
+  /**
+   * @public
+   */
+  ns.PaletteController.prototype.init = function() {
+    var transparentColorPalette = $(".palette-color[data-color=TRANSPARENT]");
+    transparentColorPalette.mouseup($.proxy(this.onPaletteColorClick_, this));
+
+    $.subscribe(Events.PRIMARY_COLOR_UPDATED, $.proxy(function(evt, color) {
+      this.updateColorPicker_(color, $('#color-picker'));
+    }, this));
+
+    $.subscribe(Events.SECONDARY_COLOR_UPDATED, $.proxy(function(evt, color) {
+      this.updateColorPicker_(color, $('#secondary-color-picker'));
+    }, this));
+
+    // Initialize colorpickers:
+    var colorPicker = $('#color-picker');
+    colorPicker.val(Constants.DEFAULT_PEN_COLOR);
+    colorPicker.change({isPrimary : true}, $.proxy(this.onPickerChange_, this));
+
+
+    var secondaryColorPicker = $('#secondary-color-picker');
+    secondaryColorPicker.val(Constants.TRANSPARENT_COLOR);
+    secondaryColorPicker.change({isPrimary : false}, $.proxy(this.onPickerChange_, this));
+
+    window.jscolor.install();
   };
 
   /**
@@ -14636,27 +15083,8 @@ jscolor.install();
     var inputPicker = $(evt.target);
     if(evt.data.isPrimary) {
       $.publish(Events.PRIMARY_COLOR_SELECTED, [inputPicker.val()]);
-    }
-    else {
+    } else {
       $.publish(Events.SECONDARY_COLOR_SELECTED, [inputPicker.val()]);
-    }
-  };
-  
-  /**
-   * @private
-   */
-  ns.PaletteController.prototype.addColorToPalette_ = function (color) {
-    if (this.paletteColors.indexOf(color) == -1 && color != Constants.TRANSPARENT_COLOR) {
-      this.paletteColors.push(color);
-    }
-  };
-
-  /**
-   * @private
-   */
-  ns.PaletteController.prototype.addColorsToPalette_ = function (colors) {
-    for(var color in colors) {
-      this.addColorToPalette_(color);
     }
   };
 
@@ -14694,45 +15122,6 @@ jscolor.install();
       colorPicker[0].color.fromString(color);
     }
   };
-
-  /**
-   * @public
-   */
-  ns.PaletteController.prototype.init = function(framesheet) {
-      
-    this.paletteRoot = $("#palette");
-    this.framesheet = framesheet;
-
-    // Initialize palette:
-    this.addColorsToPalette_(this.framesheet.getUsedColors());
-
-    $.subscribe(Events.FRAMESHEET_RESET, $.proxy(function(evt) {
-      this.addColorsToPalette_(this.framesheet.getUsedColors());
-    }, this));
-
-    this.paletteRoot.mouseup($.proxy(this.onPaletteColorClick_, this));
-    
-    $.subscribe(Events.PRIMARY_COLOR_UPDATED, $.proxy(function(evt, color) {
-      this.updateColorPicker_(color, $('#color-picker'));
-      this.addColorToPalette_(color);
-    }, this));
-
-    $.subscribe(Events.SECONDARY_COLOR_UPDATED, $.proxy(function(evt, color) {
-      this.updateColorPicker_(color, $('#secondary-color-picker'));
-      this.addColorToPalette_(color);
-    }, this));
-
-    // Initialize colorpickers:
-    var colorPicker = $('#color-picker');
-    colorPicker.val(Constants.DEFAULT_PEN_COLOR);
-    colorPicker.change({isPrimary : true}, $.proxy(this.onPickerChange_, this));
-
-
-    var secondaryColorPicker = $('#secondary-color-picker');
-    secondaryColorPicker.val(Constants.TRANSPARENT_COLOR);
-    secondaryColorPicker.change({isPrimary : false}, $.proxy(this.onPickerChange_, this));
-
-  };
 })();
 
 
@@ -14741,6 +15130,14 @@ jscolor.install();
   var ns = $.namespace("pskl.controller");
 
   ns.NotificationController = function () {};
+
+  /**
+   * @public
+   */
+  ns.NotificationController.prototype.init = function() {
+    $.subscribe(Events.SHOW_NOTIFICATION, $.proxy(this.displayMessage_, this));
+    $.subscribe(Events.HIDE_NOTIFICATION, $.proxy(this.removeMessage_, this));
+  };
 
   /**
    * @private
@@ -14767,25 +15164,16 @@ jscolor.install();
       message.remove();
     }
   };
-
-  /**
-   * @public
-   */
-  ns.NotificationController.prototype.init = function() {
-    $.subscribe(Events.SHOW_NOTIFICATION, $.proxy(this.displayMessage_, this));
-    $.subscribe(Events.HIDE_NOTIFICATION, $.proxy(this.removeMessage_, this));
-  };
 })();
 ;(function () {
-  var ns = $.namespace("pskl.controller");
+  var ns = $.namespace("pskl.controller.settings");
   
-  ns.SettingsController = function () {};
+  ns.ApplicationSettingsController = function () {};
 
   /**
    * @public
    */
-  ns.SettingsController.prototype.init = function() {
-
+  ns.ApplicationSettingsController.prototype.init = function() {
     // Highlight selected background picker:
     var backgroundClass = pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND);
     $('#background-picker-wrapper')
@@ -14795,12 +15183,6 @@ jscolor.install();
     // Initial state for grid display:
     var show_grid = pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID);
     $('#show-grid').prop('checked', show_grid);
-
-    // Expand drawer when clicking 'Settings' tab.
-    $('#settings').click(function(evt) {
-      $('.right-sticky-section').toggleClass('expanded');
-      $('#settings').toggleClass('has-expanded-drawer');
-    });
 
     // Handle grid display changes:
     $('#show-grid').change($.proxy(function(evt) {
@@ -14821,21 +15203,218 @@ jscolor.install();
     });
   };
 })();;(function () {
+  var ns = $.namespace("pskl.controller.settings");
+
+  ns.GifExportController = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+  /**
+   * List of Resolutions applicable for Gif export
+   * @static
+   * @type {Array} array of Objects {dpi:{Number}, default:{Boolean}}
+   */
+  ns.GifExportController.RESOLUTIONS = [
+    {
+      'dpi' : 1
+    },{
+      'dpi' : 5
+    },{
+      'dpi' : 10,
+      'default' : true
+    },{
+      'dpi' : 20
+    }
+  ];
+
+  ns.GifExportController.prototype.init = function () {
+    this.radioTemplate_ = pskl.utils.Template.get("export-gif-radio-template");
+
+    this.previewContainerEl = document.querySelectorAll(".export-gif-preview div")[0];
+    this.radioGroupEl = document.querySelectorAll(".gif-export-radio-group")[0];
+
+    this.uploadForm = $("[name=gif-export-upload-form]");
+    this.uploadForm.submit(this.onUploadFormSubmit_.bind(this));
+
+    this.createRadioElements_();
+  };
+
+  ns.GifExportController.prototype.onUploadFormSubmit_ = function (evt) {
+    evt.originalEvent.preventDefault();
+    var selectedDpi = this.getSelectedDpi_(),
+        fps = this.piskelController.getFPS(),
+        dpi = selectedDpi;
+
+    this.renderAsImageDataAnimatedGIF(dpi, fps, this.onGifRenderingCompleted_.bind(this));
+  };
+
+  ns.GifExportController.prototype.onGifRenderingCompleted_ = function (imageData) {
+    this.updatePreview_(imageData);
+    this.previewContainerEl.classList.add("preview-upload-ongoing");
+    pskl.app.imageUploadService.upload(imageData, this.onImageUploadCompleted_.bind(this));
+  };
+
+  ns.GifExportController.prototype.onImageUploadCompleted_ = function (imageUrl) {
+    this.updatePreview_(imageUrl);
+    this.previewContainerEl.classList.remove("preview-upload-ongoing");
+  };
+
+  ns.GifExportController.prototype.updatePreview_ = function (src) {
+    this.previewContainerEl.innerHTML = "<img style='max-width:240px;' src='"+src+"'/>";
+  };
+
+  ns.GifExportController.prototype.getSelectedDpi_ = function () {
+    var radiosColl = this.uploadForm.get(0).querySelectorAll("[name=gif-dpi]"),
+        radios = Array.prototype.slice.call(radiosColl,0);
+    var selectedRadios = radios.filter(function(radio) {return !!radio.checked;});
+
+    if (selectedRadios.length == 1) {
+      return selectedRadios[0].value;
+    } else {
+      throw "Unexpected error when retrieving selected dpi";
+    }
+  };
+
+  ns.GifExportController.prototype.createRadioElements_ = function () {
+    var resolutions = ns.GifExportController.RESOLUTIONS;
+    for (var i = 0 ; i < resolutions.length ; i++) {
+      var radio = this.createRadioForResolution_(resolutions[i]);
+      this.radioGroupEl.appendChild(radio);
+    }
+  };
+
+  ns.GifExportController.prototype.createRadioForResolution_ = function (resolution) {
+    var dpi = resolution.dpi;
+    var label = dpi*this.piskelController.getWidth() + "x" + dpi*this.piskelController.getHeight();
+    var value = dpi;
+
+    var radioHTML = pskl.utils.Template.replace(this.radioTemplate_, {value : value, label : label});
+    var radioEl = pskl.utils.Template.createFromHTML(radioHTML);
+
+    if (resolution['default']) {
+      var input = radioEl.getElementsByTagName("input")[0];
+      input.setAttribute("checked", "checked");
+    }
+
+    return radioEl;
+  };
+
+  ns.GifExportController.prototype.blobToBase64_ = function(blob, cb) {
+    var reader = new FileReader();
+    reader.onload = function() {
+      var dataUrl = reader.result;
+      cb(dataUrl);
+    };
+    reader.readAsDataURL(blob);
+  };
+
+  ns.GifExportController.prototype.renderAsImageDataAnimatedGIF = function(dpi, fps, cb) {
+    var gif = new window.GIF({
+      workers: 2,
+      quality: 10,
+      width: this.piskelController.getWidth()*dpi,
+      height: this.piskelController.getHeight()*dpi
+    });
+
+    for (var i = 0; i < this.piskelController.getFrameCount(); i++) {
+      var frame = this.piskelController.getFrameAt(i);
+      var renderer = new pskl.rendering.CanvasRenderer(frame, dpi);
+      gif.addFrame(renderer.render(), {
+        delay: 1000 / fps
+      });
+    }
+
+    gif.on('finished', function(blob) {
+      this.blobToBase64_(blob, cb);
+    }.bind(this));
+
+    gif.render();
+  };
+})();;(function () {
+  var ns = $.namespace("pskl.controller");
+  
+  var settings = {
+    user : {
+      template : 'templates/settings-application.html',
+      controller : ns.settings.ApplicationSettingsController
+    },
+    gif : {
+      template : 'templates/settings-export-gif.html',
+      controller : ns.settings.GifExportController
+    }
+  };
+
+  var SEL_SETTING_CLS = 'has-expanded-drawer';
+  var EXP_DRAWER_CLS = 'expanded';
+
+  ns.SettingsController = function (piskelController) {
+    this.piskelController = piskelController;
+    this.drawerContainer = document.getElementById("drawer-container");
+    this.settingsContainer = $('[data-pskl-controller=settings]');
+    this.expanded = false;
+    this.currentSetting = null;
+  };
+
+  /**
+   * @public
+   */
+  ns.SettingsController.prototype.init = function() {
+    // Expand drawer when clicking 'Settings' tab.
+    $('[data-setting]').click(function(evt) {
+      var el = evt.originalEvent.currentTarget;
+      var setting = el.getAttribute("data-setting");
+      if (this.currentSetting != setting) {
+        this.loadSetting(setting);
+      } else {
+        this.closeDrawer();
+      }
+    }.bind(this));
+
+    $('body').click(function (evt) {
+      var isInSettingsContainer = $.contains(this.settingsContainer.get(0), evt.target);
+      if (this.expanded && !isInSettingsContainer) {
+        this.closeDrawer();
+      }
+    }.bind(this));
+  };
+
+  ns.SettingsController.prototype.loadSetting = function (setting) {
+    this.drawerContainer.innerHTML = pskl.utils.Template.get(settings[setting].template);
+    (new settings[setting].controller(this.piskelController)).init();
+    
+    this.settingsContainer.addClass(EXP_DRAWER_CLS);
+    
+    $('.' + SEL_SETTING_CLS).removeClass(SEL_SETTING_CLS);
+    $('[data-setting='+setting+']').addClass(SEL_SETTING_CLS);
+
+    this.expanded = true;
+    this.currentSetting = setting;
+  };
+
+  ns.SettingsController.prototype.closeDrawer = function () {
+    this.settingsContainer.removeClass(EXP_DRAWER_CLS);
+    $('.' + SEL_SETTING_CLS).removeClass(SEL_SETTING_CLS);
+
+    this.expanded = false;
+    this.currentSetting = null;
+  };
+  
+})();;(function () {
   var ns = $.namespace("pskl.service");
 
-  ns.LocalStorageService = function (framesheet_) {
+  ns.LocalStorageService = function (piskelController) {
 
-    if(framesheet_ === undefined) {
-      throw "Bad LocalStorageService initialization: <undefined frameSheet>";
+    if(piskelController === undefined) {
+      throw "Bad LocalStorageService initialization: <undefined piskelController>";
     }
-    this.framesheet = framesheet_;
+    this.piskelController = piskelController;
     this.localStorageThrottler_ = null;
   };
 
   /**
    * @public
    */
-  ns.LocalStorageService.prototype.init = function(framesheet_) {
+  ns.LocalStorageService.prototype.init = function(piskelController) {
     $.subscribe(Events.LOCALSTORAGE_REQUEST, $.proxy(this.persistToLocalStorageRequest_, this));
   };
 
@@ -14860,7 +15439,7 @@ jscolor.install();
   ns.LocalStorageService.prototype.persistToLocalStorage_ = function() {
     
     console.log('[LocalStorage service]: Snapshot stored');
-    window.localStorage.snapShot = this.framesheet.serialize();
+    window.localStorage.snapShot = this.piskelController.serialize();
   };
 
   /**
@@ -14868,8 +15447,8 @@ jscolor.install();
    */
   ns.LocalStorageService.prototype.restoreFromLocalStorage_ = function() {
 
-    this.framesheet.deserialize(window.localStorage.snapShot);
-    this.framesheet.setCurrentFrameIndex(0);
+    this.piskelController.deserialize(window.localStorage.snapShot);
+    this.piskelController.setCurrentFrameIndex(0);
   };
 
   /**
@@ -14909,29 +15488,29 @@ jscolor.install();
   };
 })();;(function () {
   var ns = $.namespace("pskl.service");
-  ns.HistoryService = function (framesheet) {
-    this.framesheet = framesheet; 
+  ns.HistoryService = function (piskelController) {
+    this.piskelController = piskelController;
   };
 
   ns.HistoryService.prototype.init = function () {
-    
+
     $.subscribe(Events.TOOL_RELEASED, this.saveState.bind(this));
     $.subscribe(Events.UNDO, this.undo.bind(this));
     $.subscribe(Events.REDO, this.redo.bind(this));
   };
 
   ns.HistoryService.prototype.saveState = function () {
-    this.framesheet.getCurrentFrame().saveState();
+    this.piskelController.getCurrentFrame().saveState();
   };
 
   ns.HistoryService.prototype.undo = function () {
-    this.framesheet.getCurrentFrame().loadPreviousState();
-    $.publish(Events.FRAMESHEET_RESET);
+    this.piskelController.getCurrentFrame().loadPreviousState();
+    $.publish(Events.PISKEL_RESET);
   };
 
   ns.HistoryService.prototype.redo = function () {
-    this.framesheet.getCurrentFrame().loadNextState();
-    $.publish(Events.FRAMESHEET_RESET);
+    this.piskelController.getCurrentFrame().loadNextState();
+    $.publish(Events.PISKEL_RESET);
   };
 
 })();;(function () {
@@ -14997,7 +15576,35 @@ jscolor.install();
     $(document.body).keydown($.proxy(this.onKeyUp_, this));
   };
   
-})();;/*
+})();;(function () {
+  var ns = $.namespace("pskl.service");
+  ns.ImageUploadService = function () {};
+  ns.ImageUploadService.prototype.init = function () {};
+
+  /**
+   * Upload a base64 image data to distant service. If successful, will call provided callback with the image URL as first argument;
+   * @param {String} imageData base64 image data (such as the return value of canvas.toDataUrl())
+   * @param {Function} cbSuccess success callback. 1st argument will be the uploaded image URL
+   * @param {Function} cbError error callback
+   */
+  ns.ImageUploadService.prototype.upload = function (imageData, cbSuccess, cbError) {
+    var xhr = new XMLHttpRequest();
+    var formData = new FormData();
+    formData.append('data', imageData);
+    xhr.open('POST', Constants.IMAGE_SERVICE_UPLOAD_URL, true);
+    xhr.onload = function (e) {
+      if (this.status == 200) {
+        var imageUrl = Constants.IMAGE_SERVICE_GET_URL + this.responseText;
+        cbSuccess(imageUrl);
+      } else {
+        cbError();
+      }
+    };
+
+    xhr.send(formData);
+  };
+})();
+;/**
  * @provide pskl.drawingtools.BaseTool
  *
  * @require pskl.utils
@@ -15008,7 +15615,7 @@ jscolor.install();
   ns.BaseTool = function() {};
 
   ns.BaseTool.prototype.applyToolAt = function(col, row, color, frame, overlay) {};
-  
+
   ns.BaseTool.prototype.moveToolAt = function(col, row, color, frame, overlay) {};
 
   ns.BaseTool.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
@@ -15026,7 +15633,7 @@ jscolor.install();
       overlay.setPixel(col, row, Constants.TOOL_TARGET_HIGHLIGHT_COLOR);
 
       this.highlightedPixelCol = col;
-      this.highlightedPixelRow = row; 
+      this.highlightedPixelRow = row;
     }
   };
 
@@ -15042,7 +15649,7 @@ jscolor.install();
    * @private
    */
   ns.BaseTool.prototype.getLinePixels_ = function(x0, x1, y0, y1) {
-    
+
     var pixels = [];
     var dx = Math.abs(x1-x0);
     var dy = Math.abs(y1-y0);
@@ -15055,7 +15662,10 @@ jscolor.install();
       // Do what you need to for this
       pixels.push({"col": x0, "row": y0});
 
-      if ((x0==x1) && (y0==y1)) break;
+      if ((x0==x1) && (y0==y1)) {
+        break;
+      }
+
       var e2 = 2*err;
       if (e2>-dy){
         err -= dy;
@@ -15069,7 +15679,7 @@ jscolor.install();
     return pixels;
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.SimplePen
  *
  * @require pskl.utils
@@ -15131,7 +15741,7 @@ jscolor.install();
   };
 
   pskl.utils.inherit(ns.VerticalMirrorPen, ns.SimplePen);
-  
+
 
   ns.VerticalMirrorPen.prototype.setMirrorContext = function() {
     this.swap = this.previousCol;
@@ -15161,10 +15771,10 @@ jscolor.install();
    * @private
    */
   ns.VerticalMirrorPen.prototype.getSymmetricCol_ = function(col, frame) {
-    return frame.getWidth() - col - 1; 
+    return frame.getWidth() - col - 1;
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.Eraser
  *
  * @require Constants
@@ -15186,7 +15796,7 @@ jscolor.install();
   ns.Eraser.prototype.applyToolAt = function(col, row, color, frame, overlay) {
     this.superclass.applyToolAt.call(this, col, row, Constants.TRANSPARENT_COLOR, frame, overlay);
   };
-})();;/*
+})();;/**
  * @provide pskl.drawingtools.Stroke
  *
  * @require pskl.utils
@@ -15204,14 +15814,14 @@ jscolor.install();
   };
 
   pskl.utils.inherit(ns.Stroke, ns.BaseTool);
-  
+
   /**
    * @override
    */
   ns.Stroke.prototype.applyToolAt = function(col, row, color, frame, overlay) {
     this.startCol = col;
     this.startRow = row;
-    
+
     // When drawing a stroke we don't change the model instantly, since the
     // user can move his cursor to change the stroke direction and length
     // dynamically. Instead we draw the (preview) stroke in a fake canvas that
@@ -15227,10 +15837,10 @@ jscolor.install();
   ns.Stroke.prototype.moveToolAt = function(col, row, color, frame, overlay) {
     overlay.clear();
 
-    // When the user moussemove (before releasing), we dynamically compute the 
+    // When the user moussemove (before releasing), we dynamically compute the
     // pixel to draw the line and draw this line in the overlay canvas:
     var strokePoints = this.getLinePixels_(this.startCol, col, this.startRow, row);
-    
+
     // Drawing current stroke:
     for(var i = 0; i< strokePoints.length; i++) {
 
@@ -15239,10 +15849,10 @@ jscolor.install();
         // If the stroke color is transparent, we won't be
         // able to see it during the movement.
         // We set it to a semi-opaque white during the tool mousemove allowing to see colors below the stroke.
-        // When the stroke tool will be released, It will draw a transparent stroke, 
-        // eg deleting the equivalent of a stroke.    
+        // When the stroke tool will be released, It will draw a transparent stroke,
+        // eg deleting the equivalent of a stroke.
         color = Constants.SELECTION_TRANSPARENT_COLOR;
-      }     
+      }
       overlay.setPixel(strokePoints[i].col, strokePoints[i].row, color);
     }
   };
@@ -15261,12 +15871,12 @@ jscolor.install();
         // Change model:
         frame.setPixel(strokePoints[i].col, strokePoints[i].row, color);
       }
-    } 
+    }
     // For now, we are done with the stroke tool and don't need an overlay anymore:
-    overlay.clear();   
+    overlay.clear();
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.PaintBucket
  *
  * @require pskl.utils
@@ -15302,7 +15912,7 @@ jscolor.install();
 
 
 
-;/*
+;/**
  * @provide pskl.drawingtools.Rectangle
  *
  * @require pskl.utils
@@ -15313,21 +15923,21 @@ jscolor.install();
   ns.Rectangle = function() {
     this.toolId = "tool-rectangle";
     this.helpText = "Rectangle tool";
-    
+
     // Rectangle's first point coordinates (set in applyToolAt)
     this.startCol = null;
     this.startRow = null;
   };
 
   pskl.utils.inherit(ns.Rectangle, ns.BaseTool);
-  
+
   /**
    * @override
    */
   ns.Rectangle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
     this.startCol = col;
     this.startRow = row;
-    
+
     // Drawing the first point of the rectangle in the fake overlay canvas:
     overlay.setPixel(col, row, color);
   };
@@ -15345,7 +15955,7 @@ jscolor.install();
   /**
    * @override
    */
-  ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {    
+  ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
     overlay.clear();
     if(frame.containsPixel(col, row)) { // cancel if outside of canvas
       // draw in frame to finalize
@@ -15361,7 +15971,7 @@ jscolor.install();
     }
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.Circle
  *
  * @require pskl.utils
@@ -15372,21 +15982,21 @@ jscolor.install();
   ns.Circle = function() {
     this.toolId = "tool-circle";
     this.helpText = "Circle tool";
-    
+
     // Circle's first point coordinates (set in applyToolAt)
     this.startCol = null;
     this.startRow = null;
   };
 
   pskl.utils.inherit(ns.Circle, ns.BaseTool);
-  
+
   /**
    * @override
    */
   ns.Circle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
     this.startCol = col;
     this.startRow = row;
-    
+
     // Drawing the first point of the rectangle in the fake overlay canvas:
     overlay.setPixel(col, row, color);
   };
@@ -15404,7 +16014,7 @@ jscolor.install();
   /**
    * @override
    */
-  ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {   
+  ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
     overlay.clear();
     if(frame.containsPixel(col, row)) { // cancel if outside of canvas
       // draw in frame to finalize
@@ -15424,7 +16034,7 @@ jscolor.install();
     var coords = pskl.PixelUtils.getOrderedRectangleCoordinates(x0, y0, x1, y1);
     var xC = (coords.x0 + coords.x1)/2;
     var yC = (coords.y0 + coords.y1)/2;
-    
+
     var rX = coords.x1 - xC;
     var rY = coords.y1 - yC;
 
@@ -15446,7 +16056,7 @@ jscolor.install();
     return pixels;
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.Move
  *
  * @require pskl.utils
@@ -15457,14 +16067,14 @@ jscolor.install();
   ns.Move = function() {
     this.toolId = "tool-move";
     this.helpText = "Move tool";
-    
+
     // Stroke's first point coordinates (set in applyToolAt)
     this.startCol = null;
     this.startRow = null;
   };
 
   pskl.utils.inherit(ns.Move, ns.BaseTool);
-  
+
   /**
    * @override
    */
@@ -15474,7 +16084,7 @@ jscolor.install();
     this.frameClone = frame.clone();
   };
 
-  ns.Move.prototype.moveToolAt = function(col, row, color, frame, overlay) {  
+  ns.Move.prototype.moveToolAt = function(col, row, color, frame, overlay) {
     var colDiff = col - this.startCol, rowDiff = row - this.startRow;
     this.shiftFrame(colDiff, rowDiff, frame, this.frameClone);
   };
@@ -15500,7 +16110,7 @@ jscolor.install();
     this.moveToolAt(col, row, color, frame, overlay);
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.BaseSelect
  *
  * @require pskl.utils
@@ -15511,7 +16121,7 @@ jscolor.install();
   ns.BaseSelect = function() {
     this.secondaryToolId = "tool-move";
     this.BodyRoot = $('body');
-    
+
     // Select's first point coordinates (set in applyToolAt)
     this.startCol = null;
     this.startRow = null;
@@ -15525,17 +16135,17 @@ jscolor.install();
   ns.BaseSelect.prototype.applyToolAt = function(col, row, color, frame, overlay) {
     this.startCol = col;
     this.startRow = row;
-    
+
     this.lastCol = col;
     this.lastRow = row;
-    
+
     // The select tool can be in two different state.
     // If the inital click of the tool is not on a selection, we go in "select"
     // mode to create a selection.
     // If the initial click is on a previous selection, we go in "moveSelection"
     // mode to allow to move the selection by drag'n dropping it.
     if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
-      
+
       this.mode = "select";
       this.onSelectStart_(col, row, color, frame, overlay);
     }
@@ -15551,11 +16161,11 @@ jscolor.install();
    */
   ns.BaseSelect.prototype.moveToolAt = function(col, row, color, frame, overlay) {
     if(this.mode == "select") {
-      
+
       this.onSelect_(col, row, color, frame, overlay);
     }
     else if(this.mode == "moveSelection") {
-      
+
       this.onSelectionDrag_(col, row, color, frame, overlay);
     }
   };
@@ -15563,11 +16173,11 @@ jscolor.install();
   /**
    * @override
    */
-  ns.BaseSelect.prototype.releaseToolAt = function(col, row, color, frame, overlay) {   
+  ns.BaseSelect.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
     if(this.mode == "select") {
       this.onSelectEnd_(col, row, color, frame, overlay);
     } else if(this.mode == "moveSelection") {
-      
+
       this.onSelectionDragEnd_(col, row, color, frame, overlay);
     }
   };
@@ -15579,7 +16189,7 @@ jscolor.install();
    * @override
    */
   ns.BaseSelect.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
-    
+
     if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
       // We're hovering the selection, show the move tool:
       this.BodyRoot.addClass(this.toolId);
@@ -15637,14 +16247,14 @@ jscolor.install();
     // we clone it to have a reference for the later shifting process.
     this.overlayFrameReference = overlay.clone();
   };
-  
+
   /** @private */
   ns.BaseSelect.prototype.onSelectionDrag_ = function (col, row, color, frame, overlay) {
     var deltaCol = col - this.lastCol;
     var deltaRow = row - this.lastRow;
-    
+
     var colDiff = col - this.startCol, rowDiff = row - this.startRow;
-    
+
     // Shifting selection on overlay frame:
     this.shiftOverlayFrame_(colDiff, rowDiff, overlay, this.overlayFrameReference);
 
@@ -15652,7 +16262,7 @@ jscolor.install();
     $.publish(Events.SELECTION_MOVE_REQUEST, [deltaCol, deltaRow]);
 
     this.lastCol = col;
-    this.lastRow = row; 
+    this.lastRow = row;
   };
 
   /** @private */
@@ -15660,7 +16270,7 @@ jscolor.install();
     this.onSelectionDrag_(col, row, color, frame, overlay);
   };
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.RectangleSelect
  *
  * @require pskl.utils
@@ -15712,7 +16322,7 @@ jscolor.install();
   };
 
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.ShapeSelect
  *
  * @require pskl.utils
@@ -15748,7 +16358,7 @@ jscolor.install();
   };
 
 })();
-;/*
+;/**
  * @provide pskl.drawingtools.ColorPicker
  *
  * @require pskl.utils
@@ -15784,42 +16394,41 @@ jscolor.install();
 (function () {
   var ns = $.namespace("pskl");
   /**
-   * FrameSheetModel instance.
-   */
-  var frameSheet;
-  /**
    * Main application controller
    */
   ns.app = {
 
     init : function () {
-      var frameSize = this.readSizeFromURL_();
-      frameSheet = new pskl.model.FrameSheet(frameSize.height, frameSize.width);
-      frameSheet.addEmptyFrame();
-      frameSheet.setCurrentFrameIndex(0);
+      var size = this.readSizeFromURL_();
+      var piskel = new pskl.model.Piskel(size.width, size.height);
 
-      /**
-       * True when piskel is running in static mode (no back end needed).
-       * When started from APP Engine, appEngineToken_ (Boolean) should be set on window.pskl
-       */
-      this.isStaticVersion = !pskl.appEngineToken_;
+      var layer = new pskl.model.Layer("Layer 1");
+      var frame = new pskl.model.Frame(size.width, size.height);
+      layer.addFrame(frame);
 
-      this.drawingController = new pskl.controller.DrawingController(frameSheet, $('#drawing-canvas-container'));
+      piskel.addLayer(layer);
+
+      this.piskelController = new pskl.controller.PiskelController(piskel);
+
+      this.drawingController = new pskl.controller.DrawingController(this.piskelController, $('#drawing-canvas-container'));
       this.drawingController.init();
 
-      this.animationController = new pskl.controller.AnimatedPreviewController(frameSheet, $('#preview-canvas-container'));
+      this.animationController = new pskl.controller.AnimatedPreviewController(this.piskelController, $('#preview-canvas-container'));
       this.animationController.init();
-      
-      this.previewsController = new pskl.controller.PreviewFilmController(frameSheet, $('#preview-list'));
+
+      this.previewsController = new pskl.controller.PreviewFilmController(this.piskelController, $('#preview-list'));
       this.previewsController.init();
 
-      this.settingsController = new pskl.controller.SettingsController();
+      this.layersListController = new pskl.controller.LayersListController(this.piskelController);
+      this.layersListController.init();
+
+      this.settingsController = new pskl.controller.SettingsController(this.piskelController);
       this.settingsController.init();
 
-      this.selectionManager = new pskl.selection.SelectionManager(frameSheet);
+      this.selectionManager = new pskl.selection.SelectionManager(this.piskelController);
       this.selectionManager.init();
 
-      this.historyService = new pskl.service.HistoryService(frameSheet);
+      this.historyService = new pskl.service.HistoryService(this.piskelController);
       this.historyService.init();
 
       this.keyboardEventService = new pskl.service.KeyboardEventService();
@@ -15828,25 +16437,24 @@ jscolor.install();
       this.notificationController = new pskl.controller.NotificationController();
       this.notificationController.init();
 
-      this.localStorageService = new pskl.service.LocalStorageService(frameSheet);
+      this.localStorageService = new pskl.service.LocalStorageService(this.piskelController);
       this.localStorageService.init();
+
+      this.imageUploadService = new pskl.service.ImageUploadService();
+      this.imageUploadService.init();
 
       this.toolController = new pskl.controller.ToolController();
       this.toolController.init();
-      
+
       this.paletteController = new pskl.controller.PaletteController();
-      this.paletteController.init(frameSheet);
+      this.paletteController.init();
 
       var drawingLoop = new pskl.rendering.DrawingLoop();
       drawingLoop.addCallback(this.render, this);
       drawingLoop.start();
 
-      // Init (event-delegated) bootstrap tooltips:
-      $('body').tooltip({
-        selector: '[rel=tooltip]'
-      });
+      this.initBootstrapTooltips_();
 
-      
       /**
        * True when piskel is running in static mode (no back end needed).
        * When started from APP Engine, appEngineToken_ (Boolean) should be set on window.pskl
@@ -15865,10 +16473,16 @@ jscolor.install();
         }
       } else {
         if (pskl.framesheetData_ && pskl.framesheetData_.content) {
-          frameSheet.load(pskl.framesheetData_.content);
+          this.piskelController.load(pskl.framesheetData_.content);
           pskl.app.animationController.setFPS(pskl.framesheetData_.fps);
         }
       }
+    },
+
+    initBootstrapTooltips_ : function () {
+      $('body').tooltip({
+        selector: '[rel=tooltip]'
+      });
     },
 
     render : function (delta) {
@@ -15876,7 +16490,7 @@ jscolor.install();
       this.animationController.render(delta);
       this.previewsController.render(delta);
     },
-    
+
     readSizeFromURL_ : function () {
       var sizeParam = this.readUrlParameter_("size"),
         size;
@@ -15891,7 +16505,10 @@ jscolor.install();
           width : Math.min(width, Constants.MAX_WIDTH)
         };
       } else {
-        size = Constants.DEFAULT_SIZE;
+        size = {
+          height : Constants.DEFAULT.HEIGHT,
+          width : Constants.DEFAULT.WIDTH
+        };
       }
       return size;
     },
@@ -15917,10 +16534,10 @@ jscolor.install();
       var xhr = new XMLHttpRequest();
       xhr.open('GET', Constants.PISKEL_SERVICE_URL + '/get?l=' + frameId, true);
       xhr.responseType = 'text';
-
+      var piskelController = this.piskelController;
       xhr.onload = function (e) {
         var res = JSON.parse(this.responseText);
-        frameSheet.load(res.framesheet);
+        piskelController.deserialize(JSON.stringify(res.framesheet));
         pskl.app.animationController.setFPS(res.fps);
         $.publish(Events.HIDE_NOTIFICATION);
       };
@@ -15932,21 +16549,15 @@ jscolor.install();
       xhr.send();
     },
 
-    loadFramesheet : function (framesheet) {
-      frameSheet.load(framesheet);
-    },
-
     getFirstFrameAsPNGData_ : function () {
-      var tmpSheet = new pskl.model.FrameSheet(frameSheet.getHeight(), frameSheet.getWidth());
-      tmpSheet.addFrame(frameSheet.getFrameByIndex(0));
-      return (new pskl.rendering.SpritesheetRenderer(tmpSheet)).renderAsImageDataSpritesheetPNG();
+      throw 'getFirstFrameAsPNGData_ not implemented';
     },
 
     // TODO(julz): Create package ?
     storeSheet : function (event) {
       var xhr = new XMLHttpRequest();
       var formData = new FormData();
-      formData.append('framesheet_content', frameSheet.serialize());
+      formData.append('framesheet_content', this.piskelController.serialize());
       formData.append('fps_speed', $('#preview-fps').val());
 
       if (this.isStaticVersion) {
@@ -15955,17 +16566,21 @@ jscolor.install();
       } else {
         // additional values only used with latest app-engine backend
         formData.append('name', $('#piskel-name').val());
-        formData.append('frames', frameSheet.getFrameCount());
-        // Get image/png data for first frame
-       
-        formData.append('preview', this.getFirstFrameAsPNGData_());
+        formData.append('frames', this.piskelController.getFrameCount());
 
-        var imageData = (new pskl.rendering.SpritesheetRenderer(frameSheet)).renderAsImageDataSpritesheetPNG();
+        // Get image/png data for first frame
+        var firstFrame = this.piskelController.getFrameAt(0);
+        var frameRenderer = new pskl.rendering.CanvasRenderer(firstFrame, 1);
+        frameRenderer.drawTransparentAs('rgba(0,0,0,0)');
+        var firstFrameCanvas = frameRenderer.render().canvas;
+        formData.append('preview', firstFrameCanvas.toDataURL("image/png"));
+
+        var imageData = (new pskl.rendering.SpritesheetRenderer(this.piskelController)).renderAsImageDataSpritesheetPNG();
         formData.append('framesheet', imageData);
 
         xhr.open('POST', "save", true);
       }
-     
+
       xhr.onload = function(e) {
         if (this.status == 200) {
           if (pskl.app.isStaticVersion) {
@@ -15990,41 +16605,16 @@ jscolor.install();
       return false;
     },
 
-    uploadToScreenletstore : function (imageData) {
-      var xhr = new XMLHttpRequest();
-      var formData = new FormData();
-      formData.append('data', imageData);
-      xhr.open('POST', "http://screenletstore.appspot.com/__/upload", true);
-      var cloudURL;
-      var that = this;
-      xhr.onload = function (e) {
-        if (this.status == 200) {
-          cloudURL = "http://screenletstore.appspot.com/img/" + this.responseText;
-          that.openWindow(cloudURL);
-        }
-      };
-
-      xhr.send(formData);
-    },
-
-    uploadAsAnimatedGIF : function () {
-      var fps = pskl.app.animationController.fps;
-      var renderer = new pskl.rendering.SpritesheetRenderer(frameSheet);
-      var cb = this.uploadToScreenletstore.bind(this);
-
-      renderer.renderAsImageDataAnimatedGIF(fps, cb);
-    },
-
     uploadAsSpritesheetPNG : function () {
-      var imageData = (new pskl.rendering.SpritesheetRenderer(frameSheet)).renderAsImageDataSpritesheetPNG();
-      this.uploadToScreenletstore(imageData);
+      var imageData = (new pskl.rendering.SpritesheetRenderer(this.piskelController)).renderAsImageDataSpritesheetPNG();
+      this.imageUploadService.upload(imageData, this.openWindow.bind(this));
     },
 
     openWindow : function (url) {
       var options = [
         "dialog=yes", "scrollbars=no", "status=no",
-        "width=" + frameSheet.getWidth() * frameSheet.getFrameCount(),
-        "height=" + frameSheet.getHeight()
+        "width=" + this.piskelController.getWidth() * this.piskelController.getFrameCount(),
+        "height=" + this.piskelController.getHeight()
       ].join(",");
 
       window.open(url, "piskel-export", options);
