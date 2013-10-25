@@ -11823,7 +11823,17 @@ var Constants = {
   /*
    * Default entry point for piskel web service:
    */
-  PISKEL_SERVICE_URL: 'http://3.piskel-app.appspot.com',
+  STATIC : {
+    URL : {
+      SAVE : 'http://3.piskel-app.appspot.com/store',
+      GET : 'http://3.piskel-app.appspot.com/get'
+    }
+  },
+  APPENGINE : {
+    URL : {
+      SAVE : 'save'
+    }
+  },
   IMAGE_SERVICE_UPLOAD_URL : 'http://screenletstore.appspot.com/__/upload',
   IMAGE_SERVICE_GET_URL : 'http://screenletstore.appspot.com/img/',
 
@@ -11871,6 +11881,9 @@ var Events = {
    *   2nd argument: New value
    */
   USER_SETTINGS_CHANGED: "USER_SETTINGS_CHANGED",
+
+  /* Listened to by SettingsController */
+  CLOSE_SETTINGS_DRAWER : "CLOSE_SETTINGS_DRAWER",
 
   /**
    * The framesheet was reseted and is now probably drastically different.
@@ -11969,6 +11982,18 @@ if (typeof Function.prototype.bind !== "function") {
 })();;(function () {
   var ns = $.namespace('pskl.utils');
 
+  ns.FileUtils = {
+    readFile : function (file, callback) {
+      var reader = new FileReader();
+      reader.onload = function(event){
+        callback(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+
   ns.FrameUtils = {
     merge : function (frames) {
       var merged = null;
@@ -11988,6 +12013,92 @@ if (typeof Function.prototype.bind !== "function") {
           frameA.setPixel(col, row, p);
         }
       });
+    },
+
+    /**
+     * Create a pskl.model.Frame from an Image object.
+     * Transparent pixels will either be converted to completely opaque or completely transparent pixels.
+     * @param  {Image} image source image
+     * @return {pskl.model.Frame} corresponding frame
+     */
+    createFromImage : function (image) {
+      var w = image.width,
+        h = image.height;
+      var canvas = pskl.CanvasUtils.createCanvas(w, h);
+      var context = canvas.getContext('2d');
+
+      context.drawImage(image, 0,0,w,h,0,0,w,h);
+      var imgData = context.getImageData(0,0,w,h).data;
+      // Draw the zoomed-up pixels to a different canvas context
+      var frame = [];
+      for (var x=0;x<image.width;++x){
+        frame[x] = [];
+        for (var y=0;y<image.height;++y){
+          // Find the starting index in the one-dimensional image data
+          var i = (y*image.width + x)*4;
+          var r = imgData[i  ];
+          var g = imgData[i+1];
+          var b = imgData[i+2];
+          var a = imgData[i+3];
+          if (a < 125) {
+            frame[x][y] = "TRANSPARENT";
+          } else {
+            frame[x][y] = this.rgbToHex(r,g,b);
+          }
+        }
+      }
+      return frame;
+    },
+
+    /**
+     * Convert a rgb(Number, Number, Number) color to hexadecimal representation
+     * @param  {Number} r red value, between 0 and 255
+     * @param  {Number} g green value, between 0 and 255
+     * @param  {Number} b blue value, between 0 and 255
+     * @return {String} hex representation of the color '#ABCDEF'
+     */
+    rgbToHex : function (r, g, b) {
+      return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
+    },
+
+    /**
+     * Convert a color component (as a Number between 0 and 255) to its string hexa representation
+     * @param  {Number} c component value, between 0 and 255
+     * @return {String} eg. '0A'
+     */
+    componentToHex : function (c) {
+      var hex = c.toString(16);
+      return hex.length == 1 ? "0" + hex : hex;
+    }
+  };
+})();
+;(function () {
+  var ns = $.namespace('pskl.utils');
+
+  ns.ImageResizer = {
+    resize : function (image, targetWidth, targetHeight, smoothingEnabled) {
+      var canvas = pskl.CanvasUtils.createCanvas(targetWidth, targetHeight);
+      var context = canvas.getContext('2d');
+      context.save();
+
+      if (!smoothingEnabled) {
+        this.disableSmoothingOnContext(context);
+      }
+
+      context.translate(canvas.width / 2, canvas.height / 2);
+      context.scale(targetWidth / image.width, targetHeight / image.height);
+      context.drawImage(image, -image.width / 2, -image.height / 2);
+      context.restore();
+
+      return canvas;
+    },
+
+    disableSmoothingOnContext : function (context) {
+      context.imageSmoothingEnabled = false;
+      context.mozImageSmoothingEnabled = false;
+      context.oImageSmoothingEnabled = false;
+      context.webkitImageSmoothingEnabled = false;
+      context.msImageSmoothingEnabled = false;
     }
   };
 })();;(function () {
@@ -12193,11 +12304,20 @@ if (typeof Function.prototype.bind !== "function") {
       });
     },
 
-    deserializePiskel : function (json) {
+    deserializePiskel : function (piskelString) {
+      var piskelData = JSON.parse(piskelString);
+      return this.createPiskelFromData(piskelData);
+    },
+
+    /**
+     * Similar to deserializePiskel, but dealing directly with a parsed piskel
+     * @param  {Object} piskelData JSON.parse of a serialized piskel
+     * @return {pskl.model.Piskel} a piskel
+     */
+    createPiskel : function (piskelData) {
       var piskel = null;
-      var data = JSON.parse(json);
-      if (data.modelVersion == Constants.MODEL_VERSION) {
-        var pData = data.piskel;
+      if (piskelData.modelVersion == Constants.MODEL_VERSION) {
+        var pData = piskelData.piskel;
         piskel = new pskl.model.Piskel(pData.width, pData.height);
 
         pData.layers.forEach(function (serializedLayer) {
@@ -12205,14 +12325,14 @@ if (typeof Function.prototype.bind !== "function") {
           piskel.addLayer(layer);
         });
       } else {
-        piskel = pskl.utils.Serializer.backwardDeserializer_(data);
+        piskel = pskl.utils.Serializer.backwardDeserializer_(piskelData);
       }
 
       return piskel;
     },
 
-    deserializeLayer : function (json) {
-      var lData = JSON.parse(json);
+    deserializeLayer : function (layerString) {
+      var lData = JSON.parse(layerString);
       var layer = new pskl.model.Layer(lData.name);
 
       lData.frames.forEach(function (serializedFrame) {
@@ -12223,8 +12343,8 @@ if (typeof Function.prototype.bind !== "function") {
       return layer;
     },
 
-    deserializeFrame : function (json) {
-      var framePixelGrid = JSON.parse(json);
+    deserializeFrame : function (frameString) {
+      var framePixelGrid = JSON.parse(frameString);
       return pskl.model.Frame.fromPixelGrid(framePixelGrid);
     },
 
@@ -12243,10 +12363,11 @@ if (typeof Function.prototype.bind !== "function") {
       return piskel;
     }
   };
-})();;(function () {
-  var ns = $.namespace("pskl");
+})();
+;(function () {
+  var ns = $.namespace("pskl.utils");
 
-  ns.utils.Template = {
+  ns.Template = {
     get : function (templateId) {
       var template = document.getElementById(templateId);
       if (template) {
@@ -14004,13 +14125,13 @@ var jscolor = {
     this.piskelController = piskelController;
   };
 
-  ns.SpritesheetRenderer.prototype.renderAsImageDataSpritesheetPNG = function () {
+  ns.SpritesheetRenderer.prototype.render = function () {
     var canvas = this.createCanvas_();
     for (var i = 0 ; i < this.piskelController.getFrameCount() ; i++) {
       var frame = this.piskelController.getFrameAt(i);
       this.drawFrameInCanvas_(frame, canvas, i * this.piskelController.getWidth(), 0);
     }
-    return canvas.toDataURL("image/png");
+    return canvas;
   };
 
   /**
@@ -14043,7 +14164,11 @@ var jscolor = {
   var ns = $.namespace('pskl.controller');
 
   ns.PiskelController = function (piskel) {
-    this.setPiskel(piskel);
+    if (piskel) {
+      this.setPiskel(piskel);
+    } else {
+      throw 'A piskel instance is mandatory for instanciating PiskelController';
+    }
   };
 
   ns.PiskelController.prototype.setPiskel = function (piskel) {
@@ -14227,16 +14352,6 @@ var jscolor = {
 
   ns.PiskelController.prototype.load = function (data) {
     this.deserialize(JSON.stringify(data));
-  };
-
-  ns.PiskelController.prototype.deserialize = function (jsonStr) {
-    try {
-      var piskel = pskl.utils.Serializer.deserializePiskel(jsonStr);
-      this.setPiskel(piskel);
-    } catch (e) {
-      console.error('Failed to deserialize');
-      console.error(e.stack);
-    }
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
@@ -15228,9 +15343,9 @@ var jscolor = {
   ];
 
   ns.GifExportController.prototype.init = function () {
-    this.radioTemplate_ = pskl.utils.Template.get("export-gif-radio-template");
+    this.radioTemplate_ = pskl.utils.Template.get("gif-export-radio-template");
 
-    this.previewContainerEl = document.querySelectorAll(".export-gif-preview div")[0];
+    this.previewContainerEl = document.querySelectorAll(".gif-export-preview")[0];
     this.radioGroupEl = document.querySelectorAll(".gif-export-radio-group")[0];
 
     this.uploadForm = $("[name=gif-export-upload-form]");
@@ -15260,7 +15375,7 @@ var jscolor = {
   };
 
   ns.GifExportController.prototype.updatePreview_ = function (src) {
-    this.previewContainerEl.innerHTML = "<img style='max-width:240px;' src='"+src+"'/>";
+    this.previewContainerEl.innerHTML = "<div><img style='max-width:240px;' src='"+src+"'/></div>";
   };
 
   ns.GifExportController.prototype.getSelectedDpi_ = function () {
@@ -15331,16 +15446,187 @@ var jscolor = {
     gif.render();
   };
 })();;(function () {
-  var ns = $.namespace("pskl.controller");
-  
+  var ns = $.namespace('pskl.controller.settings');
+  var DEFAULT_FILE_STATUS = 'No file selected ...';
+  var PREVIEW_HEIGHT  = 60;
+
+  ns.ImportController = function (piskelController) {
+    this.piskelController = piskelController;
+    this.importedImage_ = null;
+  };
+
+  ns.ImportController.prototype.init = function () {
+    this.importForm = $("[name=import-form]");
+    this.hiddenFileInput = $("[name=file-upload-input]");
+    this.fileInputButton = $(".file-input-button");
+    this.fileInputStatus = $(".file-input-status");
+    this.fileInputStatus.html(DEFAULT_FILE_STATUS);
+
+    this.importPreview = $(".import-section-preview");
+
+    this.resizeWidth = $("[name=resize-width]");
+    this.resizeHeight = $("[name=resize-height]");
+    this.smoothResize =  $("[name=smooth-resize-checkbox]");
+    this.submitButton =  $("[name=import-submit]");
+
+    this.importForm.submit(this.onImportFormSubmit_.bind(this));
+    this.hiddenFileInput.change(this.onFileUploadChange_.bind(this));
+    this.fileInputButton.click(this.onFileInputClick_.bind(this));
+
+    this.resizeWidth.keyup(this.onResizeInputKeyUp_.bind(this, 'width'));
+    this.resizeHeight.keyup(this.onResizeInputKeyUp_.bind(this, 'height'));
+  };
+
+  ns.ImportController.prototype.reset_ = function () {
+    this.importForm.get(0).reset();
+    this.fileInputStatus.html(DEFAULT_FILE_STATUS);
+    $.publish(Events.CLOSE_SETTINGS_DRAWER);
+  };
+
+  ns.ImportController.prototype.onResizeInputKeyUp_ = function (from, evt) {
+    if (this.importedImage_) {
+      this.synchronizeResizeFields_(evt.target.value, from);
+    }
+  };
+
+  ns.ImportController.prototype.synchronizeResizeFields_ = function (value, from) {
+    value = parseInt(value, 10);
+    if (isNaN(value)) {
+      value = 0;
+    }
+    var height = this.importedImage_.height, width = this.importedImage_.width;
+    if (from === 'width') {
+      this.resizeHeight.val(Math.round(value * height / width));
+    } else {
+      this.resizeWidth.val(Math.round(value * width / height));
+    }
+  };
+
+  ns.ImportController.prototype.onImportFormSubmit_ = function (evt) {
+    evt.originalEvent.preventDefault();
+    this.importImageToPiskel_();
+  };
+
+  ns.ImportController.prototype.onFileUploadChange_ = function (evt) {
+    this.importFromFile_();
+  };
+
+  ns.ImportController.prototype.onFileInputClick_ = function (evt) {
+    this.hiddenFileInput.click();
+  };
+
+  ns.ImportController.prototype.importFromFile_ = function () {
+    var files = this.hiddenFileInput.get(0).files;
+    if (files.length == 1) {
+      var file = files[0];
+      if (this.isImage_(file)) {
+        this.readImageFile_(file);
+        this.enableDisabledSections_();
+      } else {
+        this.reset_();
+        throw "File is not an image : " + file.type;
+      }
+    }
+  };
+
+  ns.ImportController.prototype.enableDisabledSections_ = function () {
+    this.resizeWidth.removeAttr('disabled');
+    this.resizeHeight.removeAttr('disabled');
+    this.smoothResize.removeAttr('disabled');
+    this.submitButton.removeAttr('disabled');
+
+    this.fileInputButton.removeClass('button-primary');
+    this.fileInputButton.blur();
+
+    $('.import-section-disabled').removeClass('import-section-disabled');
+  };
+
+  ns.ImportController.prototype.readImageFile_ = function (imageFile) {
+    pskl.utils.FileUtils.readFile(imageFile, this.processImageSource_.bind(this));
+  };
+
+  /**
+   * Create an image from the given source (url or data-url), and onload forward to onImageLoaded
+   * TODO : should be a generic utility method, should take a callback
+   * @param  {String} imageSource url or data-url, will be used as src for the image
+   */
+  ns.ImportController.prototype.processImageSource_ = function (imageSource) {
+    this.importedImage_ = new Image();
+    this.importedImage_.onload = this.onImageLoaded_.bind(this);
+    this.importedImage_.src = imageSource;
+  };
+
+  ns.ImportController.prototype.onImageLoaded_ = function (evt) {
+    var w = this.importedImage_.width,
+        h = this.importedImage_.height;
+    var filePath = this.hiddenFileInput.val();
+    var fileName = this.extractFileNameFromPath_(filePath);
+    this.fileInputStatus.html(fileName);
+
+    this.resizeWidth.val(w);
+    this.resizeHeight.val(h);
+
+    this.importPreview.width("auto");
+    this.importPreview.append(this.createImagePreview_());
+  };
+
+  ns.ImportController.prototype.createImagePreview_ = function () {
+    var image = document.createElement('IMG');
+    image.src = this.importedImage_.src;
+    image.setAttribute('height', PREVIEW_HEIGHT);
+    return image;
+  };
+
+  ns.ImportController.prototype.extractFileNameFromPath_ = function (path) {
+    var parts = [];
+    if (path.indexOf('/') !== -1) {
+      parts = path.split('/');
+    } else if (path.indexOf('\\') !== -1) {
+      parts = path.split('\\');
+    } else {
+      parts = [path];
+    }
+    return parts[parts.length-1];
+  };
+
+  ns.ImportController.prototype.importImageToPiskel_ = function () {
+    if (this.importedImage_) {
+      if (window.confirm("You are about to create a new Piskel, unsaved changes will be lost.")) {
+        var w = this.resizeWidth.val(),
+          h = this.resizeHeight.val(),
+          smoothing = !!this.smoothResize.prop('checked');
+
+        var image = pskl.utils.ImageResizer.resize(this.importedImage_, w, h, smoothing);
+        var frame = pskl.utils.FrameUtils.createFromImage(image);
+
+        var piskel = pskl.utils.Serializer.createPiskel([frame]);
+        pskl.app.piskelController.setPiskel(piskel);
+        pskl.app.animationController.setFPS(Constants.DEFAULT.FPS);
+
+        this.reset_();
+      }
+    }
+  };
+
+  ns.ImportController.prototype.isImage_ = function (file) {
+    return file.type.indexOf('image') === 0;
+  };
+
+})();;(function () {
+  var ns = $.namespace("pskl.controller.settings");
+
   var settings = {
-    user : {
-      template : 'templates/settings-application.html',
-      controller : ns.settings.ApplicationSettingsController
+    'user' : {
+      template : 'templates/settings/application.html',
+      controller : ns.ApplicationSettingsController
     },
-    gif : {
-      template : 'templates/settings-export-gif.html',
-      controller : ns.settings.GifExportController
+    'gif' : {
+      template : 'templates/settings/export-gif.html',
+      controller : ns.GifExportController
+    },
+    'import' : {
+      template : 'templates/settings/import.html',
+      controller : ns.ImportController
     }
   };
 
@@ -15376,14 +15662,16 @@ var jscolor = {
         this.closeDrawer();
       }
     }.bind(this));
+
+    $.subscribe(Events.CLOSE_SETTINGS_DRAWER, this.closeDrawer.bind(this));
   };
 
   ns.SettingsController.prototype.loadSetting = function (setting) {
     this.drawerContainer.innerHTML = pskl.utils.Template.get(settings[setting].template);
     (new settings[setting].controller(this.piskelController)).init();
-    
+
     this.settingsContainer.addClass(EXP_DRAWER_CLS);
-    
+
     $('.' + SEL_SETTING_CLS).removeClass(SEL_SETTING_CLS);
     $('[data-setting='+setting+']').addClass(SEL_SETTING_CLS);
 
@@ -15398,7 +15686,7 @@ var jscolor = {
     this.expanded = false;
     this.currentSetting = null;
   };
-  
+
 })();;(function () {
   var ns = $.namespace("pskl.service");
 
@@ -16422,7 +16710,7 @@ var jscolor = {
       this.layersListController = new pskl.controller.LayersListController(this.piskelController);
       this.layersListController.init();
 
-      this.settingsController = new pskl.controller.SettingsController(this.piskelController);
+      this.settingsController = new pskl.controller.settings.SettingsController(this.piskelController);
       this.settingsController.init();
 
       this.selectionManager = new pskl.selection.SelectionManager(this.piskelController);
@@ -16462,20 +16750,29 @@ var jscolor = {
       this.isStaticVersion = !pskl.appEngineToken_;
 
       if (this.isStaticVersion) {
-        var framesheetId = this.readFramesheetIdFromURL_();
-        if (framesheetId) {
-          $.publish(Events.SHOW_NOTIFICATION, [{
-            "content" : "Loading animation with id : [" + framesheetId + "]"
-          }]);
-          this.loadFramesheetFromService(framesheetId);
-        } else {
-          this.localStorageService.displayRestoreNotification();
-        }
+        this.finishInitStatic_();
       } else {
-        if (pskl.framesheetData_ && pskl.framesheetData_.content) {
-          this.piskelController.load(pskl.framesheetData_.content);
-          pskl.app.animationController.setFPS(pskl.framesheetData_.fps);
-        }
+        this.finishInitAppEngine_();
+      }
+    },
+
+    finishInitStatic_ : function () {
+      var framesheetId = this.readFramesheetIdFromURL_();
+      if (framesheetId) {
+        $.publish(Events.SHOW_NOTIFICATION, [{
+          "content" : "Loading animation with id : [" + framesheetId + "]"
+        }]);
+        this.loadFramesheetFromService(framesheetId);
+      } else {
+        this.localStorageService.displayRestoreNotification();
+      }
+    },
+
+    finishInitAppEngine_ : function () {
+      if (pskl.framesheetData_ && pskl.framesheetData_.content) {
+        var piskel = pskl.utils.Serializer.createPiskel(pskl.framesheetData_.content);
+        pskl.app.piskelController.setPiskel(piskel);
+        pskl.app.animationController.setFPS(pskl.framesheetData_.fps);
       }
     },
 
@@ -16532,12 +16829,12 @@ var jscolor = {
 
     loadFramesheetFromService : function (frameId) {
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', Constants.PISKEL_SERVICE_URL + '/get?l=' + frameId, true);
+      xhr.open('GET', Constants.STATIC.URL.GET + '?l=' + frameId, true);
       xhr.responseType = 'text';
-      var piskelController = this.piskelController;
       xhr.onload = function (e) {
         var res = JSON.parse(this.responseText);
-        piskelController.deserialize(JSON.stringify(res.framesheet));
+        var piskel = pskl.utils.Serializer.createPiskel(res.framesheet);
+        pskl.app.piskelController.setPiskel(piskel);
         pskl.app.animationController.setFPS(res.fps);
         $.publish(Events.HIDE_NOTIFICATION);
       };
@@ -16549,54 +16846,12 @@ var jscolor = {
       xhr.send();
     },
 
-    getFirstFrameAsPNGData_ : function () {
-      throw 'getFirstFrameAsPNGData_ not implemented';
-    },
-
-    // TODO(julz): Create package ?
     storeSheet : function (event) {
-      var xhr = new XMLHttpRequest();
-      var formData = new FormData();
-      formData.append('framesheet_content', this.piskelController.serialize());
-      formData.append('fps_speed', $('#preview-fps').val());
-
       if (this.isStaticVersion) {
-        // anonymous save on old app-engine backend
-        xhr.open('POST', Constants.PISKEL_SERVICE_URL + "/store", true);
+        this.storeSheetStatic_();
       } else {
-        // additional values only used with latest app-engine backend
-        formData.append('name', $('#piskel-name').val());
-        formData.append('frames', this.piskelController.getFrameCount());
-
-        // Get image/png data for first frame
-        var firstFrame = this.piskelController.getFrameAt(0);
-        var frameRenderer = new pskl.rendering.CanvasRenderer(firstFrame, 1);
-        frameRenderer.drawTransparentAs('rgba(0,0,0,0)');
-        var firstFrameCanvas = frameRenderer.render().canvas;
-        formData.append('preview', firstFrameCanvas.toDataURL("image/png"));
-
-        var imageData = (new pskl.rendering.SpritesheetRenderer(this.piskelController)).renderAsImageDataSpritesheetPNG();
-        formData.append('framesheet', imageData);
-
-        xhr.open('POST', "save", true);
+        this.storeSheetAppEngine_();
       }
-
-      xhr.onload = function(e) {
-        if (this.status == 200) {
-          if (pskl.app.isStaticVersion) {
-            var baseUrl = window.location.href.replace(window.location.search, "");
-            window.location.href = baseUrl + "?frameId=" + this.responseText;
-          } else {
-            $.publish(Events.SHOW_NOTIFICATION, [{"content": "Successfully saved !"}]);
-          }
-        } else {
-          this.onerror(e);
-        }
-      };
-      xhr.onerror = function(e) {
-        $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+this.status+")"}]);
-      };
-      xhr.send(formData);
 
       if(event) {
         event.stopPropagation();
@@ -16605,8 +16860,69 @@ var jscolor = {
       return false;
     },
 
+    storeSheetStatic_ : function () {
+      var xhr = new XMLHttpRequest();
+      var formData = new FormData();
+      formData.append('framesheet_content', this.piskelController.serialize());
+      formData.append('fps_speed', $('#preview-fps').val());
+
+      xhr.open('POST', Constants.STATIC.URL.SAVE, true);
+
+      xhr.onload = function(e) {
+        if (this.status == 200) {
+          var baseUrl = window.location.href.replace(window.location.search, "");
+          window.location.href = baseUrl + "?frameId=" + this.responseText;
+        } else {
+          this.onerror(e);
+        }
+      };
+      xhr.onerror = function(e) {
+        $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+this.status+")"}]);
+      };
+      xhr.send(formData);
+    },
+
+    storeSheetAppEngine_ : function () {
+      var xhr = new XMLHttpRequest();
+      var formData = new FormData();
+      formData.append('framesheet_content', this.piskelController.serialize());
+      formData.append('fps_speed', $('#preview-fps').val());
+      formData.append('name', $('#piskel-name').val());
+      formData.append('frames', this.piskelController.getFrameCount());
+      formData.append('preview', this.getFirstFrameAsPng());
+      formData.append('framesheet', this.getFramesheetAsPng());
+
+      xhr.open('POST', Constants.APPENGINE.URL.SAVE, true);
+
+      xhr.onload = function(e) {
+        if (this.status == 200) {
+          $.publish(Events.SHOW_NOTIFICATION, [{"content": "Successfully saved !"}]);
+        } else {
+          this.onerror(e);
+        }
+      };
+      xhr.onerror = function(e) {
+        $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+this.status+")"}]);
+      };
+      xhr.send(formData);
+    },
+
+    getFirstFrameAsPng : function () {
+      var firstFrame = this.piskelController.getFrameAt(0);
+      var frameRenderer = new pskl.rendering.CanvasRenderer(firstFrame, 1);
+      frameRenderer.drawTransparentAs('rgba(0,0,0,0)');
+      var firstFrameCanvas = frameRenderer.render().canvas;
+      return firstFrameCanvas.toDataURL("image/png");
+    },
+
+    getFramesheetAsPng : function () {
+      var renderer = new pskl.rendering.SpritesheetRenderer(this.piskelController);
+      var framesheetCanvas = renderer.render();
+      return framesheetCanvas.toDataURL("image/png");
+    },
+
     uploadAsSpritesheetPNG : function () {
-      var imageData = (new pskl.rendering.SpritesheetRenderer(this.piskelController)).renderAsImageDataSpritesheetPNG();
+      var imageData = this.getFramesheetAsPng();
       this.imageUploadService.upload(imageData, this.openWindow.bind(this));
     },
 
