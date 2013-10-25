@@ -34,7 +34,7 @@
   {% endautoescape %}
 
   <div class="piskel-name-container">
-    <input readonly id="piskel-name" type="text" value=""/>
+    <input {% if is_logged_in %}{% else %}readonly{% endif %} id="piskel-name" type="text" value="{{ piskel.name }}"/>
   </div>
   <div id="main-wrapper" class="main-wrapper">
     <iframe src="../templates/drawing-tools.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
