@@ -6,28 +6,67 @@
 {% block css %}
 	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css"/>
 {% endblock %}
-{% block main %} 
-	<div class="piskel-carousel">
-		<div class="piskel-preview-container">
-			<h3 class="background-title">Public repository</h3>
-			{% for id in showcase_piskels %}
-				<img class="piskel-preview" src="/static/resources/sleepy-guy.gif"/>
-			{% endfor %}
-		</div>
-	</div>
 
-	<hr class="preview-separator"/>
-
-	{% if is_logged_in %}
-	<div class="piskel-carousel">
-		<div class="piskel-preview-container">
-			<h3 class="background-title">Your latest piskels</h3>
-			{% for piskel in user_piskels %}
-				<a class="piskel-preview" href="/p/{{ piskel.key }}/view">
-					{{ render_animated_preview(piskel.framesheet_key, 300, piskel.fps) }}
-				</a>
-			{% endfor %}
+{% block main %}
+	<div class="main-container">
+		<img style="margin-bottom:50px;" src="/static/resources/logo_transparent_big.png"/>
+		<div class="media-container">
+			<div class="media-image" style="padding:10px">
+				<img style="box-shadow:0 0 5px 2px rgba(0,0,0,0.3)" src="http://screenletstore.appspot.com/img/00d2c9e3-59ef-11e3-a97e-c1ae2f3a690a.png"/>
+			</div>
+			<div class="media-body" style="padding-left:30px;text-align:left">
+				<h1 style="font-family:Tahoma; font-weight:normal;color:gold">Build animated sprites !</h1>
+				<p style="margin-bottom:10px;">
+					Remember the good old 2D games and their beautifully animated sprites ? With Piskel you can now create your own in a few clicks.
+				</p>
+				<p style="margin-bottom:10px;">
+					If you need some inspiration, take a look at our <a href="/gallery">examples</a> or <a href="/help/tutorials">check out a tutorial</a>.
+				</p>
+				<a style="line-height:50px; color:gold" class="piskel-button" href="/p/create">Try it !</a>
+				<a style="line-height:50px" class="piskel-button" href="/auth/google">Login with Google</a>
+			</div>
 		</div>
+		<ul style="padding:20px;text-align:left;">
+			<div class="asset-item">
+				<div class="media-container">
+					<img class="media-image" src="http://screenletstore.appspot.com/img/e1e9f3d4-59ff-11e3-9c2e-c1ae2f3a690a.png"/>
+					<div class="media-body" style="padding-left:20px;">
+						<h4 class="asset-title">Live preview</h4>
+						<p class="asset-description">With Piskel you have a live preview of your work. It gets updated after any change you make.<br/>
+						You no longer have to guess how it will look like when it's done : you see it !</p>
+					</div>
+				</div>
+			</div>
+			<div class="asset-item">
+				<div class="media-container">
+					<img class="media-image" width="100px" src="http://screenletstore.appspot.com/img/72c26f5e-5a02-11e3-bb1e-c1ae2f3a690a.png"/>
+					<div class="media-body" style="padding-left:20px;">
+						<h4 class="asset-title">Export to GIF</h4>
+						<p class="asset-description">Since we're animating images, might as well share them as animated GIFs.<br/>
+						So yeah.</p>
+					</div>
+				</div>
+			</div>
+			<div class="asset-item">
+				<div class="media-container">
+					<img class="media-image" width="100px" src="http://screenletstore.appspot.com/img/b1b387c0-5a04-11e3-88ce-c1ae2f3a690a.png"/>
+					<div class="media-body" style="padding-left:20px;">
+						<h4 class="asset-title">Your gallery</h4>
+						<p class="asset-description">Keep track of all the sprites you created.<br/>
+						Everyone can see your public gallery, but you can keep any sprite you want private.</p>
+					</div>
+				</div>
+			</div>
+			<div class="asset-item">
+				<div class="media-container">
+					<img class="media-image" width="100px" src="http://screenletstore.appspot.com/img/a3d86173-5a05-11e3-aa9f-c1ae2f3a690a.png"/>
+					<div class="media-body" style="padding-left:20px;">
+						<h4 class="asset-title">Open Source</h4>
+						<p class="asset-description">If you want to contribute or check the code for any readon, everything is available on Github.<br/>
+						See <a href="http://github.com/juliandescottes/piskel" target="_blank">http://github.com/juliandescottes/piskel</a> and <a href="http://github.com/juliandescottes/piskel-website" target="_blank">http://github.com/juliandescottes/piskel-website</a>.</p>
+					</div>
+				</div>
+			</div>
+		</ul>
 	</div>
-	{% endif %}
 {% endblock %}

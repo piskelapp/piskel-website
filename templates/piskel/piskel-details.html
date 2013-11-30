@@ -12,22 +12,22 @@
 		<script type="text/javascript" src="/static/js/piskel-details-page.js"></script>
 	{% endif %}
 {% endblock %}
-    
+
 {% block main %}
 
 	<div class="piskel-container">
 		<div class="piskel-preview-container inset-container">
 			{% if is_author %}{% include "piskel/piskel-details-edit.html" %}{% endif %}
 			{{ render_animated_preview(piskel.framesheet_key, 512, piskel.fps) }}
-			
+
 		</div>
 		<div class="piskel-info-container">
 			<div style="min-width:500px">
 			<h2 class="piskel-name">{{ piskel.name }}</h2>
 			by
-			<a href="/user/{{ owner.key.id() }}"><img 
+			<a href="/user/{{ owner.key.id() }}"><img
 				title="{{ owner.name }}"
-				class="small-user-avatar piskel-owner" 
+				class="small-user-avatar piskel-owner"
 				src="{{ owner.avatar_url }}"/></a>
 			<div class="piskel-meta">
 				<h4 class="piskel-meta-title">Sharing</h4>
@@ -41,12 +41,11 @@
 					<i>No description</i>
 				{% endif %}
 			</div>
-			<div class="piskel-meta"><i>No tags</i></div>
 			<div class="piskel-meta">
 				<h4 class="piskel-meta-title">History</h4>
 				<a      class="piskel-button" href="/p/{{piskel.key}}/history">Browse</a>
 				{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}
-				
+
 			</div>
 			{% if is_logged_in %}
 				<div class="piskel-meta">
@@ -69,8 +68,4 @@
 		</div>
 		</div>
 	</div>
-
-	{% if is_author %}
-	
-	{% endif %}
 {% endblock %}
