@@ -19,6 +19,15 @@
 	border-bottom-width: 0px;
 }
 
+.main-container {
+	width: 1000px;
+	position: relative;
+	left: 50%;
+	text-align: center;
+	margin-left: -500px;
+	padding-top: 50px
+}
+
 .media-container {
 	overflow : hidden;
 }
@@ -31,6 +40,35 @@
 	overflow : hidden;
 }
 
+.assets-container {
+	padding:50px 0;
+	text-align:left;
+}
+
+.asset-item {
+	margin-bottom: 20px;
+	width: 500px;
+	height: 150px;
+	float: left;
+}
+
+.asset-item .media-image {
+	border : 3px solid gold;
+	border-radius: 2px;
+}
+
+.asset-item .media-body {
+	padding : 0 20px;
+}
+
+.asset-title {
+	color : white;
+	margin: 10px 0;
+}
+
+.asset-description {
+	margin: 10px 0;
+}
 .piskel-preview {
 	height : 300px;
 	width : 300px;

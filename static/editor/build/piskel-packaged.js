@@ -6322,7 +6322,7 @@ jQuery.sub = function() {
 	var rootjQuerySub = jQuerySub(document);
 	return jQuerySub;
 };
-	
+
 })();
 var curCSS, iframe, iframeDoc,
 	ralpha = /alpha\([^)]*\)/i,
@@ -11788,9 +11788,1972 @@ $.widget("ui.sortable", $.ui.mouse, {
 		console.error("Could not create worker", e.message);
 	}
 })();
-;(function(c){function a(b,d){if({}.hasOwnProperty.call(a.cache,b))return a.cache[b];var e=a.resolve(b);if(!e)throw new Error('Failed to resolve module '+b);var c={id:b,require:a,filename:b,exports:{},loaded:!1,parent:d,children:[]};d&&d.children.push(c);var f=b.slice(0,b.lastIndexOf('/')+1);return a.cache[b]=c.exports,e.call(c.exports,c,c.exports,f,b),c.loaded=!0,a.cache[b]=c.exports}a.modules={},a.cache={},a.resolve=function(b){return{}.hasOwnProperty.call(a.modules,b)?a.modules[b]:void 0},a.define=function(b,c){a.modules[b]=c};var b=function(a){return a='/',{title:'browser',version:'v0.10.5',browser:!0,env:{},argv:[],nextTick:c.setImmediate||function(a){setTimeout(a,0)},cwd:function(){return a},chdir:function(b){a=b}}}();a.define('/gif.coffee',function(b,k,j,i){function c(a,b){return{}.hasOwnProperty.call(a,b)}function g(d,b){for(var a=0,c=b.length;a<c;++a)if(a in b&&b[a]===d)return!0;return!1}function h(a,b){function e(){this.constructor=a}for(var d in b)c(b,d)&&(a[d]=b[d]);return e.prototype=b.prototype,a.prototype=new e,a.__super__=b.prototype,a}var e,d,f;d=a('events',b).EventEmitter,e=a('/browser.coffee',b),f=function(f,b,d){function a(d){var a,c;this.running=!1,this.options={},this.frames=[],this.freeWorkers=[],this.activeWorkers=[],this.setOptions(d);for(a in b)c=b[a],null!=this.options[a]?this.options[a]:this.options[a]=c}return h(a,f),b={workerScript:window.GifWorkerURL,workers:2,repeat:0,background:'#fff',quality:10,width:null,height:null},d={delay:500,copy:!1},a.prototype.setOption=function(a,b){return this.options[a]=b,null!=this._canvas&&(a==='width'||a==='height')?this._canvas[a]=b:void 0},a.prototype.setOptions=function(a){return function(d){var b,e;for(b in a){if(!c(a,b))continue;e=a[b],d.push(this.setOption(b,e))}return d}.call(this,[])},a.prototype.addFrame=function(a,c){var b,e;null==c&&(c={}),b={};for(e in d)b[e]=c[e]||d[e];if(null!=this.options.width||this.setOption('width',a.width),null!=this.options.height||this.setOption('height',a.height),'undefined'!==typeof ImageData&&null!=ImageData&&a instanceof ImageData)b.data=a.data;else if('undefined'!==typeof CanvasRenderingContext2D&&null!=CanvasRenderingContext2D&&a instanceof CanvasRenderingContext2D||'undefined'!==typeof WebGLRenderingContext&&null!=WebGLRenderingContext&&a instanceof WebGLRenderingContext)c.copy?b.data=this.getContextData(a):b.context=a;else if(null!=a.childNodes)c.copy?b.data=this.getImageData(a):b.image=a;else throw new Error('Invalid image');return this.frames.push(b)},a.prototype.render=function(){var d,a;if(this.running)throw new Error('Already running');if(!(null!=this.options.width&&null!=this.options.height))throw new Error('Width and height must be set prior to rendering');this.running=!0,this.nextFrame=0,this.finishedFrames=0,this.imageParts=function(b){var d;for(var a=0,c=function(){var b,b;b=[];for(var a=0;0<=this.frames.length?a<this.frames.length:a>this.frames.length;0<=this.frames.length?++a:--a)b.push(a);return b}.apply(this,arguments).length;a<c;++a)d=function(){var b,b;b=[];for(var a=0;0<=this.frames.length?a<this.frames.length:a>this.frames.length;0<=this.frames.length?++a:--a)b.push(a);return b}.apply(this,arguments)[a],b.push(null);return b}.call(this,[]),a=this.spawnWorkers();for(var b=0,c=function(){var c,c;c=[];for(var b=0;0<=a?b<a:b>a;0<=a?++b:--b)c.push(b);return c}.apply(this,arguments).length;b<c;++b)d=function(){var c,c;c=[];for(var b=0;0<=a?b<a:b>a;0<=a?++b:--b)c.push(b);return c}.apply(this,arguments)[b],this.renderNextFrame();return this.emit('start'),this.emit('progress',0)},a.prototype.abort=function(){var a;while(!0){if(a=this.activeWorkers.shift(),!(null!=a))break;console.log('killing active worker'),a.terminate()}return this.running=!1,this.emit('abort')},a.prototype.spawnWorkers=function(){var a,b;return a=Math.min(this.options.workers,this.frames.length),function(){var c;c=[];for(var b=this.freeWorkers.length;this.freeWorkers.length<=a?b<a:b>a;this.freeWorkers.length<=a?++b:--b)c.push(b);return c}.apply(this,arguments).forEach((b=this,function(d){var a,c;return console.log('spawning worker '+d),c=new Worker(b.options.workerScript),a=b,c.onmessage=function(b){return a.activeWorkers.splice(a.activeWorkers.indexOf(c),1),a.freeWorkers.push(c),a.frameFinished(b.data)},b.freeWorkers.push(c)})),a},a.prototype.frameFinished=function(a){return console.log('frame '+a.index+' finished - '+this.activeWorkers.length+' active'),this.finishedFrames++,this.emit('progress',this.finishedFrames/this.frames.length),this.imageParts[a.index]=a,g(null,this.imageParts)?this.renderNextFrame():this.finishRendering()},a.prototype.finishRendering=function(){var e,a,k,m,b,d,h;b=0;for(var f=0,j=this.imageParts.length;f<j;++f)a=this.imageParts[f],b+=(a.data.length-1)*a.pageSize+a.cursor;b+=a.pageSize-a.cursor,console.log('rendering finished - filesize '+Math.round(b/1e3)+'kb'),e=new Uint8Array(b),d=0;for(var g=0,l=this.imageParts.length;g<l;++g){a=this.imageParts[g];for(var c=0,i=a.data.length;c<i;++c)h=a.data[c],k=c,e.set(h,d),k===a.data.length-1?d+=a.cursor:d+=a.pageSize}return m=new Blob([e],{type:'image/gif'}),this.emit('finished',m,e)},a.prototype.renderNextFrame=function(){var c,a,b;if(this.freeWorkers.length===0)throw new Error('No free workers');return this.nextFrame>=this.frames.length?void 0:(c=this.frames[this.nextFrame++],b=this.freeWorkers.shift(),a=this.getTask(c),console.log('starting frame '+(a.index+1)+' of '+this.frames.length),this.activeWorkers.push(b),b.postMessage(a))},a.prototype.getContextData=function(a){return a.getImageData(0,0,this.options.width,this.options.height).data},a.prototype.getImageData=function(b){var a;return null!=this._canvas||(this._canvas=document.createElement('canvas'),this._canvas.width=this.options.width,this._canvas.height=this.options.height),a=this._canvas.getContext('2d'),a.setFill=this.options.background,a.fillRect(0,0,this.options.width,this.options.height),a.drawImage(b,0,0),this.getContextData(a)},a.prototype.getTask=function(a){var c,b;if(c=this.frames.indexOf(a),b={index:c,last:c===this.frames.length-1,delay:a.delay,width:this.options.width,height:this.options.height,quality:this.options.quality,repeat:this.options.repeat,canTransfer:e.name==='chrome'},null!=a.data)b.data=a.data;else if(null!=a.context)b.data=this.getContextData(a.context);else if(null!=a.image)b.data=this.getImageData(a.image);else throw new Error('Invalid frame');return b},a}(d),b.exports=f}),a.define('/browser.coffee',function(f,g,h,i){var a,d,e,c,b;c=navigator.userAgent.toLowerCase(),e=navigator.platform.toLowerCase(),b=c.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/)||[null,'unknown',0],d=b[1]==='ie'&&document.documentMode,a={name:b[1]==='version'?b[3]:b[1],version:d||parseFloat(b[1]==='opera'&&b[4]?b[4]:b[2]),platform:{name:c.match(/ip(?:ad|od|hone)/)?'ios':(c.match(/(?:webos|android)/)||e.match(/mac|win|linux/)||['other'])[0]}},a[a.name]=!0,a[a.name+parseInt(a.version,10)]=!0,a.platform[a.platform.name]=!0,f.exports=a}),a.define('events',function(f,e,g,h){b.EventEmitter||(b.EventEmitter=function(){});var a=e.EventEmitter=b.EventEmitter,c=typeof Array.isArray==='function'?Array.isArray:function(a){return Object.prototype.toString.call(a)==='[object Array]'},d=10;a.prototype.setMaxListeners=function(a){this._events||(this._events={}),this._events.maxListeners=a},a.prototype.emit=function(f){if(f==='error'&&(!(this._events&&this._events.error)||c(this._events.error)&&!this._events.error.length))throw arguments[1]instanceof Error?arguments[1]:new Error("Uncaught, unspecified 'error' event.");if(!this._events)return!1;var a=this._events[f];if(!a)return!1;if(!(typeof a=='function'))if(c(a)){var b=Array.prototype.slice.call(arguments,1),e=a.slice();for(var d=0,g=e.length;d<g;d++)e[d].apply(this,b);return!0}else return!1;switch(arguments.length){case 1:a.call(this);break;case 2:a.call(this,arguments[1]);break;case 3:a.call(this,arguments[1],arguments[2]);break;default:var b=Array.prototype.slice.call(arguments,1);a.apply(this,b)}return!0},a.prototype.addListener=function(a,b){if('function'!==typeof b)throw new Error('addListener only takes instances of Function');if(this._events||(this._events={}),this.emit('newListener',a,b),!this._events[a])this._events[a]=b;else if(c(this._events[a])){if(!this._events[a].warned){var e;this._events.maxListeners!==undefined?e=this._events.maxListeners:e=d,e&&e>0&&this._events[a].length>e&&(this._events[a].warned=!0,console.error('(node) warning: possible EventEmitter memory leak detected. %d listeners added. Use emitter.setMaxListeners() to increase limit.',this._events[a].length),console.trace())}this._events[a].push(b)}else this._events[a]=[this._events[a],b];return this},a.prototype.on=a.prototype.addListener,a.prototype.once=function(b,c){var a=this;return a.on(b,function d(){a.removeListener(b,d),c.apply(this,arguments)}),this},a.prototype.removeListener=function(a,d){if('function'!==typeof d)throw new Error('removeListener only takes instances of Function');if(!(this._events&&this._events[a]))return this;var b=this._events[a];if(c(b)){var e=b.indexOf(d);if(e<0)return this;b.splice(e,1),b.length==0&&delete this._events[a]}else this._events[a]===d&&delete this._events[a];return this},a.prototype.removeAllListeners=function(a){return a&&this._events&&this._events[a]&&(this._events[a]=null),this},a.prototype.listeners=function(a){return this._events||(this._events={}),this._events[a]||(this._events[a]=[]),c(this._events[a])||(this._events[a]=[this._events[a]]),this._events[a]}}),c.GIF=a('/gif.coffee')}.call(this,this))
-//# sourceMappingURL=gif.js.map
-// gif.js 0.1.4 - https://github.com/jnordberg/gif.js;// TODO(grosbouddha): put under pskl namespace.
+;(function(c){function a(b,d){if({}.hasOwnProperty.call(a.cache,b))return a.cache[b];var e=a.resolve(b);if(!e)throw new Error('Failed to resolve module '+b);var c={id:b,require:a,filename:b,exports:{},loaded:!1,parent:d,children:[]};d&&d.children.push(c);var f=b.slice(0,b.lastIndexOf('/')+1);return a.cache[b]=c.exports,e.call(c.exports,c,c.exports,f,b),c.loaded=!0,a.cache[b]=c.exports}a.modules={},a.cache={},a.resolve=function(b){return{}.hasOwnProperty.call(a.modules,b)?a.modules[b]:void 0},a.define=function(b,c){a.modules[b]=c};var b=function(a){return a='/',{title:'browser',version:'v0.10.5',browser:!0,env:{},argv:[],nextTick:c.setImmediate||function(a){setTimeout(a,0)},cwd:function(){return a},chdir:function(b){a=b}}}();a.define('/gif.coffee',function(b,k,j,i){function c(a,b){return{}.hasOwnProperty.call(a,b)}function g(d,b){for(var a=0,c=b.length;a<c;++a)if(a in b&&b[a]===d)return!0;return!1}function h(a,b){function e(){this.constructor=a}for(var d in b)c(b,d)&&(a[d]=b[d]);return e.prototype=b.prototype,a.prototype=new e,a.__super__=b.prototype,a}var e,d,f;d=a('events',b).EventEmitter,e=a('/browser.coffee',b),f=function(f,b,d){function a(d){var a,c;this.running=!1,this.options={},this.frames=[],this.freeWorkers=[],this.activeWorkers=[],this.setOptions(d);for(a in b)c=b[a],null!=this.options[a]?this.options[a]:this.options[a]=c}return h(a,f),b={workerScript:window.GifWorkerURL,workers:2,repeat:0,background:'#fff',quality:10,width:null,height:null},d={delay:500,copy:!1},a.prototype.setOption=function(a,b){return this.options[a]=b,null!=this._canvas&&(a==='width'||a==='height')?this._canvas[a]=b:void 0},a.prototype.setOptions=function(a){return function(d){var b,e;for(b in a){if(!c(a,b))continue;e=a[b],d.push(this.setOption(b,e))}return d}.call(this,[])},a.prototype.addFrame=function(a,c){var b,e;null==c&&(c={}),b={};for(e in d)b[e]=c[e]||d[e];if(null!=this.options.width||this.setOption('width',a.width),null!=this.options.height||this.setOption('height',a.height),'undefined'!==typeof ImageData&&null!=ImageData&&a instanceof ImageData)b.data=a.data;else if('undefined'!==typeof CanvasRenderingContext2D&&null!=CanvasRenderingContext2D&&a instanceof CanvasRenderingContext2D||'undefined'!==typeof WebGLRenderingContext&&null!=WebGLRenderingContext&&a instanceof WebGLRenderingContext)c.copy?b.data=this.getContextData(a):b.context=a;else if(null!=a.childNodes)c.copy?b.data=this.getImageData(a):b.image=a;else throw new Error('Invalid image');return this.frames.push(b)},a.prototype.render=function(){var d,a;if(this.running)throw new Error('Already running');if(!(null!=this.options.width&&null!=this.options.height))throw new Error('Width and height must be set prior to rendering');this.running=!0,this.nextFrame=0,this.finishedFrames=0,this.imageParts=function(b){var d;for(var a=0,c=function(){var b,b;b=[];for(var a=0;0<=this.frames.length?a<this.frames.length:a>this.frames.length;0<=this.frames.length?++a:--a)b.push(a);return b}.apply(this,arguments).length;a<c;++a)d=function(){var b,b;b=[];for(var a=0;0<=this.frames.length?a<this.frames.length:a>this.frames.length;0<=this.frames.length?++a:--a)b.push(a);return b}.apply(this,arguments)[a],b.push(null);return b}.call(this,[]),a=this.spawnWorkers();for(var b=0,c=function(){var c,c;c=[];for(var b=0;0<=a?b<a:b>a;0<=a?++b:--b)c.push(b);return c}.apply(this,arguments).length;b<c;++b)d=function(){var c,c;c=[];for(var b=0;0<=a?b<a:b>a;0<=a?++b:--b)c.push(b);return c}.apply(this,arguments)[b],this.renderNextFrame();return this.emit('start'),this.emit('progress',0)},a.prototype.abort=function(){var a;while(!0){if(a=this.activeWorkers.shift(),!(null!=a))break;console.log('killing active worker'),a.terminate()}return this.running=!1,this.emit('abort')},a.prototype.spawnWorkers=function(){var a,b;return a=Math.min(this.options.workers,this.frames.length),function(){var c;c=[];for(var b=this.freeWorkers.length;this.freeWorkers.length<=a?b<a:b>a;this.freeWorkers.length<=a?++b:--b)c.push(b);return c}.apply(this,arguments).forEach((b=this,function(d){var a,c;return console.log('spawning worker '+d),c=new Worker(b.options.workerScript),a=b,c.onmessage=function(b){return a.activeWorkers.splice(a.activeWorkers.indexOf(c),1),a.freeWorkers.push(c),a.frameFinished(b.data)},b.freeWorkers.push(c)})),a},a.prototype.frameFinished=function(a){return console.log('frame '+a.index+' finished - '+this.activeWorkers.length+' active'),this.finishedFrames++,this.emit('progress',this.finishedFrames/this.frames.length),this.imageParts[a.index]=a,g(null,this.imageParts)?this.renderNextFrame():this.finishRendering()},a.prototype.finishRendering=function(){var e,a,k,m,b,d,h;b=0;for(var f=0,j=this.imageParts.length;f<j;++f)a=this.imageParts[f],b+=(a.data.length-1)*a.pageSize+a.cursor;b+=a.pageSize-a.cursor,console.log('rendering finished - filesize '+Math.round(b/1e3)+'kb'),e=new Uint8Array(b),d=0;for(var g=0,l=this.imageParts.length;g<l;++g){a=this.imageParts[g];for(var c=0,i=a.data.length;c<i;++c)h=a.data[c],k=c,e.set(h,d),k===a.data.length-1?d+=a.cursor:d+=a.pageSize}return m=new Blob([e],{type:'image/gif'}),this.emit('finished',m,e)},a.prototype.renderNextFrame=function(){var c,a,b;if(this.freeWorkers.length===0)throw new Error('No free workers');return this.nextFrame>=this.frames.length?void 0:(c=this.frames[this.nextFrame++],b=this.freeWorkers.shift(),a=this.getTask(c),console.log('starting frame '+(a.index+1)+' of '+this.frames.length),this.activeWorkers.push(b),b.postMessage(a))},a.prototype.getContextData=function(a){return a.getImageData(0,0,this.options.width,this.options.height).data},a.prototype.getImageData=function(b){var a;return null!=this._canvas||(this._canvas=document.createElement('canvas'),this._canvas.width=this.options.width,this._canvas.height=this.options.height),a=this._canvas.getContext('2d'),a.setFill=this.options.background,a.fillRect(0,0,this.options.width,this.options.height),a.drawImage(b,0,0),this.getContextData(a)},a.prototype.getTask=function(a){var c,b;if(c=this.frames.indexOf(a),b={index:c,last:c===this.frames.length-1,delay:a.delay,width:this.options.width,height:this.options.height,quality:this.options.quality,repeat:this.options.repeat,canTransfer:e.name==='chrome'},null!=a.data)b.data=a.data;else if(null!=a.context)b.data=this.getContextData(a.context);else if(null!=a.image)b.data=this.getImageData(a.image);else throw new Error('Invalid frame');return b},a}(d),b.exports=f}),a.define('/browser.coffee',function(f,g,h,i){var a,d,e,c,b;c=navigator.userAgent.toLowerCase(),e=navigator.platform.toLowerCase(),b=c.match(/(opera|ie|firefox|chrome|version)[\s\/:]([\w\d\.]+)?.*?(safari|version[\s\/:]([\w\d\.]+)|$)/)||[null,'unknown',0],d=b[1]==='ie'&&document.documentMode,a={name:b[1]==='version'?b[3]:b[1],version:d||parseFloat(b[1]==='opera'&&b[4]?b[4]:b[2]),platform:{name:c.match(/ip(?:ad|od|hone)/)?'ios':(c.match(/(?:webos|android)/)||e.match(/mac|win|linux/)||['other'])[0]}},a[a.name]=!0,a[a.name+parseInt(a.version,10)]=!0,a.platform[a.platform.name]=!0,f.exports=a}),a.define('events',function(f,e,g,h){b.EventEmitter||(b.EventEmitter=function(){});var a=e.EventEmitter=b.EventEmitter,c=typeof Array.isArray==='function'?Array.isArray:function(a){return Object.prototype.toString.call(a)==='[object Array]'},d=10;a.prototype.setMaxListeners=function(a){this._events||(this._events={}),this._events.maxListeners=a},a.prototype.emit=function(f){if(f==='error'&&(!(this._events&&this._events.error)||c(this._events.error)&&!this._events.error.length))throw arguments[1]instanceof Error?arguments[1]:new Error("Uncaught, unspecified 'error' event.");if(!this._events)return!1;var a=this._events[f];if(!a)return!1;if(!(typeof a=='function'))if(c(a)){var b=Array.prototype.slice.call(arguments,1),e=a.slice();for(var d=0,g=e.length;d<g;d++)e[d].apply(this,b);return!0}else return!1;switch(arguments.length){case 1:a.call(this);break;case 2:a.call(this,arguments[1]);break;case 3:a.call(this,arguments[1],arguments[2]);break;default:var b=Array.prototype.slice.call(arguments,1);a.apply(this,b)}return!0},a.prototype.addListener=function(a,b){if('function'!==typeof b)throw new Error('addListener only takes instances of Function');if(this._events||(this._events={}),this.emit('newListener',a,b),!this._events[a])this._events[a]=b;else if(c(this._events[a])){if(!this._events[a].warned){var e;this._events.maxListeners!==undefined?e=this._events.maxListeners:e=d,e&&e>0&&this._events[a].length>e&&(this._events[a].warned=!0,console.error('(node) warning: possible EventEmitter memory leak detected. %d listeners added. Use emitter.setMaxListeners() to increase limit.',this._events[a].length),console.trace())}this._events[a].push(b)}else this._events[a]=[this._events[a],b];return this},a.prototype.on=a.prototype.addListener,a.prototype.once=function(b,c){var a=this;return a.on(b,function d(){a.removeListener(b,d),c.apply(this,arguments)}),this},a.prototype.removeListener=function(a,d){if('function'!==typeof d)throw new Error('removeListener only takes instances of Function');if(!(this._events&&this._events[a]))return this;var b=this._events[a];if(c(b)){var e=b.indexOf(d);if(e<0)return this;b.splice(e,1),b.length==0&&delete this._events[a]}else this._events[a]===d&&delete this._events[a];return this},a.prototype.removeAllListeners=function(a){return a&&this._events&&this._events[a]&&(this._events[a]=null),this},a.prototype.listeners=function(a){return this._events||(this._events={}),this._events[a]||(this._events[a]=[]),c(this._events[a])||(this._events[a]=[this._events[a]]),this._events[a]}}),c.GIF=a('/gif.coffee')}.call(this,this));
+;// Spectrum Colorpicker v1.1.2
+// https://github.com/bgrins/spectrum
+// Author: Brian Grinstead
+// License: MIT
+
+(function (window, $, undefined) {
+    var defaultOpts = {
+
+        // Callbacks
+        beforeShow: noop,
+        move: noop,
+        change: noop,
+        show: noop,
+        hide: noop,
+
+        // Options
+        color: false,
+        flat: false,
+        showInput: false,
+        showButtons: true,
+        clickoutFiresChange: false,
+        showInitial: false,
+        showPalette: false,
+        showPaletteOnly: false,
+        showSelectionPalette: true,
+        localStorageKey: false,
+        appendTo: "body",
+        maxSelectionSize: 7,
+        cancelText: "cancel",
+        chooseText: "choose",
+        preferredFormat: false,
+        className: "",
+        showAlpha: false,
+        theme: "sp-light",
+        palette: ['fff', '000'],
+        selectionPalette: [],
+        disabled: false
+    },
+    spectrums = [],
+    IE = !!/msie/i.exec( window.navigator.userAgent ),
+    rgbaSupport = (function() {
+        function contains( str, substr ) {
+            return !!~('' + str).indexOf(substr);
+        }
+
+        var elem = document.createElement('div');
+        var style = elem.style;
+        style.cssText = 'background-color:rgba(0,0,0,.5)';
+        return contains(style.backgroundColor, 'rgba') || contains(style.backgroundColor, 'hsla');
+    })(),
+    replaceInput = [
+        "<div class='sp-replacer'>",
+            "<div class='sp-preview'><div class='sp-preview-inner'></div></div>",
+            "<div class='sp-dd'>&#9660;</div>",
+        "</div>"
+    ].join(''),
+    markup = (function () {
+
+        // IE does not support gradients with multiple stops, so we need to simulate
+        //  that for the rainbow slider with 8 divs that each have a single gradient
+        var gradientFix = "";
+        if (IE) {
+            for (var i = 1; i <= 6; i++) {
+                gradientFix += "<div class='sp-" + i + "'></div>";
+            }
+        }
+
+        return [
+            "<div class='sp-container sp-hidden'>",
+                "<div class='sp-palette-container'>",
+                    "<div class='sp-palette sp-thumb sp-cf'></div>",
+                "</div>",
+                "<div class='sp-picker-container'>",
+                    "<div class='sp-top sp-cf'>",
+                        "<div class='sp-fill'></div>",
+                        "<div class='sp-top-inner'>",
+                            "<div class='sp-color'>",
+                                "<div class='sp-sat'>",
+                                    "<div class='sp-val'>",
+                                        "<div class='sp-dragger'></div>",
+                                    "</div>",
+                                "</div>",
+                            "</div>",
+                            "<div class='sp-hue'>",
+                                "<div class='sp-slider'></div>",
+                                gradientFix,
+                            "</div>",
+                        "</div>",
+                        "<div class='sp-alpha'><div class='sp-alpha-inner'><div class='sp-alpha-handle'></div></div></div>",
+                    "</div>",
+                    "<div class='sp-input-container sp-cf'>",
+                        "<input class='sp-input' type='text' spellcheck='false'  />",
+                    "</div>",
+                    "<div class='sp-initial sp-thumb sp-cf'></div>",
+                    "<div class='sp-button-container sp-cf'>",
+                        "<a class='sp-cancel' href='#'></a>",
+                        "<button class='sp-choose'></button>",
+                    "</div>",
+                "</div>",
+            "</div>"
+        ].join("");
+    })();
+
+    function paletteTemplate (p, color, className) {
+        var html = [];
+        for (var i = 0; i < p.length; i++) {
+            var tiny = tinycolor(p[i]);
+            var c = tiny.toHsl().l < 0.5 ? "sp-thumb-el sp-thumb-dark" : "sp-thumb-el sp-thumb-light";
+            c += (tinycolor.equals(color, p[i])) ? " sp-thumb-active" : "";
+
+            var swatchStyle = rgbaSupport ? ("background-color:" + tiny.toRgbString()) : "filter:" + tiny.toFilter();
+            html.push('<span title="' + tiny.toRgbString() + '" data-color="' + tiny.toRgbString() + '" class="' + c + '"><span class="sp-thumb-inner" style="' + swatchStyle + ';" /></span>');
+        }
+        return "<div class='sp-cf " + className + "'>" + html.join('') + "</div>";
+    }
+
+    function hideAll() {
+        for (var i = 0; i < spectrums.length; i++) {
+            if (spectrums[i]) {
+                spectrums[i].hide();
+            }
+        }
+    }
+
+    function instanceOptions(o, callbackContext) {
+        var opts = $.extend({}, defaultOpts, o);
+        opts.callbacks = {
+            'move': bind(opts.move, callbackContext),
+            'change': bind(opts.change, callbackContext),
+            'show': bind(opts.show, callbackContext),
+            'hide': bind(opts.hide, callbackContext),
+            'beforeShow': bind(opts.beforeShow, callbackContext)
+        };
+
+        return opts;
+    }
+
+    function spectrum(element, o) {
+
+        var opts = instanceOptions(o, element),
+            flat = opts.flat,
+            showSelectionPalette = opts.showSelectionPalette,
+            localStorageKey = opts.localStorageKey,
+            theme = opts.theme,
+            callbacks = opts.callbacks,
+            resize = throttle(reflow, 10),
+            visible = false,
+            dragWidth = 0,
+            dragHeight = 0,
+            dragHelperHeight = 0,
+            slideHeight = 0,
+            slideWidth = 0,
+            alphaWidth = 0,
+            alphaSlideHelperWidth = 0,
+            slideHelperHeight = 0,
+            currentHue = 0,
+            currentSaturation = 0,
+            currentValue = 0,
+            currentAlpha = 1,
+            palette = opts.palette.slice(0),
+            paletteArray = $.isArray(palette[0]) ? palette : [palette],
+            selectionPalette = opts.selectionPalette.slice(0),
+            maxSelectionSize = opts.maxSelectionSize,
+            draggingClass = "sp-dragging",
+            shiftMovementDirection = null;
+
+        var doc = element.ownerDocument,
+            body = doc.body,
+            boundElement = $(element),
+            disabled = false,
+            container = $(markup, doc).addClass(theme),
+            dragger = container.find(".sp-color"),
+            dragHelper = container.find(".sp-dragger"),
+            slider = container.find(".sp-hue"),
+            slideHelper = container.find(".sp-slider"),
+            alphaSliderInner = container.find(".sp-alpha-inner"),
+            alphaSlider = container.find(".sp-alpha"),
+            alphaSlideHelper = container.find(".sp-alpha-handle"),
+            textInput = container.find(".sp-input"),
+            paletteContainer = container.find(".sp-palette"),
+            initialColorContainer = container.find(".sp-initial"),
+            cancelButton = container.find(".sp-cancel"),
+            chooseButton = container.find(".sp-choose"),
+            isInput = boundElement.is("input"),
+            shouldReplace = isInput && !flat,
+            replacer = (shouldReplace) ? $(replaceInput).addClass(theme).addClass(opts.className) : $([]),
+            offsetElement = (shouldReplace) ? replacer : boundElement,
+            previewElement = replacer.find(".sp-preview-inner"),
+            initialColor = opts.color || (isInput && boundElement.val()),
+            colorOnShow = false,
+            preferredFormat = opts.preferredFormat,
+            currentPreferredFormat = preferredFormat,
+            clickoutFiresChange = !opts.showButtons || opts.clickoutFiresChange;
+
+
+        function applyOptions() {
+
+            if (opts.showPaletteOnly) {
+                opts.showPalette = true;
+            }
+
+            container.toggleClass("sp-flat", flat);
+            container.toggleClass("sp-input-disabled", !opts.showInput);
+            container.toggleClass("sp-alpha-enabled", opts.showAlpha);
+            container.toggleClass("sp-buttons-disabled", !opts.showButtons);
+            container.toggleClass("sp-palette-disabled", !opts.showPalette);
+            container.toggleClass("sp-palette-only", opts.showPaletteOnly);
+            container.toggleClass("sp-initial-disabled", !opts.showInitial);
+            container.addClass(opts.className);
+
+            reflow();
+        }
+
+        function initialize() {
+
+            if (IE) {
+                container.find("*:not(input)").attr("unselectable", "on");
+            }
+
+            applyOptions();
+
+            if (shouldReplace) {
+                boundElement.after(replacer).hide();
+            }
+
+            if (flat) {
+                boundElement.after(container).hide();
+            }
+            else {
+
+                var appendTo = opts.appendTo === "parent" ? boundElement.parent() : $(opts.appendTo);
+                if (appendTo.length !== 1) {
+                    appendTo = $("body");
+                }
+
+                appendTo.append(container);
+            }
+
+            if (localStorageKey && window.localStorage) {
+
+                // Migrate old palettes over to new format.  May want to remove this eventually.
+                try {
+                    var oldPalette = window.localStorage[localStorageKey].split(",#");
+                    if (oldPalette.length > 1) {
+                        delete window.localStorage[localStorageKey];
+                        $.each(oldPalette, function(i, c) {
+                             addColorToSelectionPalette(c);
+                        });
+                    }
+                }
+                catch(e) { }
+
+                try {
+                    selectionPalette = window.localStorage[localStorageKey].split(";");
+                }
+                catch (e) { }
+            }
+
+            offsetElement.bind("click.spectrum touchstart.spectrum", function (e) {
+                if (!disabled) {
+                    toggle();
+                }
+
+                e.stopPropagation();
+
+                if (!$(e.target).is("input")) {
+                    e.preventDefault();
+                }
+            });
+
+            if(boundElement.is(":disabled") || (opts.disabled === true)) {
+                disable();
+            }
+
+            // Prevent clicks from bubbling up to document.  This would cause it to be hidden.
+            container.click(stopPropagation);
+
+            // Handle user typed input
+            textInput.change(setFromTextInput);
+            textInput.bind("paste", function () {
+                setTimeout(setFromTextInput, 1);
+            });
+            textInput.keydown(function (e) { if (e.keyCode == 13) { setFromTextInput(); } });
+
+            cancelButton.text(opts.cancelText);
+            cancelButton.bind("click.spectrum", function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                hide("cancel");
+            });
+
+            chooseButton.text(opts.chooseText);
+            chooseButton.bind("click.spectrum", function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                if (isValid()) {
+                    updateOriginalInput(true);
+                    hide();
+                }
+            });
+
+            draggable(alphaSlider, function (dragX, dragY, e) {
+                currentAlpha = (dragX / alphaWidth);
+                if (e.shiftKey) {
+                    currentAlpha = Math.round(currentAlpha * 10) / 10;
+                }
+
+                move();
+            });
+
+            draggable(slider, function (dragX, dragY) {
+                currentHue = parseFloat(dragY / slideHeight);
+                move();
+            }, dragStart, dragStop);
+
+            draggable(dragger, function (dragX, dragY, e) {
+
+                // shift+drag should snap the movement to either the x or y axis.
+                if (!e.shiftKey) {
+                    shiftMovementDirection = null;
+                }
+                else if (!shiftMovementDirection) {
+                    var oldDragX = currentSaturation * dragWidth;
+                    var oldDragY = dragHeight - (currentValue * dragHeight);
+                    var furtherFromX = Math.abs(dragX - oldDragX) > Math.abs(dragY - oldDragY);
+
+                    shiftMovementDirection = furtherFromX ? "x" : "y";
+                }
+
+                var setSaturation = !shiftMovementDirection || shiftMovementDirection === "x";
+                var setValue = !shiftMovementDirection || shiftMovementDirection === "y";
+
+                if (setSaturation) {
+                    currentSaturation = parseFloat(dragX / dragWidth);
+                }
+                if (setValue) {
+                    currentValue = parseFloat((dragHeight - dragY) / dragHeight);
+                }
+
+                move();
+
+            }, dragStart, dragStop);
+
+            if (!!initialColor) {
+                set(initialColor);
+
+                // In case color was black - update the preview UI and set the format
+                // since the set function will not run (default color is black).
+                updateUI();
+                currentPreferredFormat = preferredFormat || tinycolor(initialColor).format;
+
+                addColorToSelectionPalette(initialColor);
+            }
+            else {
+                updateUI();
+            }
+
+            if (flat) {
+                show();
+            }
+
+            function palletElementClick(e) {
+                if (e.data && e.data.ignore) {
+                    set($(this).data("color"));
+                    move();
+                }
+                else {
+                    set($(this).data("color"));
+                    updateOriginalInput(true);
+                    move();
+                    hide();
+                }
+
+                return false;
+            }
+
+            var paletteEvent = IE ? "mousedown.spectrum" : "click.spectrum touchstart.spectrum";
+            paletteContainer.delegate(".sp-thumb-el", paletteEvent, palletElementClick);
+            initialColorContainer.delegate(".sp-thumb-el:nth-child(1)", paletteEvent, { ignore: true }, palletElementClick);
+        }
+
+        function addColorToSelectionPalette(color) {
+            if (showSelectionPalette) {
+                var colorRgb = tinycolor(color).toRgbString();
+                if ($.inArray(colorRgb, selectionPalette) === -1) {
+                    selectionPalette.push(colorRgb);
+                    while(selectionPalette.length > maxSelectionSize) {
+                        selectionPalette.shift();
+                    }
+                }
+
+                if (localStorageKey && window.localStorage) {
+                    try {
+                        window.localStorage[localStorageKey] = selectionPalette.join(";");
+                    }
+                    catch(e) { }
+                }
+            }
+        }
+
+        function getUniqueSelectionPalette() {
+            var unique = [];
+            var p = selectionPalette;
+            var paletteLookup = {};
+            var rgb;
+
+            if (opts.showPalette) {
+
+                for (var i = 0; i < paletteArray.length; i++) {
+                    for (var j = 0; j < paletteArray[i].length; j++) {
+                        rgb = tinycolor(paletteArray[i][j]).toRgbString();
+                        paletteLookup[rgb] = true;
+                    }
+                }
+
+                for (i = 0; i < p.length; i++) {
+                    rgb = tinycolor(p[i]).toRgbString();
+
+                    if (!paletteLookup.hasOwnProperty(rgb)) {
+                        unique.push(p[i]);
+                        paletteLookup[rgb] = true;
+                    }
+                }
+            }
+
+            return unique.reverse().slice(0, opts.maxSelectionSize);
+        }
+
+        function drawPalette() {
+
+            var currentColor = get();
+
+            var html = $.map(paletteArray, function (palette, i) {
+                return paletteTemplate(palette, currentColor, "sp-palette-row sp-palette-row-" + i);
+            });
+
+            if (selectionPalette) {
+                html.push(paletteTemplate(getUniqueSelectionPalette(), currentColor, "sp-palette-row sp-palette-row-selection"));
+            }
+
+            paletteContainer.html(html.join(""));
+        }
+
+        function drawInitial() {
+            if (opts.showInitial) {
+                var initial = colorOnShow;
+                var current = get();
+                initialColorContainer.html(paletteTemplate([initial, current], current, "sp-palette-row-initial"));
+            }
+        }
+
+        function dragStart() {
+            if (dragHeight <= 0 || dragWidth <= 0 || slideHeight <= 0) {
+                reflow();
+            }
+            container.addClass(draggingClass);
+            shiftMovementDirection = null;
+        }
+
+        function dragStop() {
+            container.removeClass(draggingClass);
+        }
+
+        function setFromTextInput() {
+            var tiny = tinycolor(textInput.val());
+            if (tiny.ok) {
+                set(tiny);
+            }
+            else {
+                textInput.addClass("sp-validation-error");
+            }
+        }
+
+        function toggle() {
+            if (visible) {
+                hide();
+            }
+            else {
+                show();
+            }
+        }
+
+        function show() {
+            var event = $.Event('beforeShow.spectrum');
+
+            if (visible) {
+                reflow();
+                return;
+            }
+
+            colorOnShow = get();
+            boundElement.trigger(event, [ colorOnShow ]);
+
+            if (callbacks.beforeShow(colorOnShow) === false || event.isDefaultPrevented()) {
+                return;
+            }
+
+            // if color has changed
+            set(colorOnShow);
+
+            hideAll();
+            visible = true;
+
+            $(doc).bind("mousedown.spectrum", onMousedown);
+
+            // Piskel-specific : change the color as soon as the user does a mouseup
+            $(doc).bind("mouseup.spectrum", updateColor);
+
+            $(window).bind("resize.spectrum", resize);
+            replacer.addClass("sp-active");
+            container.removeClass("sp-hidden");
+
+            if (opts.showPalette) {
+                drawPalette();
+            }
+            reflow();
+            updateUI();
+
+            drawInitial();
+            callbacks.show(colorOnShow);
+            boundElement.trigger('show.spectrum', [ colorOnShow ]);
+        }
+
+        function onMousedown (e) {
+            var target = $(e.target);
+            var parents = target.parents();
+            var isClickOutsideWidget = !parents.is(container) && !target.is(container);
+
+            if (isClickOutsideWidget) {
+                hide(e);
+            }
+        }
+
+        // Piskel-specific (code extracted to method)
+        function updateColor(e) {
+            var colorHasChanged = !tinycolor.equals(get(), colorOnShow);
+
+            if (colorHasChanged) {
+                if (clickoutFiresChange && e !== "cancel") {
+                    updateOriginalInput(true);
+                }
+                else {
+                    revert();
+                }
+            }
+        }
+
+        function hide(e) {
+
+            // Return on right click
+            if (e && e.type == "click" && e.button == 2) { return; }
+
+            // Return if hiding is unnecessary
+            if (!visible || flat) { return; }
+            visible = false;
+
+            $(doc).unbind("mousedown.spectrum", onMousedown);
+
+            // Piskel-specific
+            $(doc).unbind("mouseup.spectrum", updateColor);
+
+            $(window).unbind("resize.spectrum", resize);
+
+            replacer.removeClass("sp-active");
+            container.addClass("sp-hidden");
+
+            updateColor(e);
+
+            // Piskel-specific
+            addColorToSelectionPalette(get());
+
+            callbacks.hide(get());
+            boundElement.trigger('hide.spectrum', [ get() ]);
+        }
+
+        function revert() {
+            set(colorOnShow, true);
+        }
+
+        function set(color, ignoreFormatChange) {
+            if (tinycolor.equals(color, get())) {
+                return;
+            }
+
+            var newColor = tinycolor(color);
+            var newHsv = newColor.toHsv();
+
+            currentHue = (newHsv.h % 360) / 360;
+            currentSaturation = newHsv.s;
+            currentValue = newHsv.v;
+            currentAlpha = newHsv.a;
+
+            updateUI();
+
+            if (newColor.ok && !ignoreFormatChange) {
+                currentPreferredFormat = preferredFormat || newColor.format;
+            }
+        }
+
+        function get(opts) {
+            opts = opts || { };
+            return tinycolor.fromRatio({
+                h: currentHue,
+                s: currentSaturation,
+                v: currentValue,
+                a: Math.round(currentAlpha * 100) / 100
+            }, { format: opts.format || currentPreferredFormat });
+        }
+
+        function isValid() {
+            return !textInput.hasClass("sp-validation-error");
+        }
+
+        function move() {
+            updateUI();
+
+            callbacks.move(get());
+            boundElement.trigger('move.spectrum', [ get() ]);
+        }
+
+        function updateUI() {
+
+            textInput.removeClass("sp-validation-error");
+
+            updateHelperLocations();
+
+            // Update dragger background color (gradients take care of saturation and value).
+            var flatColor = tinycolor.fromRatio({ h: currentHue, s: 1, v: 1 });
+            dragger.css("background-color", flatColor.toHexString());
+
+            // Get a format that alpha will be included in (hex and names ignore alpha)
+            var format = currentPreferredFormat;
+            if (currentAlpha < 1) {
+                if (format === "hex" || format === "hex3" || format === "hex6" || format === "name") {
+                    format = "rgb";
+                }
+            }
+
+            var realColor = get({ format: format }),
+                realHex = realColor.toHexString(),
+                realRgb = realColor.toRgbString();
+
+            // Update the replaced elements background color (with actual selected color)
+            if (rgbaSupport || realColor.alpha === 1) {
+                previewElement.css("background-color", realRgb);
+            }
+            else {
+                previewElement.css("background-color", "transparent");
+                previewElement.css("filter", realColor.toFilter());
+            }
+
+            if (opts.showAlpha) {
+                var rgb = realColor.toRgb();
+                rgb.a = 0;
+                var realAlpha = tinycolor(rgb).toRgbString();
+                var gradient = "linear-gradient(left, " + realAlpha + ", " + realHex + ")";
+
+                if (IE) {
+                    alphaSliderInner.css("filter", tinycolor(realAlpha).toFilter({ gradientType: 1 }, realHex));
+                }
+                else {
+                    alphaSliderInner.css("background", "-webkit-" + gradient);
+                    alphaSliderInner.css("background", "-moz-" + gradient);
+                    alphaSliderInner.css("background", "-ms-" + gradient);
+                    alphaSliderInner.css("background", gradient);
+                }
+            }
+
+
+            // Update the text entry input as it changes happen
+            if (opts.showInput) {
+                textInput.val(realColor.toString(format));
+            }
+
+            if (opts.showPalette) {
+                drawPalette();
+            }
+
+            drawInitial();
+        }
+
+        function updateHelperLocations() {
+            var s = currentSaturation;
+            var v = currentValue;
+
+            // Where to show the little circle in that displays your current selected color
+            var dragX = s * dragWidth;
+            var dragY = (dragHeight) - (v * dragHeight);
+            dragX = Math.max(
+                -dragHelperHeight/2,
+                Math.min(dragWidth - dragHelperHeight/2, dragX - dragHelperHeight/2)
+            );
+            dragY = Math.max(
+                -dragHelperHeight/2,
+                Math.min(dragHeight - dragHelperHeight/2, dragY - dragHelperHeight/2)
+            );
+            dragHelper.css({
+                "top": dragY,
+                "left": dragX
+            });
+
+            var alphaX = currentAlpha * alphaWidth;
+            alphaSlideHelper.css({
+                "left": alphaX - (alphaSlideHelperWidth / 2)
+            });
+
+            // Where to show the bar that displays your current selected hue
+            var slideY = (currentHue) * slideHeight;
+            slideHelper.css({
+                "top": slideY - (slideHelperHeight/2)
+            });
+        }
+
+        function updateOriginalInput(fireCallback) {
+            var color = get();
+
+            if (isInput) {
+                boundElement.val(color.toString(currentPreferredFormat));
+            }
+
+            var hasChanged = !tinycolor.equals(color, colorOnShow);
+            colorOnShow = color;
+
+            // Update the selection palette with the current color
+
+            // Piskel-specific : commented-out, palette update is done on hide
+            // addColorToSelectionPalette(color);
+
+            if (fireCallback && hasChanged) {
+                callbacks.change(color);
+                boundElement.trigger('change', [ color ]);
+            }
+        }
+
+        function reflow() {
+            dragWidth = dragger.width();
+            dragHeight = dragger.height();
+            dragHelperHeight = dragHelper.height() + 4;
+            slideWidth = slider.width();
+            slideHeight = slider.height();
+            slideHelperHeight = slideHelper.height() + 4;
+            alphaWidth = alphaSlider.width();
+            alphaSlideHelperWidth = alphaSlideHelper.width();
+
+            if (!flat) {
+                container.css("position", "absolute");
+                container.offset(getOffset(container, offsetElement));
+            }
+
+            updateHelperLocations();
+        }
+
+        function destroy() {
+            boundElement.show();
+            offsetElement.unbind("click.spectrum touchstart.spectrum");
+            container.remove();
+            replacer.remove();
+            spectrums[spect.id] = null;
+        }
+
+        function option(optionName, optionValue) {
+            if (optionName === undefined) {
+                return $.extend({}, opts);
+            }
+            if (optionValue === undefined) {
+                return opts[optionName];
+            }
+
+            opts[optionName] = optionValue;
+            applyOptions();
+        }
+
+        function enable() {
+            disabled = false;
+            boundElement.attr("disabled", false);
+            offsetElement.removeClass("sp-disabled");
+        }
+
+        function disable() {
+            hide();
+            disabled = true;
+            boundElement.attr("disabled", true);
+            offsetElement.addClass("sp-disabled");
+        }
+
+        initialize();
+
+        var spect = {
+            show: show,
+            hide: hide,
+            toggle: toggle,
+            reflow: reflow,
+            option: option,
+            enable: enable,
+            disable: disable,
+            set: function (c) {
+                set(c);
+                updateOriginalInput();
+            },
+            get: get,
+            destroy: destroy,
+            container: container
+        };
+
+        spect.id = spectrums.push(spect) - 1;
+
+        return spect;
+    }
+
+    /**
+    * checkOffset - get the offset below/above and left/right element depending on screen position
+    * Thanks https://github.com/jquery/jquery-ui/blob/master/ui/jquery.ui.datepicker.js
+    */
+    function getOffset(picker, input) {
+        var extraY = 0;
+        var dpWidth = picker.outerWidth();
+        var dpHeight = picker.outerHeight();
+        var inputHeight = input.outerHeight();
+        var doc = picker[0].ownerDocument;
+        var docElem = doc.documentElement;
+        var viewWidth = docElem.clientWidth + $(doc).scrollLeft();
+        var viewHeight = docElem.clientHeight + $(doc).scrollTop();
+        var offset = input.offset();
+        offset.top += inputHeight;
+
+        if (Math.min(offset.left, (offset.left + dpWidth > viewWidth && viewWidth > dpWidth))) {
+            offset.left -= Math.abs(offset.left + dpWidth - viewWidth);
+            picker.attr('data-x-position','right');
+        } else {
+            offset.left -= 0;
+            picker.attr('data-x-position','left');
+        }
+
+        if (Math.min(offset.top, (offset.top + dpHeight > viewHeight && viewHeight > dpHeight))) {
+            offset.top -= Math.abs(dpHeight + inputHeight - extraY);
+            picker.attr('data-y-position','top');
+        } else {
+            offset.top -= extraY;
+            picker.attr('data-y-position','bottom');
+        }
+
+        return offset;
+    }
+
+    /**
+    * noop - do nothing
+    */
+    function noop() {
+
+    }
+
+    /**
+    * stopPropagation - makes the code only doing this a little easier to read in line
+    */
+    function stopPropagation(e) {
+        e.stopPropagation();
+    }
+
+    /**
+    * Create a function bound to a given object
+    * Thanks to underscore.js
+    */
+    function bind(func, obj) {
+        var slice = Array.prototype.slice;
+        var args = slice.call(arguments, 2);
+        return function () {
+            return func.apply(obj, args.concat(slice.call(arguments)));
+        };
+    }
+
+    /**
+    * Lightweight drag helper.  Handles containment within the element, so that
+    * when dragging, the x is within [0,element.width] and y is within [0,element.height]
+    */
+    function draggable(element, onmove, onstart, onstop) {
+        onmove = onmove || function () { };
+        onstart = onstart || function () { };
+        onstop = onstop || function () { };
+        var doc = element.ownerDocument || document;
+        var dragging = false;
+        var offset = {};
+        var maxHeight = 0;
+        var maxWidth = 0;
+        var hasTouch = ('ontouchstart' in window);
+
+        var duringDragEvents = {};
+        duringDragEvents["selectstart"] = prevent;
+        duringDragEvents["dragstart"] = prevent;
+        duringDragEvents["touchmove mousemove"] = move;
+        duringDragEvents["touchend mouseup"] = stop;
+
+        function prevent(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.returnValue = false;
+        }
+
+        function move(e) {
+            if (dragging) {
+                // Mouseup happened outside of window
+                if (IE && document.documentMode < 9 && !e.button) {
+                    return stop();
+                }
+
+                var touches = e.originalEvent.touches;
+                var pageX = touches ? touches[0].pageX : e.pageX;
+                var pageY = touches ? touches[0].pageY : e.pageY;
+
+                var dragX = Math.max(0, Math.min(pageX - offset.left, maxWidth));
+                var dragY = Math.max(0, Math.min(pageY - offset.top, maxHeight));
+
+                if (hasTouch) {
+                    // Stop scrolling in iOS
+                    prevent(e);
+                }
+
+                onmove.apply(element, [dragX, dragY, e]);
+            }
+        }
+        function start(e) {
+            var rightclick = (e.which) ? (e.which == 3) : (e.button == 2);
+            var touches = e.originalEvent.touches;
+
+            if (!rightclick && !dragging) {
+                if (onstart.apply(element, arguments) !== false) {
+                    dragging = true;
+                    maxHeight = $(element).height();
+                    maxWidth = $(element).width();
+                    offset = $(element).offset();
+
+                    $(doc).bind(duringDragEvents);
+                    $(doc.body).addClass("sp-dragging");
+
+                    if (!hasTouch) {
+                        move(e);
+                    }
+
+                    prevent(e);
+                }
+            }
+        }
+        function stop() {
+            if (dragging) {
+                $(doc).unbind(duringDragEvents);
+                $(doc.body).removeClass("sp-dragging");
+                onstop.apply(element, arguments);
+            }
+            dragging = false;
+        }
+
+        $(element).bind("touchstart mousedown", start);
+    }
+
+    function throttle(func, wait, debounce) {
+        var timeout;
+        return function () {
+            var context = this, args = arguments;
+            var throttler = function () {
+                timeout = null;
+                func.apply(context, args);
+            };
+            if (debounce) clearTimeout(timeout);
+            if (debounce || !timeout) timeout = setTimeout(throttler, wait);
+        };
+    }
+
+
+    function log(){/* jshint -W021 */if(window.console){if(Function.prototype.bind)log=Function.prototype.bind.call(console.log,console);else log=function(){Function.prototype.apply.call(console.log,console,arguments);};log.apply(this,arguments);}}
+
+    /**
+    * Define a jQuery plugin
+    */
+    var dataID = "spectrum.id";
+    $.fn.spectrum = function (opts, extra) {
+
+        if (typeof opts == "string") {
+
+            var returnValue = this;
+            var args = Array.prototype.slice.call( arguments, 1 );
+
+            this.each(function () {
+                var spect = spectrums[$(this).data(dataID)];
+                if (spect) {
+
+                    var method = spect[opts];
+                    if (!method) {
+                        throw new Error( "Spectrum: no such method: '" + opts + "'" );
+                    }
+
+                    if (opts == "get") {
+                        returnValue = spect.get();
+                    }
+                    else if (opts == "container") {
+                        returnValue = spect.container;
+                    }
+                    else if (opts == "option") {
+                        returnValue = spect.option.apply(spect, args);
+                    }
+                    else if (opts == "destroy") {
+                        spect.destroy();
+                        $(this).removeData(dataID);
+                    }
+                    else {
+                        method.apply(spect, args);
+                    }
+                }
+            });
+
+            return returnValue;
+        }
+
+        // Initializing a new instance of spectrum
+        return this.spectrum("destroy").each(function () {
+            var spect = spectrum(this, opts);
+            $(this).data(dataID, spect.id);
+        });
+    };
+
+    $.fn.spectrum.load = true;
+    $.fn.spectrum.loadOpts = {};
+    $.fn.spectrum.draggable = draggable;
+    $.fn.spectrum.defaults = defaultOpts;
+
+    $.spectrum = { };
+    $.spectrum.localization = { };
+    $.spectrum.palettes = { };
+
+    $.fn.spectrum.processNativeColorInputs = function () {
+        var colorInput = $("<input type='color' value='!' />")[0];
+        var supportsColor = colorInput.type === "color" && colorInput.value != "!";
+
+        if (!supportsColor) {
+            $("input[type=color]").spectrum({
+                preferredFormat: "hex6"
+            });
+        }
+    };
+
+    // TinyColor v0.9.16
+    // https://github.com/bgrins/TinyColor
+    // 2013-08-10, Brian Grinstead, MIT License
+
+    (function() {
+
+    var trimLeft = /^[\s,#]+/,
+        trimRight = /\s+$/,
+        tinyCounter = 0,
+        math = Math,
+        mathRound = math.round,
+        mathMin = math.min,
+        mathMax = math.max,
+        mathRandom = math.random;
+
+    function tinycolor (color, opts) {
+
+        color = (color) ? color : '';
+        opts = opts || { };
+
+        // If input is already a tinycolor, return itself
+        if (typeof color == "object" && color.hasOwnProperty("_tc_id")) {
+           return color;
+        }
+
+        var rgb = inputToRGB(color);
+        var r = rgb.r,
+            g = rgb.g,
+            b = rgb.b,
+            a = rgb.a,
+            roundA = mathRound(100*a) / 100,
+            format = opts.format || rgb.format;
+
+        // Don't let the range of [0,255] come back in [0,1].
+        // Potentially lose a little bit of precision here, but will fix issues where
+        // .5 gets interpreted as half of the total, instead of half of 1
+        // If it was supposed to be 128, this was already taken care of by `inputToRgb`
+        if (r < 1) { r = mathRound(r); }
+        if (g < 1) { g = mathRound(g); }
+        if (b < 1) { b = mathRound(b); }
+
+        return {
+            ok: rgb.ok,
+            format: format,
+            _tc_id: tinyCounter++,
+            alpha: a,
+            getAlpha: function() {
+                return a;
+            },
+            setAlpha: function(value) {
+                a = boundAlpha(value);
+                roundA = mathRound(100*a) / 100;
+            },
+            toHsv: function() {
+                var hsv = rgbToHsv(r, g, b);
+                return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: a };
+            },
+            toHsvString: function() {
+                var hsv = rgbToHsv(r, g, b);
+                var h = mathRound(hsv.h * 360), s = mathRound(hsv.s * 100), v = mathRound(hsv.v * 100);
+                return (a == 1) ?
+                  "hsv("  + h + ", " + s + "%, " + v + "%)" :
+                  "hsva(" + h + ", " + s + "%, " + v + "%, "+ roundA + ")";
+            },
+            toHsl: function() {
+                var hsl = rgbToHsl(r, g, b);
+                return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: a };
+            },
+            toHslString: function() {
+                var hsl = rgbToHsl(r, g, b);
+                var h = mathRound(hsl.h * 360), s = mathRound(hsl.s * 100), l = mathRound(hsl.l * 100);
+                return (a == 1) ?
+                  "hsl("  + h + ", " + s + "%, " + l + "%)" :
+                  "hsla(" + h + ", " + s + "%, " + l + "%, "+ roundA + ")";
+            },
+            toHex: function(allow3Char) {
+                return rgbToHex(r, g, b, allow3Char);
+            },
+            toHexString: function(allow3Char) {
+                return '#' + rgbToHex(r, g, b, allow3Char);
+            },
+            toRgb: function() {
+                return { r: mathRound(r), g: mathRound(g), b: mathRound(b), a: a };
+            },
+            toRgbString: function() {
+                return (a == 1) ?
+                  "rgb("  + mathRound(r) + ", " + mathRound(g) + ", " + mathRound(b) + ")" :
+                  "rgba(" + mathRound(r) + ", " + mathRound(g) + ", " + mathRound(b) + ", " + roundA + ")";
+            },
+            toPercentageRgb: function() {
+                return { r: mathRound(bound01(r, 255) * 100) + "%", g: mathRound(bound01(g, 255) * 100) + "%", b: mathRound(bound01(b, 255) * 100) + "%", a: a };
+            },
+            toPercentageRgbString: function() {
+                return (a == 1) ?
+                  "rgb("  + mathRound(bound01(r, 255) * 100) + "%, " + mathRound(bound01(g, 255) * 100) + "%, " + mathRound(bound01(b, 255) * 100) + "%)" :
+                  "rgba(" + mathRound(bound01(r, 255) * 100) + "%, " + mathRound(bound01(g, 255) * 100) + "%, " + mathRound(bound01(b, 255) * 100) + "%, " + roundA + ")";
+            },
+            toName: function() {
+                if (a === 0) {
+                    return "transparent";
+                }
+
+                return hexNames[rgbToHex(r, g, b, true)] || false;
+            },
+            toFilter: function(secondColor) {
+                var hex = rgbToHex(r, g, b);
+                var secondHex = hex;
+                var alphaHex = Math.round(parseFloat(a) * 255).toString(16);
+                var secondAlphaHex = alphaHex;
+                var gradientType = opts && opts.gradientType ? "GradientType = 1, " : "";
+
+                if (secondColor) {
+                    var s = tinycolor(secondColor);
+                    secondHex = s.toHex();
+                    secondAlphaHex = Math.round(parseFloat(s.alpha) * 255).toString(16);
+                }
+
+                return "progid:DXImageTransform.Microsoft.gradient("+gradientType+"startColorstr=#" + pad2(alphaHex) + hex + ",endColorstr=#" + pad2(secondAlphaHex) + secondHex + ")";
+            },
+            toString: function(format) {
+                var formatSet = !!format;
+                format = format || this.format;
+
+                var formattedString = false;
+                var hasAlphaAndFormatNotSet = !formatSet && a < 1 && a > 0;
+                var formatWithAlpha = hasAlphaAndFormatNotSet && (format === "hex" || format === "hex6" || format === "hex3" || format === "name");
+
+                if (format === "rgb") {
+                    formattedString = this.toRgbString();
+                }
+                if (format === "prgb") {
+                    formattedString = this.toPercentageRgbString();
+                }
+                if (format === "hex" || format === "hex6") {
+                    formattedString = this.toHexString();
+                }
+                if (format === "hex3") {
+                    formattedString = this.toHexString(true);
+                }
+                if (format === "name") {
+                    formattedString = this.toName();
+                }
+                if (format === "hsl") {
+                    formattedString = this.toHslString();
+                }
+                if (format === "hsv") {
+                    formattedString = this.toHsvString();
+                }
+
+                if (formatWithAlpha) {
+                    return this.toRgbString();
+                }
+
+                return formattedString || this.toHexString();
+            }
+        };
+    }
+
+    // If input is an object, force 1 into "1.0" to handle ratios properly
+    // String input requires "1.0" as input, so 1 will be treated as 1
+    tinycolor.fromRatio = function(color, opts) {
+        if (typeof color == "object") {
+            var newColor = {};
+            for (var i in color) {
+                if (color.hasOwnProperty(i)) {
+                    if (i === "a") {
+                        newColor[i] = color[i];
+                    }
+                    else {
+                        newColor[i] = convertToPercentage(color[i]);
+                    }
+                }
+            }
+            color = newColor;
+        }
+
+        return tinycolor(color, opts);
+    };
+
+    // Given a string or object, convert that input to RGB
+    // Possible string inputs:
+    //
+    //     "red"
+    //     "#f00" or "f00"
+    //     "#ff0000" or "ff0000"
+    //     "rgb 255 0 0" or "rgb (255, 0, 0)"
+    //     "rgb 1.0 0 0" or "rgb (1, 0, 0)"
+    //     "rgba (255, 0, 0, 1)" or "rgba 255, 0, 0, 1"
+    //     "rgba (1.0, 0, 0, 1)" or "rgba 1.0, 0, 0, 1"
+    //     "hsl(0, 100%, 50%)" or "hsl 0 100% 50%"
+    //     "hsla(0, 100%, 50%, 1)" or "hsla 0 100% 50%, 1"
+    //     "hsv(0, 100%, 100%)" or "hsv 0 100% 100%"
+    //
+    function inputToRGB(color) {
+
+        var rgb = { r: 0, g: 0, b: 0 };
+        var a = 1;
+        var ok = false;
+        var format = false;
+
+        if (typeof color == "string") {
+            color = stringInputToObject(color);
+        }
+
+        if (typeof color == "object") {
+            if (color.hasOwnProperty("r") && color.hasOwnProperty("g") && color.hasOwnProperty("b")) {
+                rgb = rgbToRgb(color.r, color.g, color.b);
+                ok = true;
+                format = String(color.r).substr(-1) === "%" ? "prgb" : "rgb";
+            }
+            else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("v")) {
+                color.s = convertToPercentage(color.s);
+                color.v = convertToPercentage(color.v);
+                rgb = hsvToRgb(color.h, color.s, color.v);
+                ok = true;
+                format = "hsv";
+            }
+            else if (color.hasOwnProperty("h") && color.hasOwnProperty("s") && color.hasOwnProperty("l")) {
+                color.s = convertToPercentage(color.s);
+                color.l = convertToPercentage(color.l);
+                rgb = hslToRgb(color.h, color.s, color.l);
+                ok = true;
+                format = "hsl";
+            }
+
+            if (color.hasOwnProperty("a")) {
+                a = color.a;
+            }
+        }
+
+        a = boundAlpha(a);
+
+        return {
+            ok: ok,
+            format: color.format || format,
+            r: mathMin(255, mathMax(rgb.r, 0)),
+            g: mathMin(255, mathMax(rgb.g, 0)),
+            b: mathMin(255, mathMax(rgb.b, 0)),
+            a: a
+        };
+    }
+
+
+    // Conversion Functions
+    // --------------------
+
+    // `rgbToHsl`, `rgbToHsv`, `hslToRgb`, `hsvToRgb` modified from:
+    // <http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript>
+
+    // `rgbToRgb`
+    // Handle bounds / percentage checking to conform to CSS color spec
+    // <http://www.w3.org/TR/css3-color/>
+    // *Assumes:* r, g, b in [0, 255] or [0, 1]
+    // *Returns:* { r, g, b } in [0, 255]
+    function rgbToRgb(r, g, b){
+        return {
+            r: bound01(r, 255) * 255,
+            g: bound01(g, 255) * 255,
+            b: bound01(b, 255) * 255
+        };
+    }
+
+    // `rgbToHsl`
+    // Converts an RGB color value to HSL.
+    // *Assumes:* r, g, and b are contained in [0, 255] or [0, 1]
+    // *Returns:* { h, s, l } in [0,1]
+    function rgbToHsl(r, g, b) {
+
+        r = bound01(r, 255);
+        g = bound01(g, 255);
+        b = bound01(b, 255);
+
+        var max = mathMax(r, g, b), min = mathMin(r, g, b);
+        var h, s, l = (max + min) / 2;
+
+        if(max == min) {
+            h = s = 0; // achromatic
+        }
+        else {
+            var d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch(max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+
+            h /= 6;
+        }
+
+        return { h: h, s: s, l: l };
+    }
+
+    // `hslToRgb`
+    // Converts an HSL color value to RGB.
+    // *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are contained [0, 1] or [0, 100]
+    // *Returns:* { r, g, b } in the set [0, 255]
+    function hslToRgb(h, s, l) {
+        var r, g, b;
+
+        h = bound01(h, 360);
+        s = bound01(s, 100);
+        l = bound01(l, 100);
+
+        function hue2rgb(p, q, t) {
+            if(t < 0) t += 1;
+            if(t > 1) t -= 1;
+            if(t < 1/6) return p + (q - p) * 6 * t;
+            if(t < 1/2) return q;
+            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        }
+
+        if(s === 0) {
+            r = g = b = l; // achromatic
+        }
+        else {
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+
+        return { r: r * 255, g: g * 255, b: b * 255 };
+    }
+
+    // `rgbToHsv`
+    // Converts an RGB color value to HSV
+    // *Assumes:* r, g, and b are contained in the set [0, 255] or [0, 1]
+    // *Returns:* { h, s, v } in [0,1]
+    function rgbToHsv(r, g, b) {
+
+        r = bound01(r, 255);
+        g = bound01(g, 255);
+        b = bound01(b, 255);
+
+        var max = mathMax(r, g, b), min = mathMin(r, g, b);
+        var h, s, v = max;
+
+        var d = max - min;
+        s = max === 0 ? 0 : d / max;
+
+        if(max == min) {
+            h = 0; // achromatic
+        }
+        else {
+            switch(max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return { h: h, s: s, v: v };
+    }
+
+    // `hsvToRgb`
+    // Converts an HSV color value to RGB.
+    // *Assumes:* h is contained in [0, 1] or [0, 360] and s and v are contained in [0, 1] or [0, 100]
+    // *Returns:* { r, g, b } in the set [0, 255]
+     function hsvToRgb(h, s, v) {
+
+        h = bound01(h, 360) * 6;
+        s = bound01(s, 100);
+        v = bound01(v, 100);
+
+        var i = math.floor(h),
+            f = h - i,
+            p = v * (1 - s),
+            q = v * (1 - f * s),
+            t = v * (1 - (1 - f) * s),
+            mod = i % 6,
+            r = [v, q, p, p, t, v][mod],
+            g = [t, v, v, q, p, p][mod],
+            b = [p, p, t, v, v, q][mod];
+
+        return { r: r * 255, g: g * 255, b: b * 255 };
+    }
+
+    // `rgbToHex`
+    // Converts an RGB color to hex
+    // Assumes r, g, and b are contained in the set [0, 255]
+    // Returns a 3 or 6 character hex
+    function rgbToHex(r, g, b, allow3Char) {
+
+        var hex = [
+            pad2(mathRound(r).toString(16)),
+            pad2(mathRound(g).toString(16)),
+            pad2(mathRound(b).toString(16))
+        ];
+
+        // Return a 3 character hex if possible
+        if (allow3Char && hex[0].charAt(0) == hex[0].charAt(1) && hex[1].charAt(0) == hex[1].charAt(1) && hex[2].charAt(0) == hex[2].charAt(1)) {
+            return hex[0].charAt(0) + hex[1].charAt(0) + hex[2].charAt(0);
+        }
+
+        return hex.join("");
+    }
+
+    // `equals`
+    // Can be called with any tinycolor input
+    tinycolor.equals = function (color1, color2) {
+        if (!color1 || !color2) { return false; }
+        return tinycolor(color1).toRgbString() == tinycolor(color2).toRgbString();
+    };
+    tinycolor.random = function() {
+        return tinycolor.fromRatio({
+            r: mathRandom(),
+            g: mathRandom(),
+            b: mathRandom()
+        });
+    };
+
+
+    // Modification Functions
+    // ----------------------
+    // Thanks to less.js for some of the basics here
+    // <https://github.com/cloudhead/less.js/blob/master/lib/less/functions.js>
+
+    tinycolor.desaturate = function (color, amount) {
+        amount = (amount === 0) ? 0 : (amount || 10);
+        var hsl = tinycolor(color).toHsl();
+        hsl.s -= amount / 100;
+        hsl.s = clamp01(hsl.s);
+        return tinycolor(hsl);
+    };
+    tinycolor.saturate = function (color, amount) {
+        amount = (amount === 0) ? 0 : (amount || 10);
+        var hsl = tinycolor(color).toHsl();
+        hsl.s += amount / 100;
+        hsl.s = clamp01(hsl.s);
+        return tinycolor(hsl);
+    };
+    tinycolor.greyscale = function(color) {
+        return tinycolor.desaturate(color, 100);
+    };
+    tinycolor.lighten = function(color, amount) {
+        amount = (amount === 0) ? 0 : (amount || 10);
+        var hsl = tinycolor(color).toHsl();
+        hsl.l += amount / 100;
+        hsl.l = clamp01(hsl.l);
+        return tinycolor(hsl);
+    };
+    tinycolor.darken = function (color, amount) {
+        amount = (amount === 0) ? 0 : (amount || 10);
+        var hsl = tinycolor(color).toHsl();
+        hsl.l -= amount / 100;
+        hsl.l = clamp01(hsl.l);
+        return tinycolor(hsl);
+    };
+    tinycolor.complement = function(color) {
+        var hsl = tinycolor(color).toHsl();
+        hsl.h = (hsl.h + 180) % 360;
+        return tinycolor(hsl);
+    };
+
+
+    // Combination Functions
+    // ---------------------
+    // Thanks to jQuery xColor for some of the ideas behind these
+    // <https://github.com/infusion/jQuery-xcolor/blob/master/jquery.xcolor.js>
+
+    tinycolor.triad = function(color) {
+        var hsl = tinycolor(color).toHsl();
+        var h = hsl.h;
+        return [
+            tinycolor(color),
+            tinycolor({ h: (h + 120) % 360, s: hsl.s, l: hsl.l }),
+            tinycolor({ h: (h + 240) % 360, s: hsl.s, l: hsl.l })
+        ];
+    };
+    tinycolor.tetrad = function(color) {
+        var hsl = tinycolor(color).toHsl();
+        var h = hsl.h;
+        return [
+            tinycolor(color),
+            tinycolor({ h: (h + 90) % 360, s: hsl.s, l: hsl.l }),
+            tinycolor({ h: (h + 180) % 360, s: hsl.s, l: hsl.l }),
+            tinycolor({ h: (h + 270) % 360, s: hsl.s, l: hsl.l })
+        ];
+    };
+    tinycolor.splitcomplement = function(color) {
+        var hsl = tinycolor(color).toHsl();
+        var h = hsl.h;
+        return [
+            tinycolor(color),
+            tinycolor({ h: (h + 72) % 360, s: hsl.s, l: hsl.l}),
+            tinycolor({ h: (h + 216) % 360, s: hsl.s, l: hsl.l})
+        ];
+    };
+    tinycolor.analogous = function(color, results, slices) {
+        results = results || 6;
+        slices = slices || 30;
+
+        var hsl = tinycolor(color).toHsl();
+        var part = 360 / slices;
+        var ret = [tinycolor(color)];
+
+        for (hsl.h = ((hsl.h - (part * results >> 1)) + 720) % 360; --results; ) {
+            hsl.h = (hsl.h + part) % 360;
+            ret.push(tinycolor(hsl));
+        }
+        return ret;
+    };
+    tinycolor.monochromatic = function(color, results) {
+        results = results || 6;
+        var hsv = tinycolor(color).toHsv();
+        var h = hsv.h, s = hsv.s, v = hsv.v;
+        var ret = [];
+        var modification = 1 / results;
+
+        while (results--) {
+            ret.push(tinycolor({ h: h, s: s, v: v}));
+            v = (v + modification) % 1;
+        }
+
+        return ret;
+    };
+
+
+    // Readability Functions
+    // ---------------------
+    // <http://www.w3.org/TR/AERT#color-contrast>
+
+    // `readability`
+    // Analyze the 2 colors and returns an object with the following properties:
+    //    `brightness`: difference in brightness between the two colors
+    //    `color`: difference in color/hue between the two colors
+    tinycolor.readability = function(color1, color2) {
+        var a = tinycolor(color1).toRgb();
+        var b = tinycolor(color2).toRgb();
+        var brightnessA = (a.r * 299 + a.g * 587 + a.b * 114) / 1000;
+        var brightnessB = (b.r * 299 + b.g * 587 + b.b * 114) / 1000;
+        var colorDiff = (
+            Math.max(a.r, b.r) - Math.min(a.r, b.r) +
+            Math.max(a.g, b.g) - Math.min(a.g, b.g) +
+            Math.max(a.b, b.b) - Math.min(a.b, b.b)
+        );
+
+        return {
+            brightness: Math.abs(brightnessA - brightnessB),
+            color: colorDiff
+        };
+    };
+
+    // `readable`
+    // http://www.w3.org/TR/AERT#color-contrast
+    // Ensure that foreground and background color combinations provide sufficient contrast.
+    // *Example*
+    //    tinycolor.readable("#000", "#111") => false
+    tinycolor.readable = function(color1, color2) {
+        var readability = tinycolor.readability(color1, color2);
+        return readability.brightness > 125 && readability.color > 500;
+    };
+
+    // `mostReadable`
+    // Given a base color and a list of possible foreground or background
+    // colors for that base, returns the most readable color.
+    // *Example*
+    //    tinycolor.mostReadable("#123", ["#fff", "#000"]) => "#000"
+    tinycolor.mostReadable = function(baseColor, colorList) {
+        var bestColor = null;
+        var bestScore = 0;
+        var bestIsReadable = false;
+        for (var i=0; i < colorList.length; i++) {
+
+            // We normalize both around the "acceptable" breaking point,
+            // but rank brightness constrast higher than hue.
+
+            var readability = tinycolor.readability(baseColor, colorList[i]);
+            var readable = readability.brightness > 125 && readability.color > 500;
+            var score = 3 * (readability.brightness / 125) + (readability.color / 500);
+
+            if ((readable && ! bestIsReadable) ||
+                (readable && bestIsReadable && score > bestScore) ||
+                ((! readable) && (! bestIsReadable) && score > bestScore)) {
+                bestIsReadable = readable;
+                bestScore = score;
+                bestColor = tinycolor(colorList[i]);
+            }
+        }
+        return bestColor;
+    };
+
+
+    // Big List of Colors
+    // ------------------
+    // <http://www.w3.org/TR/css3-color/#svg-color>
+    var names = tinycolor.names = {
+        aliceblue: "f0f8ff",
+        antiquewhite: "faebd7",
+        aqua: "0ff",
+        aquamarine: "7fffd4",
+        azure: "f0ffff",
+        beige: "f5f5dc",
+        bisque: "ffe4c4",
+        black: "000",
+        blanchedalmond: "ffebcd",
+        blue: "00f",
+        blueviolet: "8a2be2",
+        brown: "a52a2a",
+        burlywood: "deb887",
+        burntsienna: "ea7e5d",
+        cadetblue: "5f9ea0",
+        chartreuse: "7fff00",
+        chocolate: "d2691e",
+        coral: "ff7f50",
+        cornflowerblue: "6495ed",
+        cornsilk: "fff8dc",
+        crimson: "dc143c",
+        cyan: "0ff",
+        darkblue: "00008b",
+        darkcyan: "008b8b",
+        darkgoldenrod: "b8860b",
+        darkgray: "a9a9a9",
+        darkgreen: "006400",
+        darkgrey: "a9a9a9",
+        darkkhaki: "bdb76b",
+        darkmagenta: "8b008b",
+        darkolivegreen: "556b2f",
+        darkorange: "ff8c00",
+        darkorchid: "9932cc",
+        darkred: "8b0000",
+        darksalmon: "e9967a",
+        darkseagreen: "8fbc8f",
+        darkslateblue: "483d8b",
+        darkslategray: "2f4f4f",
+        darkslategrey: "2f4f4f",
+        darkturquoise: "00ced1",
+        darkviolet: "9400d3",
+        deeppink: "ff1493",
+        deepskyblue: "00bfff",
+        dimgray: "696969",
+        dimgrey: "696969",
+        dodgerblue: "1e90ff",
+        firebrick: "b22222",
+        floralwhite: "fffaf0",
+        forestgreen: "228b22",
+        fuchsia: "f0f",
+        gainsboro: "dcdcdc",
+        ghostwhite: "f8f8ff",
+        gold: "ffd700",
+        goldenrod: "daa520",
+        gray: "808080",
+        green: "008000",
+        greenyellow: "adff2f",
+        grey: "808080",
+        honeydew: "f0fff0",
+        hotpink: "ff69b4",
+        indianred: "cd5c5c",
+        indigo: "4b0082",
+        ivory: "fffff0",
+        khaki: "f0e68c",
+        lavender: "e6e6fa",
+        lavenderblush: "fff0f5",
+        lawngreen: "7cfc00",
+        lemonchiffon: "fffacd",
+        lightblue: "add8e6",
+        lightcoral: "f08080",
+        lightcyan: "e0ffff",
+        lightgoldenrodyellow: "fafad2",
+        lightgray: "d3d3d3",
+        lightgreen: "90ee90",
+        lightgrey: "d3d3d3",
+        lightpink: "ffb6c1",
+        lightsalmon: "ffa07a",
+        lightseagreen: "20b2aa",
+        lightskyblue: "87cefa",
+        lightslategray: "789",
+        lightslategrey: "789",
+        lightsteelblue: "b0c4de",
+        lightyellow: "ffffe0",
+        lime: "0f0",
+        limegreen: "32cd32",
+        linen: "faf0e6",
+        magenta: "f0f",
+        maroon: "800000",
+        mediumaquamarine: "66cdaa",
+        mediumblue: "0000cd",
+        mediumorchid: "ba55d3",
+        mediumpurple: "9370db",
+        mediumseagreen: "3cb371",
+        mediumslateblue: "7b68ee",
+        mediumspringgreen: "00fa9a",
+        mediumturquoise: "48d1cc",
+        mediumvioletred: "c71585",
+        midnightblue: "191970",
+        mintcream: "f5fffa",
+        mistyrose: "ffe4e1",
+        moccasin: "ffe4b5",
+        navajowhite: "ffdead",
+        navy: "000080",
+        oldlace: "fdf5e6",
+        olive: "808000",
+        olivedrab: "6b8e23",
+        orange: "ffa500",
+        orangered: "ff4500",
+        orchid: "da70d6",
+        palegoldenrod: "eee8aa",
+        palegreen: "98fb98",
+        paleturquoise: "afeeee",
+        palevioletred: "db7093",
+        papayawhip: "ffefd5",
+        peachpuff: "ffdab9",
+        peru: "cd853f",
+        pink: "ffc0cb",
+        plum: "dda0dd",
+        powderblue: "b0e0e6",
+        purple: "800080",
+        red: "f00",
+        rosybrown: "bc8f8f",
+        royalblue: "4169e1",
+        saddlebrown: "8b4513",
+        salmon: "fa8072",
+        sandybrown: "f4a460",
+        seagreen: "2e8b57",
+        seashell: "fff5ee",
+        sienna: "a0522d",
+        silver: "c0c0c0",
+        skyblue: "87ceeb",
+        slateblue: "6a5acd",
+        slategray: "708090",
+        slategrey: "708090",
+        snow: "fffafa",
+        springgreen: "00ff7f",
+        steelblue: "4682b4",
+        tan: "d2b48c",
+        teal: "008080",
+        thistle: "d8bfd8",
+        tomato: "ff6347",
+        turquoise: "40e0d0",
+        violet: "ee82ee",
+        wheat: "f5deb3",
+        white: "fff",
+        whitesmoke: "f5f5f5",
+        yellow: "ff0",
+        yellowgreen: "9acd32"
+    };
+
+    // Make it easy to access colors via `hexNames[hex]`
+    var hexNames = tinycolor.hexNames = flip(names);
+
+
+    // Utilities
+    // ---------
+
+    // `{ 'name1': 'val1' }` becomes `{ 'val1': 'name1' }`
+    function flip(o) {
+        var flipped = { };
+        for (var i in o) {
+            if (o.hasOwnProperty(i)) {
+                flipped[o[i]] = i;
+            }
+        }
+        return flipped;
+    }
+
+    // Return a valid alpha value [0,1] with all invalid values being set to 1
+    function boundAlpha(a) {
+        a = parseFloat(a);
+
+        if (isNaN(a) || a < 0 || a > 1) {
+            a = 1;
+        }
+
+        return a;
+    }
+
+    // Take input from [0, n] and return it as [0, 1]
+    function bound01(n, max) {
+        if (isOnePointZero(n)) { n = "100%"; }
+
+        var processPercent = isPercentage(n);
+        n = mathMin(max, mathMax(0, parseFloat(n)));
+
+        // Automatically convert percentage into number
+        if (processPercent) {
+            n = parseInt(n * max, 10) / 100;
+        }
+
+        // Handle floating point rounding errors
+        if ((math.abs(n - max) < 0.000001)) {
+            return 1;
+        }
+
+        // Convert into [0, 1] range if it isn't already
+        return (n % max) / parseFloat(max);
+    }
+
+    // Force a number between 0 and 1
+    function clamp01(val) {
+        return mathMin(1, mathMax(0, val));
+    }
+
+    // Parse an integer into hex
+    function parseHex(val) {
+        return parseInt(val, 16);
+    }
+
+    // Need to handle 1.0 as 100%, since once it is a number, there is no difference between it and 1
+    // <http://stackoverflow.com/questions/7422072/javascript-how-to-detect-number-as-a-decimal-including-1-0>
+    function isOnePointZero(n) {
+        return typeof n == "string" && n.indexOf('.') != -1 && parseFloat(n) === 1;
+    }
+
+    // Check to see if string passed in is a percentage
+    function isPercentage(n) {
+        return typeof n === "string" && n.indexOf('%') != -1;
+    }
+
+    // Force a hex value to have 2 characters
+    function pad2(c) {
+        return c.length == 1 ? '0' + c : '' + c;
+    }
+
+    // Replace a decimal with it's percentage value
+    function convertToPercentage(n) {
+        if (n <= 1) {
+            n = (n * 100) + "%";
+        }
+
+        return n;
+    }
+
+    var matchers = (function() {
+
+        // <http://www.w3.org/TR/css3-values/#integers>
+        var CSS_INTEGER = "[-\\+]?\\d+%?";
+
+        // <http://www.w3.org/TR/css3-values/#number-value>
+        var CSS_NUMBER = "[-\\+]?\\d*\\.\\d+%?";
+
+        // Allow positive/negative integer/number.  Don't capture the either/or, just the entire outcome.
+        var CSS_UNIT = "(?:" + CSS_NUMBER + ")|(?:" + CSS_INTEGER + ")";
+
+        // Actual matching.
+        // Parentheses and commas are optional, but not required.
+        // Whitespace can take the place of commas or opening paren
+        var PERMISSIVE_MATCH3 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
+        var PERMISSIVE_MATCH4 = "[\\s|\\(]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")[,|\\s]+(" + CSS_UNIT + ")\\s*\\)?";
+
+        return {
+            rgb: new RegExp("rgb" + PERMISSIVE_MATCH3),
+            rgba: new RegExp("rgba" + PERMISSIVE_MATCH4),
+            hsl: new RegExp("hsl" + PERMISSIVE_MATCH3),
+            hsla: new RegExp("hsla" + PERMISSIVE_MATCH4),
+            hsv: new RegExp("hsv" + PERMISSIVE_MATCH3),
+            hex3: /^([0-9a-fA-F]{1})([0-9a-fA-F]{1})([0-9a-fA-F]{1})$/,
+            hex6: /^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/
+        };
+    })();
+
+    // `stringInputToObject`
+    // Permissive string parsing.  Take in a number of formats, and output an object
+    // based on detected format.  Returns `{ r, g, b }` or `{ h, s, l }` or `{ h, s, v}`
+    function stringInputToObject(color) {
+
+        color = color.replace(trimLeft,'').replace(trimRight, '').toLowerCase();
+        var named = false;
+        if (names[color]) {
+            color = names[color];
+            named = true;
+        }
+        else if (color == 'transparent') {
+            return { r: 0, g: 0, b: 0, a: 0, format: "name" };
+        }
+
+        // Try to match string input using regular expressions.
+        // Keep most of the number bounding out of this function - don't worry about [0,1] or [0,100] or [0,360]
+        // Just return an object and let the conversion functions handle that.
+        // This way the result will be the same whether the tinycolor is initialized with string or object.
+        var match;
+        if ((match = matchers.rgb.exec(color))) {
+            return { r: match[1], g: match[2], b: match[3] };
+        }
+        if ((match = matchers.rgba.exec(color))) {
+            return { r: match[1], g: match[2], b: match[3], a: match[4] };
+        }
+        if ((match = matchers.hsl.exec(color))) {
+            return { h: match[1], s: match[2], l: match[3] };
+        }
+        if ((match = matchers.hsla.exec(color))) {
+            return { h: match[1], s: match[2], l: match[3], a: match[4] };
+        }
+        if ((match = matchers.hsv.exec(color))) {
+            return { h: match[1], s: match[2], v: match[3] };
+        }
+        if ((match = matchers.hex6.exec(color))) {
+            return {
+                r: parseHex(match[1]),
+                g: parseHex(match[2]),
+                b: parseHex(match[3]),
+                format: named ? "name" : "hex"
+            };
+        }
+        if ((match = matchers.hex3.exec(color))) {
+            return {
+                r: parseHex(match[1] + '' + match[1]),
+                g: parseHex(match[2] + '' + match[2]),
+                b: parseHex(match[3] + '' + match[3]),
+                format: named ? "name" : "hex"
+            };
+        }
+
+        return false;
+    }
+
+    // Expose tinycolor to window, does not need to run in non-browser context.
+    window.tinycolor = tinycolor;
+
+    })();
+    var tinycolor = window.tinycolor;
+
+    $(function () {
+        if ($.fn.spectrum.load) {
+            $.fn.spectrum.processNativeColorInputs();
+        }
+    });
+
+})(window, jQuery);
+;// TODO(grosbouddha): put under pskl namespace.
 var Constants = {
   DEFAULT : {
     HEIGHT : 32,
@@ -11798,15 +13761,17 @@ var Constants = {
     FPS : 12
   },
 
-  MODEL_VERSION : 1,
+  MODEL_VERSION : 2,
 
-  MAX_HEIGHT : 128,
-  MAX_WIDTH : 128,
+  MAX_HEIGHT : 1024,
+  MAX_WIDTH : 1024,
+
+  MINIMUM_ZOOM : 1,
 
   PREVIEW_FILM_SIZE : 120,
 
   DEFAULT_PEN_COLOR : '#000000',
-  TRANSPARENT_COLOR : 'TRANSPARENT',
+  TRANSPARENT_COLOR : 'rgba(0, 0, 0, 0)',
 
   /*
    * Fake semi-transparent color used to highlight transparent
@@ -11838,18 +13803,21 @@ var Constants = {
   IMAGE_SERVICE_GET_URL : 'http://screenletstore.appspot.com/img/',
 
   GRID_STROKE_WIDTH: 1,
+  ZOOMED_OUT_BACKGROUND_COLOR : '#A0A0A0',
 
-  LEFT_BUTTON : 'left_button_1',
-  RIGHT_BUTTON : 'right_button_2'
+  LEFT_BUTTON : 0,
+  MIDDLE_BUTTON : 1,
+  RIGHT_BUTTON : 2,
+  MOUSEMOVE_THROTTLING : 10,
+
+  ABSTRACT_FUNCTION : function () {throw 'abstract method should be implemented';}
 };;// TODO(grosbouddha): put under pskl namespace.
 var Events = {
 
   TOOL_SELECTED : "TOOL_SELECTED",
   TOOL_RELEASED : "TOOL_RELEASED",
-  PRIMARY_COLOR_SELECTED: "PRIMARY_COLOR_SELECTED",
-  PRIMARY_COLOR_UPDATED: "PRIMARY_COLOR_UPDATED",
-  SECONDARY_COLOR_SELECTED: "SECONDARY_COLOR_SELECTED",
-  SECONDARY_COLOR_UPDATED: "SECONDARY_COLOR_UPDATED",
+  SELECT_PRIMARY_COLOR: "SELECT_PRIMARY_COLOR",
+  SELECT_SECONDARY_COLOR: "SELECT_SECONDARY_COLOR",
 
   /**
    *  When this event is emitted, a request is sent to the localstorage
@@ -11857,22 +13825,6 @@ var Events = {
    *  may not immediately store data (internal throttling of requests).
    */
   LOCALSTORAGE_REQUEST: "LOCALSTORAGE_REQUEST",
-
-  CANVAS_RIGHT_CLICKED: "CANVAS_RIGHT_CLICKED",
-
-  /**
-   * Event to request a refresh of the display.
-   * A bit overkill but, it's just workaround in our current drawing system.
-   * TODO: Remove or rework when redraw system is refactored.
-   */
-  REFRESH: "REFRESH",
-
-  /**
-   * Temporary event to bind the redraw of right preview film to the canvas.
-   * This redraw should be driven by model updates.
-   * TODO(vincz): Remove.
-   */
-  REDRAW_PREVIEWFILM: "REDRAW_PREVIEWFILM",
 
   /**
    * Fired each time a user setting change.
@@ -11882,7 +13834,6 @@ var Events = {
    */
   USER_SETTINGS_CHANGED: "USER_SETTINGS_CHANGED",
 
-  /* Listened to by SettingsController */
   CLOSE_SETTINGS_DRAWER : "CLOSE_SETTINGS_DRAWER",
 
   /**
@@ -11893,8 +13844,6 @@ var Events = {
 
   FRAME_SIZE_CHANGED : "FRAME_SIZE_CHANGED",
 
-  CURRENT_FRAME_SET: "CURRENT_FRAME_SET",
-
   SELECTION_CREATED: "SELECTION_CREATED",
   SELECTION_MOVE_REQUEST: "SELECTION_MOVE_REQUEST",
   SELECTION_DISMISSED: "SELECTION_DISMISSED",
@@ -11902,11 +13851,7 @@ var Events = {
   SHOW_NOTIFICATION: "SHOW_NOTIFICATION",
   HIDE_NOTIFICATION: "HIDE_NOTIFICATION",
 
-  UNDO: "UNDO",
-  REDO: "REDO",
-  CUT: "CUT",
-  COPY: "COPY",
-  PASTE: "PASTE"
+  ZOOM_CHANGED : "ZOOM_CHANGED"
 };;jQuery.namespace = function() {
   var a=arguments, o=null, i, j, d;
   for (i=0; i<a.length; i=i+1) {
@@ -11946,7 +13891,7 @@ if (typeof Function.prototype.bind !== "function") {
     if (r > 255 || g > 255 || b > 255) {
       throw "Invalid color component";
     }
-    
+
     return ((r << 16) | (g << 8) | b).toString(16);
   };
 
@@ -11959,6 +13904,25 @@ if (typeof Function.prototype.bind !== "function") {
 })();
 
 ;(function () {
+  var ns = $.namespace('pskl.utils');
+  var ua = navigator.userAgent;
+
+  ns.UserAgent = {
+    isIE : /MSIE/i.test( ua ),
+    isChrome : /Chrome/i.test( ua ),
+    isFirefox : /Firefox/i.test( ua )
+  };
+
+  ns.UserAgent.version = (function () {
+    if (pskl.utils.UserAgent.isIE) {
+      return parseInt(/MSIE\s?(\d+)/i.exec( ua )[1], 10);
+    } else if (pskl.utils.UserAgent.isChrome) {
+      return parseInt(/Chrome\/(\d+)/i.exec( ua )[1], 10);
+    } else if (pskl.utils.UserAgent.isFirefox) {
+      return parseInt(/Firefox\/(\d+)/i.exec( ua )[1], 10);
+    }
+  })();
+})();;(function () {
   var ns = $.namespace("pskl");
 
   ns.CanvasUtils = {
@@ -11975,8 +13939,43 @@ if (typeof Function.prototype.bind !== "function") {
           canvas.classList.add(classList[i]);
         }
       }
-      
+
       return canvas;
+    },
+
+    /**
+     * By default, all scaling operations on a Canvas 2D Context are performed using antialiasing.
+     * Resizing a 32x32 image to 320x320 will lead to a blurry output.
+     * On Chrome, FF and IE>=11, this can be disabled by setting a property on the Canvas 2D Context.
+     * In this case the browser will use a nearest-neighbor scaling.
+     * @param  {Canvas} canvas
+     */
+    disableImageSmoothing : function (canvas) {
+      var context = canvas.getContext('2d');
+      context.imageSmoothingEnabled = false;
+      context.mozImageSmoothingEnabled = false;
+      context.oImageSmoothingEnabled = false;
+      context.webkitImageSmoothingEnabled = false;
+      context.msImageSmoothingEnabled = false;
+    },
+
+    clear : function (canvas) {
+      if (canvas) {
+        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+      }
+    },
+
+    getImageDataFromCanvas : function (canvas) {
+      var sourceContext = canvas.getContext('2d');
+      return sourceContext.getImageData(0, 0, canvas.width, canvas.height).data;
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+
+  ns.Math = {
+    minmax : function (val, min, max) {
+      return Math.max(Math.min(val, max), min);
     }
   };
 })();;(function () {
@@ -11993,7 +13992,7 @@ if (typeof Function.prototype.bind !== "function") {
   };
 })();;(function () {
   var ns = $.namespace('pskl.utils');
-
+  var colorCache = {};
   ns.FrameUtils = {
     merge : function (frames) {
       var merged = null;
@@ -12016,6 +14015,77 @@ if (typeof Function.prototype.bind !== "function") {
     },
 
     /**
+     * Alpha compositing using porter duff algorithm :
+     * http://en.wikipedia.org/wiki/Alpha_compositing
+     * http://keithp.com/~keithp/porterduff/p253-porter.pdf
+     * @param  {String} strColor1 color over
+     * @param  {String} strColor2 color under
+     * @return {String} the composite color
+     */
+    mergePixels : function (strColor1, strColor2, globalOpacity1) {
+      var col1 = pskl.utils.FrameUtils.toRgba(strColor1);
+      var col2 = pskl.utils.FrameUtils.toRgba(strColor2);
+      if (typeof globalOpacity1 == 'number') {
+        col1 = JSON.parse(JSON.stringify(col1));
+        col1.a = globalOpacity1 * col1.a;
+      }
+      var a = col1.a + col2.a * (1 - col1.a);
+
+      var r = ((col1.r * col1.a + col2.r * col2.a * (1 - col1.a)) / a)|0;
+      var g = ((col1.g * col1.a + col2.g * col2.a * (1 - col1.a)) / a)|0;
+      var b = ((col1.b * col1.a + col2.b * col2.a * (1 - col1.a)) / a)|0;
+
+      return 'rgba('+r+','+g+','+b+','+a+')';
+    },
+
+    /**
+     * Convert a color defined as a string (hex, rgba, rgb, 'TRANSPARENT') to an Object with r,g,b,a properties.
+     * r, g and b are integers between 0 and 255, a is a float between 0 and 1
+     * @param  {String} c color as a string
+     * @return {Object} {r:Number,g:Number,b:Number,a:Number}
+     */
+    toRgba : function (c) {
+      if (colorCache[c]) {
+        return colorCache[c];
+      }
+      var color, matches;
+      if (c === 'TRANSPARENT') {
+        color = {
+          r : 0,
+          g : 0,
+          b : 0,
+          a : 0
+        };
+      } else if (c.indexOf('rgba(') != -1) {
+        matches = /rgba\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(1|0\.\d+)\s*\)/.exec(c);
+        color = {
+          r : parseInt(matches[1],10),
+          g : parseInt(matches[2],10),
+          b : parseInt(matches[3],10),
+          a : parseFloat(matches[4])
+        };
+      } else if (c.indexOf('rgb(') != -1) {
+        matches = /rgb\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/.exec(c);
+        color = {
+          r : parseInt(matches[1],10),
+          g : parseInt(matches[2],10),
+          b : parseInt(matches[3],10),
+          a : 1
+        };
+      } else {
+        matches = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(c);
+        color = {
+          r : parseInt(matches[1], 16),
+          g : parseInt(matches[2], 16),
+          b : parseInt(matches[3], 16),
+          a : 1
+        };
+      }
+      colorCache[c] = color;
+      return color;
+    },
+
+    /*
      * Create a pskl.model.Frame from an Image object.
      * Transparent pixels will either be converted to completely opaque or completely transparent pixels.
      * @param  {Image} image source image
@@ -12029,25 +14099,29 @@ if (typeof Function.prototype.bind !== "function") {
 
       context.drawImage(image, 0,0,w,h,0,0,w,h);
       var imgData = context.getImageData(0,0,w,h).data;
+      return pskl.utils.FrameUtils.createFromImageData(imgData, w, h);
+    },
+
+    createFromImageData : function (imageData, width, height) {
       // Draw the zoomed-up pixels to a different canvas context
-      var frame = [];
-      for (var x=0;x<image.width;++x){
-        frame[x] = [];
-        for (var y=0;y<image.height;++y){
+      var grid = [];
+      for (var x = 0 ; x < width ; x++){
+        grid[x] = [];
+        for (var y = 0 ; y < height ; y++){
           // Find the starting index in the one-dimensional image data
-          var i = (y*image.width + x)*4;
-          var r = imgData[i  ];
-          var g = imgData[i+1];
-          var b = imgData[i+2];
-          var a = imgData[i+3];
+          var i = (y * width + x)*4;
+          var r = imageData[i  ];
+          var g = imageData[i+1];
+          var b = imageData[i+2];
+          var a = imageData[i+3];
           if (a < 125) {
-            frame[x][y] = "TRANSPARENT";
+            grid[x][y] = Constants.TRANSPARENT_COLOR;
           } else {
-            frame[x][y] = this.rgbToHex(r,g,b);
+            grid[x][y] = pskl.utils.FrameUtils.rgbToHex(r,g,b);
           }
         }
       }
-      return frame;
+      return pskl.model.Frame.fromPixelGrid(grid);
     },
 
     /**
@@ -12075,6 +14149,36 @@ if (typeof Function.prototype.bind !== "function") {
 ;(function () {
   var ns = $.namespace('pskl.utils');
 
+  ns.LayerUtils = {
+    /**
+     * Create a pskl.model.Layer from an Image object.
+     * Transparent pixels will either be converted to completely opaque or completely transparent pixels.
+     * @param  {Image} image source image
+     * @return {pskl.model.Frame} corresponding frame
+     */
+    createFromImage : function (image, frameCount) {
+      var w = image.width,
+        h = image.height,
+        frameWidth = w / frameCount;
+
+      var canvas = pskl.CanvasUtils.createCanvas(w, h);
+      var context = canvas.getContext('2d');
+
+      context.drawImage(image, 0,0,w,h,0,0,w,h);
+      // Draw the zoomed-up pixels to a different canvas context
+      var frames = [];
+      for (var i = 0 ; i < frameCount ; i++) {
+        var imgData = context.getImageData(frameWidth*i,0,frameWidth,h).data;
+        var frame = pskl.utils.FrameUtils.createFromImageData(imgData, frameWidth, h);
+        frames.push(frame);
+      }
+      return frames;
+    }
+  };
+
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+
   ns.ImageResizer = {
     resize : function (image, targetWidth, targetHeight, smoothingEnabled) {
       var canvas = pskl.CanvasUtils.createCanvas(targetWidth, targetHeight);
@@ -12082,7 +14186,7 @@ if (typeof Function.prototype.bind !== "function") {
       context.save();
 
       if (!smoothingEnabled) {
-        this.disableSmoothingOnContext(context);
+        pskl.CanvasUtils.disableImageSmoothing(canvas);
       }
 
       context.translate(canvas.width / 2, canvas.height / 2);
@@ -12093,12 +14197,58 @@ if (typeof Function.prototype.bind !== "function") {
       return canvas;
     },
 
-    disableSmoothingOnContext : function (context) {
-      context.imageSmoothingEnabled = false;
-      context.mozImageSmoothingEnabled = false;
-      context.oImageSmoothingEnabled = false;
-      context.webkitImageSmoothingEnabled = false;
-      context.msImageSmoothingEnabled = false;
+    /**
+     * Manual implementation of resize using a nearest neighbour algorithm
+     * It is slower than relying on the native 'disabledImageSmoothing' available on CanvasRenderingContext2d.
+     * But it can be useful if :
+     * - IE < 11 (doesn't support msDisableImageSmoothing)
+     * - need to display a gap between pixel
+     *
+     * @param  {Canvas2d} source original image to be resized, as a 2d canvas
+     * @param  {Number} zoom   ratio between desired dim / source dim
+     * @param  {Number} margin gap to be displayed between pixels
+     * @return {Canvas2d} the resized canvas
+     */
+    resizeNearestNeighbour : function (source, zoom, margin) {
+      margin = margin || 0;
+      var canvas = pskl.CanvasUtils.createCanvas(zoom*source.width, zoom*source.height);
+      var context = canvas.getContext('2d');
+
+      var imgData = pskl.CanvasUtils.getImageDataFromCanvas(source);
+
+      var yRanges = {},
+        xOffset = 0,
+        yOffset = 0,
+        xRange,
+        yRange;
+      // Draw the zoomed-up pixels to a different canvas context
+      for (var x = 0; x < source.width; x++) {
+        // Calculate X Range
+        xRange = Math.floor((x + 1) * zoom) - xOffset;
+
+        for (var y = 0; y < source.height; y++) {
+          // Calculate Y Range
+          if (!yRanges[y + ""]) {
+            // Cache Y Range
+            yRanges[y + ""] = Math.floor((y + 1) * zoom) - yOffset;
+          }
+          yRange = yRanges[y + ""];
+
+          var i = (y * source.width + x) * 4;
+          var r = imgData[i];
+          var g = imgData[i + 1];
+          var b = imgData[i + 2];
+          var a = imgData[i + 3];
+
+          context.fillStyle = "rgba(" + r + "," + g + "," + b + "," + (a / 255) + ")";
+          context.fillRect(xOffset, yOffset, xRange-margin, yRange-margin);
+
+          yOffset += yRange;
+        }
+        yOffset = 0;
+        xOffset += xRange;
+      }
+      return canvas;
     }
   };
 })();;(function () {
@@ -12250,121 +14400,34 @@ if (typeof Function.prototype.bind !== "function") {
     },
 
     /**
-     * Calculate and return the maximal DPI to display a picture in a given container.
+     * Calculate and return the maximal zoom level to display a picture in a given container.
      *
      * @param container jQueryObject Container where the picture should be displayed
      * @param number pictureHeight height in pixels of the picture to display
      * @param number pictureWidth width in pixels of the picture to display
-     * @return number maximal dpi
+     * @return number maximal zoom
      */
-    calculateDPIForContainer : function (container, pictureHeight, pictureWidth) {
-      return this.calculateDPI(container.height(), container.width(), pictureHeight, pictureWidth);
+    calculateZoomForContainer : function (container, pictureHeight, pictureWidth) {
+      return this.calculateZoom(container.height(), container.width(), pictureHeight, pictureWidth);
     },
 
     /**
-     * Calculate and return the maximal DPI to display a picture for a given height and width.
+     * Calculate and return the maximal zoom to display a picture for a given height and width.
      *
      * @param height number Height available to display the picture
      * @param width number Width available to display the picture
      * @param number pictureHeight height in pixels of the picture to display
      * @param number pictureWidth width in pixels of the picture to display
-     * @return number maximal dpi
+     * @return number maximal zoom
      */
-    calculateDPI : function (height, width, pictureHeight, pictureWidth) {
-      var heightBoundDpi = Math.floor(height / pictureHeight),
-        widthBoundDpi = Math.floor(width / pictureWidth);
+    calculateZoom : function (height, width, pictureHeight, pictureWidth) {
+      var heightRatio = Math.floor(height / pictureHeight),
+        widthRatio = Math.floor(width / pictureWidth);
 
-      return Math.min(heightBoundDpi, widthBoundDpi);
+      return Math.min(heightRatio, widthRatio);
     }
   };
 })();;(function () {
-  var ns = $.namespace('pskl.utils');
-  ns.Serializer = {
-    serializePiskel : function (piskel) {
-      var serializedLayers = piskel.getLayers().map(function (l) {
-        return pskl.utils.Serializer.serializeLayer(l);
-      });
-      return JSON.stringify({
-        modelVersion : Constants.MODEL_VERSION,
-        piskel : {
-          height : piskel.getHeight(),
-          width : piskel.getWidth(),
-          layers : serializedLayers
-        }
-      });
-    },
-
-    serializeLayer : function (layer) {
-      var serializedFrames = layer.getFrames().map(function (f) {
-        return f.serialize();
-      });
-      return JSON.stringify({
-        name : layer.getName(),
-        frames : serializedFrames
-      });
-    },
-
-    deserializePiskel : function (piskelString) {
-      var piskelData = JSON.parse(piskelString);
-      return this.createPiskelFromData(piskelData);
-    },
-
-    /**
-     * Similar to deserializePiskel, but dealing directly with a parsed piskel
-     * @param  {Object} piskelData JSON.parse of a serialized piskel
-     * @return {pskl.model.Piskel} a piskel
-     */
-    createPiskel : function (piskelData) {
-      var piskel = null;
-      if (piskelData.modelVersion == Constants.MODEL_VERSION) {
-        var pData = piskelData.piskel;
-        piskel = new pskl.model.Piskel(pData.width, pData.height);
-
-        pData.layers.forEach(function (serializedLayer) {
-          var layer = pskl.utils.Serializer.deserializeLayer(serializedLayer);
-          piskel.addLayer(layer);
-        });
-      } else {
-        piskel = pskl.utils.Serializer.backwardDeserializer_(piskelData);
-      }
-
-      return piskel;
-    },
-
-    deserializeLayer : function (layerString) {
-      var lData = JSON.parse(layerString);
-      var layer = new pskl.model.Layer(lData.name);
-
-      lData.frames.forEach(function (serializedFrame) {
-        var frame = pskl.utils.Serializer.deserializeFrame(serializedFrame);
-        layer.addFrame(frame);
-      });
-
-      return layer;
-    },
-
-    deserializeFrame : function (frameString) {
-      var framePixelGrid = JSON.parse(frameString);
-      return pskl.model.Frame.fromPixelGrid(framePixelGrid);
-    },
-
-    /**
-     * Deserialize old piskel framesheets. Initially piskels were stored as arrays of frames : "[[pixelGrid],[pixelGrid],[pixelGrid]]".
-     */
-    backwardDeserializer_ : function (frames) {
-      var layer = new pskl.model.Layer('Layer 1');
-      frames.forEach(function (frame) {
-        layer.addFrame(pskl.model.Frame.fromPixelGrid(frame));
-      });
-      var width = layer.getFrameAt(0).getWidth(), height = layer.getFrameAt(0).getHeight();
-      var piskel = new pskl.model.Piskel(width, height);
-      piskel.addLayer(layer);
-
-      return piskel;
-    }
-  };
-})();
-;(function () {
   var ns = $.namespace("pskl.utils");
 
   ns.Template = {
@@ -12468,934 +14531,157 @@ if (typeof Function.prototype.bind !== "function") {
       }
     }
   };
-})();;/**
- * jscolor, JavaScript Color Picker
- *
- * @version 1.4.0
- * @license GNU Lesser General Public License, http://www.gnu.org/copyleft/lesser.html
- * @author  Jan Odvarko, http://odvarko.cz
- * @created 2008-06-15
- * @updated 2012-07-06
- * @link    http://jscolor.com
- */
-
-
-var jscolor = {
-
-
-	dir : '', // location of jscolor directory (leave empty to autodetect)
-	bindClass : 'color', // class name
-	binding : true, // automatic binding via <input class="...">
-	preloading : true, // use image preloading?
-
-
-	install : function() {
-		if (document.readyState === "complete") { 
-			jscolor.init(); 
-		} else {
-			jscolor.addEvent(window, 'load', jscolor.init);
-		}
-	},
-
-
-	init : function() {
-		if(jscolor.binding) {
-			jscolor.bind();
-		}
-		if(jscolor.preloading) {
-			jscolor.preload();
-		}
-	},
-
-
-	getDir : function() {
-		return "/" + window.location.pathname.split("/")[1] + "/js/lib/jsColor_1_4_0/";
-	},
-
-
-	bind : function() {
-		var matchClass = new RegExp('(^|\\s)('+jscolor.bindClass+')\\s*(\\{[^}]*\\})?', 'i');
-		var e = document.getElementsByTagName('input');
-		for(var i=0; i<e.length; i+=1) {
-			var m;
-			if(!e[i].color && e[i].className && (m = e[i].className.match(matchClass))) {
-				var prop = {};
-				if(m[3]) {
-					try {
-						prop = (new Function ('return (' + m[3] + ')'))();
-					} catch(eInvalidProp) {}
-				}
-				e[i].color = new jscolor.color(e[i], prop);
-			}
-		}
-	},
-
-
-	preload : function() {
-		for(var fn in jscolor.imgRequire) {
-			if(jscolor.imgRequire.hasOwnProperty(fn)) {
-				jscolor.loadImage(fn);
-			}
-		}
-	},
-
-
-	images : {
-		pad : [ 181, 101 ],
-		sld : [ 16, 101 ],
-		cross : [ 15, 15 ],
-		arrow : [ 7, 11 ]
-	},
-
-
-	imgRequire : {},
-	imgLoaded : {},
-
-
-	requireImage : function(filename) {
-		jscolor.imgRequire[filename] = true;
-	},
-
-
-	loadImage : function(filename) {
-		if(!jscolor.imgLoaded[filename]) {
-			jscolor.imgLoaded[filename] = new Image();
-			jscolor.imgLoaded[filename].src = jscolor.getDir()+filename;
-		}
-	},
-
-
-	fetchElement : function(mixed) {
-		return typeof mixed === 'string' ? document.getElementById(mixed) : mixed;
-	},
-
-
-	addEvent : function(el, evnt, func) {
-		if(el.addEventListener) {
-			el.addEventListener(evnt, func, false);
-		} else if(el.attachEvent) {
-			el.attachEvent('on'+evnt, func);
-		}
-	},
-
-
-	fireEvent : function(el, evnt) {
-		if(!el) {
-			return;
-		}
-		if(document.createEvent) {
-			var ev = document.createEvent('HTMLEvents');
-			ev.initEvent(evnt, true, true);
-			el.dispatchEvent(ev);
-		} else if(document.createEventObject) {
-			var ev = document.createEventObject();
-			el.fireEvent('on'+evnt, ev);
-		} else if(el['on'+evnt]) { // alternatively use the traditional event model (IE5)
-			el['on'+evnt]();
-		}
-	},
-
-
-	getElementPos : function(e) {
-		var e1=e, e2=e;
-		var x=0, y=0;
-		if(e1.offsetParent) {
-			do {
-				x += e1.offsetLeft;
-				y += e1.offsetTop;
-			} while(e1 = e1.offsetParent);
-		}
-		while((e2 = e2.parentNode) && e2.nodeName.toUpperCase() !== 'BODY') {
-			x -= e2.scrollLeft;
-			y -= e2.scrollTop;
-		}
-		return [x, y];
-	},
-
-
-	getElementSize : function(e) {
-		return [e.offsetWidth, e.offsetHeight];
-	},
-
-
-	getRelMousePos : function(e) {
-		var x = 0, y = 0;
-		if (!e) { e = window.event; }
-		if (typeof e.offsetX === 'number') {
-			x = e.offsetX;
-			y = e.offsetY;
-		} else if (typeof e.layerX === 'number') {
-			x = e.layerX;
-			y = e.layerY;
-		}
-		return { x: x, y: y };
-	},
-
-
-	getViewPos : function() {
-		if(typeof window.pageYOffset === 'number') {
-			return [window.pageXOffset, window.pageYOffset];
-		} else if(document.body && (document.body.scrollLeft || document.body.scrollTop)) {
-			return [document.body.scrollLeft, document.body.scrollTop];
-		} else if(document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)) {
-			return [document.documentElement.scrollLeft, document.documentElement.scrollTop];
-		} else {
-			return [0, 0];
-		}
-	},
-
-
-	getViewSize : function() {
-		if(typeof window.innerWidth === 'number') {
-			return [window.innerWidth, window.innerHeight];
-		} else if(document.body && (document.body.clientWidth || document.body.clientHeight)) {
-			return [document.body.clientWidth, document.body.clientHeight];
-		} else if(document.documentElement && (document.documentElement.clientWidth || document.documentElement.clientHeight)) {
-			return [document.documentElement.clientWidth, document.documentElement.clientHeight];
-		} else {
-			return [0, 0];
-		}
-	},
-
-
-	URI : function(uri) { // See RFC3986
-
-		this.scheme = null;
-		this.authority = null;
-		this.path = '';
-		this.query = null;
-		this.fragment = null;
-
-		this.parse = function(uri) {
-			var m = uri.match(/^(([A-Za-z][0-9A-Za-z+.-]*)(:))?((\/\/)([^\/?#]*))?([^?#]*)((\?)([^#]*))?((#)(.*))?/);
-			this.scheme = m[3] ? m[2] : null;
-			this.authority = m[5] ? m[6] : null;
-			this.path = m[7];
-			this.query = m[9] ? m[10] : null;
-			this.fragment = m[12] ? m[13] : null;
-			return this;
-		};
-
-		this.toString = function() {
-			var result = '';
-			if(this.scheme !== null) { result = result + this.scheme + ':'; }
-			if(this.authority !== null) { result = result + '//' + this.authority; }
-			if(this.path !== null) { result = result + this.path; }
-			if(this.query !== null) { result = result + '?' + this.query; }
-			if(this.fragment !== null) { result = result + '#' + this.fragment; }
-			return result;
-		};
-
-		this.toAbsolute = function(base) {
-			var base = new jscolor.URI(base);
-			var r = this;
-			var t = new jscolor.URI;
-
-			if(base.scheme === null) { return false; }
-
-			if(r.scheme !== null && r.scheme.toLowerCase() === base.scheme.toLowerCase()) {
-				r.scheme = null;
-			}
-
-			if(r.scheme !== null) {
-				t.scheme = r.scheme;
-				t.authority = r.authority;
-				t.path = removeDotSegments(r.path);
-				t.query = r.query;
-			} else {
-				if(r.authority !== null) {
-					t.authority = r.authority;
-					t.path = removeDotSegments(r.path);
-					t.query = r.query;
-				} else {
-					if(r.path === '') {
-						t.path = base.path;
-						if(r.query !== null) {
-							t.query = r.query;
-						} else {
-							t.query = base.query;
-						}
-					} else {
-						if(r.path.substr(0,1) === '/') {
-							t.path = removeDotSegments(r.path);
-						} else {
-							if(base.authority !== null && base.path === '') {
-								t.path = '/'+r.path;
-							} else {
-								t.path = base.path.replace(/[^\/]+$/,'')+r.path;
-							}
-							t.path = removeDotSegments(t.path);
-						}
-						t.query = r.query;
-					}
-					t.authority = base.authority;
-				}
-				t.scheme = base.scheme;
-			}
-			t.fragment = r.fragment;
-
-			return t;
-		};
-
-		function removeDotSegments(path) {
-			var out = '';
-			while(path) {
-				if(path.substr(0,3)==='../' || path.substr(0,2)==='./') {
-					path = path.replace(/^\.+/,'').substr(1);
-				} else if(path.substr(0,3)==='/./' || path==='/.') {
-					path = '/'+path.substr(3);
-				} else if(path.substr(0,4)==='/../' || path==='/..') {
-					path = '/'+path.substr(4);
-					out = out.replace(/\/?[^\/]*$/, '');
-				} else if(path==='.' || path==='..') {
-					path = '';
-				} else {
-					var rm = path.match(/^\/?[^\/]*/)[0];
-					path = path.substr(rm.length);
-					out = out + rm;
-				}
-			}
-			return out;
-		}
-
-		if(uri) {
-			this.parse(uri);
-		}
-
-	},
-
-
-	/*
-	 * Usage example:
-	 * var myColor = new jscolor.color(myInputElement)
-	 */
-
-	color : function(target, prop) {
-
-
-		this.required = true; // refuse empty values?
-		this.adjust = true; // adjust value to uniform notation?
-		this.hash = false; // prefix color with # symbol?
-		this.caps = true; // uppercase?
-		this.slider = true; // show the value/saturation slider?
-		this.valueElement = target; // value holder
-		this.styleElement = target; // where to reflect current color
-		this.onImmediateChange = null; // onchange callback (can be either string or function)
-		this.hsv = [0, 0, 1]; // read-only  0-6, 0-1, 0-1
-		this.rgb = [1, 1, 1]; // read-only  0-1, 0-1, 0-1
-		this.minH = 0; // read-only  0-6
-		this.maxH = 6; // read-only  0-6
-		this.minS = 0; // read-only  0-1
-		this.maxS = 1; // read-only  0-1
-		this.minV = 0; // read-only  0-1
-		this.maxV = 1; // read-only  0-1
-
-		this.pickerOnfocus = true; // display picker on focus?
-		this.pickerMode = 'HSV'; // HSV | HVS
-		this.pickerPosition = 'bottom'; // left | right | top | bottom
-		this.pickerSmartPosition = true; // automatically adjust picker position when necessary
-		this.pickerButtonHeight = 20; // px
-		this.pickerClosable = false;
-		this.pickerCloseText = 'Close';
-		this.pickerButtonColor = 'ButtonText'; // px
-		this.pickerFace = 10; // px
-		this.pickerFaceColor = 'ThreeDFace'; // CSS color
-		this.pickerBorder = 1; // px
-		this.pickerBorderColor = 'ThreeDHighlight ThreeDShadow ThreeDShadow ThreeDHighlight'; // CSS color
-		this.pickerInset = 1; // px
-		this.pickerInsetColor = 'ThreeDShadow ThreeDHighlight ThreeDHighlight ThreeDShadow'; // CSS color
-		this.pickerZIndex = 10000;
-
-
-		for(var p in prop) {
-			if(prop.hasOwnProperty(p)) {
-				this[p] = prop[p];
-			}
-		}
-
-
-		this.hidePicker = function() {
-			if(isPickerOwner()) {
-				removePicker();
-			}
-		};
-
-
-		this.showPicker = function() {
-			if(!isPickerOwner()) {
-				var tp = jscolor.getElementPos(target); // target pos
-				var ts = jscolor.getElementSize(target); // target size
-				var vp = jscolor.getViewPos(); // view pos
-				var vs = jscolor.getViewSize(); // view size
-				var ps = getPickerDims(this); // picker size
-				var a, b, c;
-				switch(this.pickerPosition.toLowerCase()) {
-					case 'left': a=1; b=0; c=-1; break;
-					case 'right':a=1; b=0; c=1; break;
-					case 'top':  a=0; b=1; c=-1; break;
-					default:     a=0; b=1; c=1; break;
-				}
-				var l = (ts[b]+ps[b])/2;
-
-				// picker pos
-				if (!this.pickerSmartPosition) {
-					var pp = [
-						tp[a],
-						tp[b]+ts[b]-l+l*c
-					];
-				} else {
-					var pp = [
-						-vp[a]+tp[a]+ps[a] > vs[a] ?
-							(-vp[a]+tp[a]+ts[a]/2 > vs[a]/2 && tp[a]+ts[a]-ps[a] >= 0 ? tp[a]+ts[a]-ps[a] : tp[a]) :
-							tp[a],
-						-vp[b]+tp[b]+ts[b]+ps[b]-l+l*c > vs[b] ?
-							(-vp[b]+tp[b]+ts[b]/2 > vs[b]/2 && tp[b]+ts[b]-l-l*c >= 0 ? tp[b]+ts[b]-l-l*c : tp[b]+ts[b]-l+l*c) :
-							(tp[b]+ts[b]-l+l*c >= 0 ? tp[b]+ts[b]-l+l*c : tp[b]+ts[b]-l-l*c)
-					];
-				}
-				drawPicker(pp[a], pp[b]);
-			}
-		};
-
-
-		this.importColor = function() {
-			if(!valueElement) {
-				this.exportColor();
-			} else {
-				if(!this.adjust) {
-					if(!this.fromString(valueElement.value, leaveValue)) {
-						styleElement.style.backgroundImage = styleElement.jscStyle.backgroundImage;
-						styleElement.style.backgroundColor = styleElement.jscStyle.backgroundColor;
-						styleElement.style.color = styleElement.jscStyle.color;
-						this.exportColor(leaveValue | leaveStyle);
-					}
-				} else if(!this.required && /^\s*$/.test(valueElement.value)) {
-					valueElement.value = '';
-					styleElement.style.backgroundImage = styleElement.jscStyle.backgroundImage;
-					styleElement.style.backgroundColor = styleElement.jscStyle.backgroundColor;
-					styleElement.style.color = styleElement.jscStyle.color;
-					this.exportColor(leaveValue | leaveStyle);
-
-				} else if(this.fromString(valueElement.value)) {
-					// OK
-				} else {
-					this.exportColor();
-				}
-			}
-		};
-
-
-		this.exportColor = function(flags) {
-			if(!(flags & leaveValue) && valueElement) {
-				var value = this.toString();
-				if(this.caps) { value = value.toUpperCase(); }
-				if(this.hash) { value = '#'+value; }
-				valueElement.value = value;
-			}
-			if(!(flags & leaveStyle) && styleElement) {
-				styleElement.style.backgroundImage = "none";
-				styleElement.style.backgroundColor =
-					'#'+this.toString();
-				styleElement.style.color =
-					0.213 * this.rgb[0] +
-					0.715 * this.rgb[1] +
-					0.072 * this.rgb[2]
-					< 0.5 ? '#FFF' : '#000';
-			}
-			if(!(flags & leavePad) && isPickerOwner()) {
-				redrawPad();
-			}
-			if(!(flags & leaveSld) && isPickerOwner()) {
-				redrawSld();
-			}
-		};
-
-
-		this.fromHSV = function(h, s, v, flags) { // null = don't change
-			if(h !== null) { h = Math.max(0.0, this.minH, Math.min(6.0, this.maxH, h)); }
-			if(s !== null) { s = Math.max(0.0, this.minS, Math.min(1.0, this.maxS, s)); }
-			if(v !== null) { v = Math.max(0.0, this.minV, Math.min(1.0, this.maxV, v)); }
-
-			this.rgb = HSV_RGB(
-				h===null ? this.hsv[0] : (this.hsv[0]=h),
-				s===null ? this.hsv[1] : (this.hsv[1]=s),
-				v===null ? this.hsv[2] : (this.hsv[2]=v)
-			);
-
-			this.exportColor(flags);
-		};
-
-
-		this.fromRGB = function(r, g, b, flags) { // null = don't change
-			if(r !== null) { r = Math.max(0.0, Math.min(1.0, r)); }
-			if(g !== null) { g = Math.max(0.0, Math.min(1.0, g)); }
-			if(b !== null) { b = Math.max(0.0, Math.min(1.0, b)); }
-
-			var hsv = RGB_HSV(
-				r===null ? this.rgb[0] : r,
-				g===null ? this.rgb[1] : g,
-				b===null ? this.rgb[2] : b
-			);
-			if(hsv[0] !== null) {
-				this.hsv[0] = Math.max(0.0, this.minH, Math.min(6.0, this.maxH, hsv[0]));
-			}
-			if(hsv[2] !== 0) {
-				this.hsv[1] = hsv[1]===null ? null : Math.max(0.0, this.minS, Math.min(1.0, this.maxS, hsv[1]));
-			}
-			this.hsv[2] = hsv[2]===null ? null : Math.max(0.0, this.minV, Math.min(1.0, this.maxV, hsv[2]));
-
-			// update RGB according to final HSV, as some values might be trimmed
-			var rgb = HSV_RGB(this.hsv[0], this.hsv[1], this.hsv[2]);
-			this.rgb[0] = rgb[0];
-			this.rgb[1] = rgb[1];
-			this.rgb[2] = rgb[2];
-
-			this.exportColor(flags);
-		};
-
-
-		this.fromString = function(hex, flags) {
-			var m = hex.match(/^\W*([0-9A-F]{3}([0-9A-F]{3})?)\W*$/i);
-			if(!m) {
-				return false;
-			} else {
-				if(m[1].length === 6) { // 6-char notation
-					this.fromRGB(
-						parseInt(m[1].substr(0,2),16) / 255,
-						parseInt(m[1].substr(2,2),16) / 255,
-						parseInt(m[1].substr(4,2),16) / 255,
-						flags
-					);
-				} else { // 3-char notation
-					this.fromRGB(
-						parseInt(m[1].charAt(0)+m[1].charAt(0),16) / 255,
-						parseInt(m[1].charAt(1)+m[1].charAt(1),16) / 255,
-						parseInt(m[1].charAt(2)+m[1].charAt(2),16) / 255,
-						flags
-					);
-				}
-				return true;
-			}
-		};
-
-
-		this.toString = function() {
-			return (
-				(0x100 | Math.round(255*this.rgb[0])).toString(16).substr(1) +
-				(0x100 | Math.round(255*this.rgb[1])).toString(16).substr(1) +
-				(0x100 | Math.round(255*this.rgb[2])).toString(16).substr(1)
-			);
-		};
-
-
-		function RGB_HSV(r, g, b) {
-			var n = Math.min(Math.min(r,g),b);
-			var v = Math.max(Math.max(r,g),b);
-			var m = v - n;
-			if(m === 0) { return [ null, 0, v ]; }
-			var h = r===n ? 3+(b-g)/m : (g===n ? 5+(r-b)/m : 1+(g-r)/m);
-			return [ h===6?0:h, m/v, v ];
-		}
-
-
-		function HSV_RGB(h, s, v) {
-			if(h === null) { return [ v, v, v ]; }
-			var i = Math.floor(h);
-			var f = i%2 ? h-i : 1-(h-i);
-			var m = v * (1 - s);
-			var n = v * (1 - s*f);
-			switch(i) {
-				case 6:
-				case 0: return [v,n,m];
-				case 1: return [n,v,m];
-				case 2: return [m,v,n];
-				case 3: return [m,n,v];
-				case 4: return [n,m,v];
-				case 5: return [v,m,n];
-			}
-		}
-
-
-		function removePicker() {
-			delete jscolor.picker.owner;
-			document.getElementsByTagName('body')[0].removeChild(jscolor.picker.boxB);
-		}
-
-
-		function drawPicker(x, y) {
-			if(!jscolor.picker) {
-				jscolor.picker = {
-					box : document.createElement('div'),
-					boxB : document.createElement('div'),
-					pad : document.createElement('div'),
-					padB : document.createElement('div'),
-					padM : document.createElement('div'),
-					sld : document.createElement('div'),
-					sldB : document.createElement('div'),
-					sldM : document.createElement('div'),
-					btn : document.createElement('div'),
-					btnS : document.createElement('span'),
-					btnT : document.createTextNode(THIS.pickerCloseText)
-				};
-				for(var i=0,segSize=4; i<jscolor.images.sld[1]; i+=segSize) {
-					var seg = document.createElement('div');
-					seg.style.height = segSize+'px';
-					seg.style.fontSize = '1px';
-					seg.style.lineHeight = '0';
-					jscolor.picker.sld.appendChild(seg);
-				}
-				jscolor.picker.sldB.appendChild(jscolor.picker.sld);
-				jscolor.picker.box.appendChild(jscolor.picker.sldB);
-				jscolor.picker.box.appendChild(jscolor.picker.sldM);
-				jscolor.picker.padB.appendChild(jscolor.picker.pad);
-				jscolor.picker.box.appendChild(jscolor.picker.padB);
-				jscolor.picker.box.appendChild(jscolor.picker.padM);
-				jscolor.picker.btnS.appendChild(jscolor.picker.btnT);
-				jscolor.picker.btn.appendChild(jscolor.picker.btnS);
-				jscolor.picker.box.appendChild(jscolor.picker.btn);
-				jscolor.picker.boxB.appendChild(jscolor.picker.box);
-			}
-
-			var p = jscolor.picker;
-
-			// controls interaction
-			p.box.onmouseup =
-			p.box.onmouseout = function() { target.focus(); };
-			p.box.onmousedown = function() { abortBlur=true; };
-			p.box.onmousemove = function(e) {
-				if (holdPad || holdSld) {
-					holdPad && setPad(e);
-					holdSld && setSld(e);
-					if (document.selection) {
-						document.selection.empty();
-					} else if (window.getSelection) {
-						window.getSelection().removeAllRanges();
-					}
-					dispatchImmediateChange();
-				}
-			};
-			p.padM.onmouseup =
-			p.padM.onmouseout = function() { if(holdPad) { holdPad=false; jscolor.fireEvent(valueElement,'change'); } };
-			p.padM.onmousedown = function(e) {
-				// if the slider is at the bottom, move it up
-				switch(modeID) {
-					case 0: if (THIS.hsv[2] === 0) { THIS.fromHSV(null, null, 1.0); }; break;
-					case 1: if (THIS.hsv[1] === 0) { THIS.fromHSV(null, 1.0, null); }; break;
-				}
-				holdPad=true;
-				setPad(e);
-				dispatchImmediateChange();
-			};
-			p.sldM.onmouseup =
-			p.sldM.onmouseout = function() { if(holdSld) { holdSld=false; jscolor.fireEvent(valueElement,'change'); } };
-			p.sldM.onmousedown = function(e) {
-				holdSld=true;
-				setSld(e);
-				dispatchImmediateChange();
-			};
-
-			// picker
-			var dims = getPickerDims(THIS);
-			p.box.style.width = dims[0] + 'px';
-			p.box.style.height = dims[1] + 'px';
-
-			// picker border
-			p.boxB.style.position = 'absolute';
-			p.boxB.style.clear = 'both';
-			p.boxB.style.left = x+'px';
-			p.boxB.style.top = y+'px';
-			p.boxB.style.zIndex = THIS.pickerZIndex;
-			p.boxB.style.border = THIS.pickerBorder+'px solid';
-			p.boxB.style.borderColor = THIS.pickerBorderColor;
-			p.boxB.style.background = THIS.pickerFaceColor;
-
-			// pad image
-			p.pad.style.width = jscolor.images.pad[0]+'px';
-			p.pad.style.height = jscolor.images.pad[1]+'px';
-
-			// pad border
-			p.padB.style.position = 'absolute';
-			p.padB.style.left = THIS.pickerFace+'px';
-			p.padB.style.top = THIS.pickerFace+'px';
-			p.padB.style.border = THIS.pickerInset+'px solid';
-			p.padB.style.borderColor = THIS.pickerInsetColor;
-
-			// pad mouse area
-			p.padM.style.position = 'absolute';
-			p.padM.style.left = '0';
-			p.padM.style.top = '0';
-			p.padM.style.width = THIS.pickerFace + 2*THIS.pickerInset + jscolor.images.pad[0] + jscolor.images.arrow[0] + 'px';
-			p.padM.style.height = p.box.style.height;
-			p.padM.style.cursor = 'crosshair';
-
-			// slider image
-			p.sld.style.overflow = 'hidden';
-			p.sld.style.width = jscolor.images.sld[0]+'px';
-			p.sld.style.height = jscolor.images.sld[1]+'px';
-
-			// slider border
-			p.sldB.style.display = THIS.slider ? 'block' : 'none';
-			p.sldB.style.position = 'absolute';
-			p.sldB.style.right = THIS.pickerFace+'px';
-			p.sldB.style.top = THIS.pickerFace+'px';
-			p.sldB.style.border = THIS.pickerInset+'px solid';
-			p.sldB.style.borderColor = THIS.pickerInsetColor;
-
-			// slider mouse area
-			p.sldM.style.display = THIS.slider ? 'block' : 'none';
-			p.sldM.style.position = 'absolute';
-			p.sldM.style.right = '0';
-			p.sldM.style.top = '0';
-			p.sldM.style.width = jscolor.images.sld[0] + jscolor.images.arrow[0] + THIS.pickerFace + 2*THIS.pickerInset + 'px';
-			p.sldM.style.height = p.box.style.height;
-			try {
-				p.sldM.style.cursor = 'pointer';
-			} catch(eOldIE) {
-				p.sldM.style.cursor = 'hand';
-			}
-
-			// "close" button
-			function setBtnBorder() {
-				var insetColors = THIS.pickerInsetColor.split(/\s+/);
-				var pickerOutsetColor = insetColors.length < 2 ? insetColors[0] : insetColors[1] + ' ' + insetColors[0] + ' ' + insetColors[0] + ' ' + insetColors[1];
-				p.btn.style.borderColor = pickerOutsetColor;
-			}
-			p.btn.style.display = THIS.pickerClosable ? 'block' : 'none';
-			p.btn.style.position = 'absolute';
-			p.btn.style.left = THIS.pickerFace + 'px';
-			p.btn.style.bottom = THIS.pickerFace + 'px';
-			p.btn.style.padding = '0 15px';
-			p.btn.style.height = '18px';
-			p.btn.style.border = THIS.pickerInset + 'px solid';
-			setBtnBorder();
-			p.btn.style.color = THIS.pickerButtonColor;
-			p.btn.style.font = '12px sans-serif';
-			p.btn.style.textAlign = 'center';
-			try {
-				p.btn.style.cursor = 'pointer';
-			} catch(eOldIE) {
-				p.btn.style.cursor = 'hand';
-			}
-			p.btn.onmousedown = function () {
-				THIS.hidePicker();
-			};
-			p.btnS.style.lineHeight = p.btn.style.height;
-
-			// load images in optimal order
-			switch(modeID) {
-				case 0: var padImg = 'hs.png'; break;
-				case 1: var padImg = 'hv.png'; break;
-			}
-			p.padM.style.backgroundImage = "url('"+jscolor.getDir()+"cross.gif')";
-			p.padM.style.backgroundRepeat = "no-repeat";
-			p.sldM.style.backgroundImage = "url('"+jscolor.getDir()+"arrow.gif')";
-			p.sldM.style.backgroundRepeat = "no-repeat";
-			p.pad.style.backgroundImage = "url('"+jscolor.getDir()+padImg+"')";
-			p.pad.style.backgroundRepeat = "no-repeat";
-			p.pad.style.backgroundPosition = "0 0";
-
-			// place pointers
-			redrawPad();
-			redrawSld();
-
-			jscolor.picker.owner = THIS;
-			document.getElementsByTagName('body')[0].appendChild(p.boxB);
-		}
-
-
-		function getPickerDims(o) {
-			var dims = [
-				2*o.pickerInset + 2*o.pickerFace + jscolor.images.pad[0] +
-					(o.slider ? 2*o.pickerInset + 2*jscolor.images.arrow[0] + jscolor.images.sld[0] : 0),
-				o.pickerClosable ?
-					4*o.pickerInset + 3*o.pickerFace + jscolor.images.pad[1] + o.pickerButtonHeight :
-					2*o.pickerInset + 2*o.pickerFace + jscolor.images.pad[1]
-			];
-			return dims;
-		}
-
-
-		function redrawPad() {
-			// redraw the pad pointer
-			switch(modeID) {
-				case 0: var yComponent = 1; break;
-				case 1: var yComponent = 2; break;
-			}
-			var x = Math.round((THIS.hsv[0]/6) * (jscolor.images.pad[0]-1));
-			var y = Math.round((1-THIS.hsv[yComponent]) * (jscolor.images.pad[1]-1));
-			jscolor.picker.padM.style.backgroundPosition =
-				(THIS.pickerFace+THIS.pickerInset+x - Math.floor(jscolor.images.cross[0]/2)) + 'px ' +
-				(THIS.pickerFace+THIS.pickerInset+y - Math.floor(jscolor.images.cross[1]/2)) + 'px';
-
-			// redraw the slider image
-			var seg = jscolor.picker.sld.childNodes;
-
-			switch(modeID) {
-				case 0:
-					var rgb = HSV_RGB(THIS.hsv[0], THIS.hsv[1], 1);
-					for(var i=0; i<seg.length; i+=1) {
-						seg[i].style.backgroundColor = 'rgb('+
-							(rgb[0]*(1-i/seg.length)*100)+'%,'+
-							(rgb[1]*(1-i/seg.length)*100)+'%,'+
-							(rgb[2]*(1-i/seg.length)*100)+'%)';
-					}
-					break;
-				case 1:
-					var rgb, s, c = [ THIS.hsv[2], 0, 0 ];
-					var i = Math.floor(THIS.hsv[0]);
-					var f = i%2 ? THIS.hsv[0]-i : 1-(THIS.hsv[0]-i);
-					switch(i) {
-						case 6:
-						case 0: rgb=[0,1,2]; break;
-						case 1: rgb=[1,0,2]; break;
-						case 2: rgb=[2,0,1]; break;
-						case 3: rgb=[2,1,0]; break;
-						case 4: rgb=[1,2,0]; break;
-						case 5: rgb=[0,2,1]; break;
-					}
-					for(var i=0; i<seg.length; i+=1) {
-						s = 1 - 1/(seg.length-1)*i;
-						c[1] = c[0] * (1 - s*f);
-						c[2] = c[0] * (1 - s);
-						seg[i].style.backgroundColor = 'rgb('+
-							(c[rgb[0]]*100)+'%,'+
-							(c[rgb[1]]*100)+'%,'+
-							(c[rgb[2]]*100)+'%)';
-					}
-					break;
-			}
-		}
-
-
-		function redrawSld() {
-			// redraw the slider pointer
-			switch(modeID) {
-				case 0: var yComponent = 2; break;
-				case 1: var yComponent = 1; break;
-			}
-			var y = Math.round((1-THIS.hsv[yComponent]) * (jscolor.images.sld[1]-1));
-			jscolor.picker.sldM.style.backgroundPosition =
-				'0 ' + (THIS.pickerFace+THIS.pickerInset+y - Math.floor(jscolor.images.arrow[1]/2)) + 'px';
-		}
-
-
-		function isPickerOwner() {
-			return jscolor.picker && jscolor.picker.owner === THIS;
-		}
-
-
-		function blurTarget() {
-			if(valueElement === target) {
-				THIS.importColor();
-			}
-			if(THIS.pickerOnfocus) {
-				THIS.hidePicker();
-			}
-		}
-
-
-		function blurValue() {
-			if(valueElement !== target) {
-				THIS.importColor();
-			}
-		}
-
-
-		function setPad(e) {
-			var mpos = jscolor.getRelMousePos(e);
-			var x = mpos.x - THIS.pickerFace - THIS.pickerInset;
-			var y = mpos.y - THIS.pickerFace - THIS.pickerInset;
-			switch(modeID) {
-				case 0: THIS.fromHSV(x*(6/(jscolor.images.pad[0]-1)), 1 - y/(jscolor.images.pad[1]-1), null, leaveSld); break;
-				case 1: THIS.fromHSV(x*(6/(jscolor.images.pad[0]-1)), null, 1 - y/(jscolor.images.pad[1]-1), leaveSld); break;
-			}
-		}
-
-
-		function setSld(e) {
-			var mpos = jscolor.getRelMousePos(e);
-			var y = mpos.y - THIS.pickerFace - THIS.pickerInset;
-			switch(modeID) {
-				case 0: THIS.fromHSV(null, null, 1 - y/(jscolor.images.sld[1]-1), leavePad); break;
-				case 1: THIS.fromHSV(null, 1 - y/(jscolor.images.sld[1]-1), null, leavePad); break;
-			}
-		}
-
-
-		function dispatchImmediateChange() {
-			if (THIS.onImmediateChange) {
-				var callback;
-				if (typeof THIS.onImmediateChange === 'string') {
-					callback = new Function (THIS.onImmediateChange);
-				} else {
-					callback = THIS.onImmediateChange;
-				}
-				callback.call(THIS);
-			}
-		}
-
-
-		var THIS = this;
-		var modeID = this.pickerMode.toLowerCase()==='hvs' ? 1 : 0;
-		var abortBlur = false;
-		var
-			valueElement = jscolor.fetchElement(this.valueElement),
-			styleElement = jscolor.fetchElement(this.styleElement);
-		var
-			holdPad = false,
-			holdSld = false;
-		var
-			leaveValue = 1<<0,
-			leaveStyle = 1<<1,
-			leavePad = 1<<2,
-			leaveSld = 1<<3;
-
-		// target
-		jscolor.addEvent(target, 'focus', function() {
-			if(THIS.pickerOnfocus) { THIS.showPicker(); }
-		});
-		jscolor.addEvent(target, 'blur', function() {
-			if(!abortBlur) {
-				window.setTimeout(function(){ abortBlur || blurTarget(); abortBlur=false; }, 0);
-			} else {
-				abortBlur = false;
-			}
-		});
-
-		// valueElement
-		if(valueElement) {
-			var updateField = function() {
-				THIS.fromString(valueElement.value, leaveValue);
-				dispatchImmediateChange();
-			};
-			jscolor.addEvent(valueElement, 'keyup', updateField);
-			jscolor.addEvent(valueElement, 'input', updateField);
-			jscolor.addEvent(valueElement, 'blur', blurValue);
-			valueElement.setAttribute('autocomplete', 'off');
-		}
-
-		// styleElement
-		if(styleElement) {
-			styleElement.jscStyle = {
-				backgroundImage : styleElement.style.backgroundImage,
-				backgroundColor : styleElement.style.backgroundColor,
-				color : styleElement.style.color
-			};
-		}
-
-		// require images
-		switch(modeID) {
-			case 0: jscolor.requireImage('hs.png'); break;
-			case 1: jscolor.requireImage('hv.png'); break;
-		}
-		jscolor.requireImage('cross.gif');
-		jscolor.requireImage('arrow.gif');
-
-		this.importColor();
-	}
-
-};
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+
+  ns.Serializer = {
+    serializePiskel : function (piskel) {
+      var serializedLayers = piskel.getLayers().map(function (l) {
+        return pskl.utils.Serializer.serializeLayer(l);
+      });
+      return JSON.stringify({
+        modelVersion : Constants.MODEL_VERSION,
+        piskel : {
+          height : piskel.getHeight(),
+          width : piskel.getWidth(),
+          layers : serializedLayers
+        }
+      });
+    },
+
+    serializeLayer : function (layer) {
+      var frames = layer.getFrames();
+      var renderer = new pskl.rendering.FramesheetRenderer(frames);
+      var base64PNG = renderer.renderAsCanvas().toDataURL();
+
+      return JSON.stringify({
+        name : layer.getName(),
+        base64PNG : base64PNG,
+        frameCount : frames.length
+      });
+    }
+  };
+})();
 ;(function () {
+  var ns = $.namespace('pskl.utils.serialization');
+
+  ns.Deserializer = function (data, callback) {
+    this.layersToLoad_ = 0;
+    this.data_ = data;
+    this.callback_ = callback;
+    this.piskel_ = null;
+  };
+
+  ns.Deserializer.deserialize = function (data, callback) {
+    var deserializer;
+    if (data.modelVersion == Constants.MODEL_VERSION) {
+      deserializer = new ns.Deserializer(data, callback);
+    } else if (data.modelVersion == 1) {
+      deserializer = new ns.backward.Deserializer_v1(data, callback);
+    } else {
+      deserializer = new ns.backward.Deserializer_v0(data, callback);
+    }
+    deserializer.deserialize();
+  };
+
+  ns.Deserializer.prototype.deserialize = function () {
+    var data = this.data_;
+    var piskelData = data.piskel;
+    this.piskel_ = new pskl.model.Piskel(piskelData.width, piskelData.height);
+
+    this.layersToLoad_ = piskelData.layers.length;
+
+    piskelData.layers.forEach(function (serializedLayer) {
+      var layer = this.deserializeLayer(serializedLayer);
+      this.piskel_.addLayer(layer);
+    }.bind(this));
+  };
+
+  ns.Deserializer.prototype.deserializeLayer = function (layerString) {
+    var layerData = JSON.parse(layerString);
+    var layer = new pskl.model.Layer(layerData.name);
+
+    // 1 - create an image to load the base64PNG representing the layer
+    var base64PNG = layerData.base64PNG;
+    var image = new Image();
+
+    // 2 - attach the onload callback that will be triggered asynchronously
+    image.onload = function () {
+      // 5 - extract the frames from the loaded image
+      var frames = pskl.utils.LayerUtils.createFromImage(image, layerData.frameCount);
+
+      // 6 - add each image to the layer
+      frames.forEach(layer.addFrame.bind(layer));
+
+      this.onLayerLoaded_();
+    }.bind(this);
+
+    // 3 - set the source of the image
+    image.src = base64PNG;
+
+    // 4 - return a pointer to the new layer instance
+    return layer;
+  };
+
+  ns.Deserializer.prototype.onLayerLoaded_ = function () {
+    this.layersToLoad_ = this.layersToLoad_ - 1;
+    if (this.layersToLoad_ === 0) {
+      this.callback_(this.piskel_);
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils.serialization.backward');
+
+  ns.Deserializer_v0 = function (data, callback) {
+    this.data_ = data;
+    this.callback_ = callback;
+  };
+
+  ns.Deserializer_v0.prototype.deserialize = function () {
+    var pixelGrids = this.data_;
+    var frames = pixelGrids.map(function (grid) {
+      return pskl.model.Frame.fromPixelGrid(grid);
+    });
+    var layer = pskl.model.Layer.fromFrames('Layer 1', frames);
+
+    this.callback_(pskl.model.Piskel.fromLayers([layer]));
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils.serialization.backward');
+
+  ns.Deserializer_v1 = function (data, callback) {
+    this.callback_ = callback;
+    this.data_ = data;
+  };
+
+  ns.Deserializer_v1.prototype.deserialize = function () {
+    var piskelData = this.data_.piskel;
+    var piskel = new pskl.model.Piskel(piskelData.width, piskelData.height);
+
+    piskelData.layers.forEach(function (serializedLayer) {
+      var layer = this.deserializeLayer(serializedLayer);
+      piskel.addLayer(layer);
+    }.bind(this));
+
+    this.callback_(piskel);
+  };
+
+  ns.Deserializer_v1.prototype.deserializeLayer = function (layerString) {
+    var layerData = JSON.parse(layerString);
+    var layer = new pskl.model.Layer(layerData.name);
+    layerData.frames.forEach(function (serializedFrame) {
+      var frame = this.deserializeFrame(serializedFrame);
+      layer.addFrame(frame);
+    }.bind(this));
+
+    return layer;
+  };
+
+  ns.Deserializer_v1.prototype.deserializeFrame = function (frameString) {
+    var framePixelGrid = JSON.parse(frameString);
+    return pskl.model.Frame.fromPixelGrid(framePixelGrid);
+  };
+})();;(function () {
   var ns = $.namespace("pskl.rendering");
 
   ns.DrawingLoop = function () {
@@ -13605,6 +14891,19 @@ var jscolor = {
     }
   };
 
+  /**
+   * Create a Layer instance from an already existing set a Frames
+   * @static
+   * @param  {String} name layer's name
+   * @param  {Array<pskl.model.Frame>} frames should all have the same dimensions
+   * @return {pskl.model.Layer}
+   */
+  ns.Layer.fromFrames = function (name, frames) {
+    var layer = new ns.Layer(name);
+    frames.forEach(layer.addFrame.bind(layer));
+    return layer;
+  };
+
   ns.Layer.prototype.getName = function () {
     return this.name;
   };
@@ -13658,7 +14957,7 @@ var jscolor = {
 
   ns.Layer.prototype.duplicateFrame = function (frame) {
     var index = this.frames.indexOf(frame);
-    this.duplicateFrameAt();
+    this.duplicateFrameAt(index);
   };
 
   ns.Layer.prototype.duplicateFrameAt = function (index) {
@@ -13695,6 +14994,24 @@ var jscolor = {
     } else {
       throw 'Missing arguments in Piskel constructor : ' + Array.prototype.join.call(arguments, ",");
     }
+  };
+
+  /**
+   * Create a piskel instance from an existing set of (non empty) layers
+   * Layers should all be synchronized : same number of frames, same dimensions
+   * @param  {Array<pskl.model.Layer>} layers
+   * @return {pskl.model.Piskel}
+   */
+  ns.Piskel.fromLayers = function (layers) {
+    var piskel = null;
+    if (layers.length > 0 && layers[0].length() > 0) {
+      var sampleFrame = layers[0].getFrameAt(0);
+      piskel = new pskl.model.Piskel(sampleFrame.getWidth(), sampleFrame.getHeight());
+      layers.forEach(piskel.addLayer.bind(piskel));
+    } else {
+      throw 'Piskel.fromLayers expects array of non empty pskl.model.Layer as first argument';
+    }
+    return piskel;
   };
 
   ns.Piskel.prototype.getLayers = function () {
@@ -13769,9 +15086,9 @@ var jscolor = {
     $.subscribe(Events.SELECTION_DISMISSED, $.proxy(this.onSelectionDismissed_, this));
     $.subscribe(Events.SELECTION_MOVE_REQUEST, $.proxy(this.onSelectionMoved_, this));
 
-    $.subscribe(Events.PASTE, $.proxy(this.onPaste_, this));
-    $.subscribe(Events.COPY, $.proxy(this.onCopy_, this));
-    $.subscribe(Events.CUT, $.proxy(this.onCut_, this));
+    pskl.app.shortcutService.addShortcut('ctrl+V', this.paste.bind(this));
+    pskl.app.shortcutService.addShortcut('ctrl+X', this.cut.bind(this));
+    pskl.app.shortcutService.addShortcut('ctrl+C', this.copy.bind(this));
 
     $.subscribe(Events.TOOL_SELECTED, $.proxy(this.onToolSelected_, this));
   };
@@ -13802,10 +15119,7 @@ var jscolor = {
     this.cleanSelection_();
   };
 
-  /**
-   * @private
-   */
-  ns.SelectionManager.prototype.onCut_ = function(evt) {
+  ns.SelectionManager.prototype.cut = function() {
     if(this.currentSelection) {
       // Put cut target into the selection:
       this.currentSelection.fillSelectionFromFrame(this.piskelController.getCurrentFrame());
@@ -13815,9 +15129,8 @@ var jscolor = {
       for(var i=0, l=pixels.length; i<l; i++) {
         try {
           currentFrame.setPixel(pixels[i].col, pixels[i].row, Constants.TRANSPARENT_COLOR);
-        }
-        catch(e) {
-          // Catchng out of frame's bound pixels without testing
+        } catch(e) {
+          // Catching out of frame's bound pixels without testing
         }
       }
     }
@@ -13826,7 +15139,7 @@ var jscolor = {
     }
   };
 
-  ns.SelectionManager.prototype.onPaste_ = function(evt) {
+  ns.SelectionManager.prototype.paste = function() {
     if(this.currentSelection && this.currentSelection.hasPastedContent) {
       var pixels = this.currentSelection.pixels;
       var currentFrame = this.piskelController.getCurrentFrame();
@@ -13835,22 +15148,17 @@ var jscolor = {
           currentFrame.setPixel(
             pixels[i].col, pixels[i].row,
             pixels[i].copiedColor);
-        }
-        catch(e) {
-          // Catchng out of frame's bound pixels without testing
+        } catch(e) {
+          // Catching out of frame's bound pixels without testing
         }
       }
     }
   };
 
-  /**
-   * @private
-   */
-  ns.SelectionManager.prototype.onCopy_ = function(evt) {
+  ns.SelectionManager.prototype.copy = function() {
     if(this.currentSelection && this.piskelController.getCurrentFrame()) {
       this.currentSelection.fillSelectionFromFrame(this.piskelController.getCurrentFrame());
-    }
-    else {
+    } else {
       throw "Bad state for CUT callback in SelectionManager";
     }
   };
@@ -13928,11 +15236,464 @@ var jscolor = {
 
   pskl.utils.inherit(ns.ShapeSelection, ns.BaseSelection);
 })();;(function () {
+  var ns = $.namespace('pskl.rendering');
+
+  ns.AbstractRenderer = function () {};
+
+  ns.AbstractRenderer.prototype.clear = Constants.ABSTRACT_FUNCTION;
+
+  ns.AbstractRenderer.prototype.getCoordinates = Constants.ABSTRACT_FUNCTION;
+
+  ns.AbstractRenderer.prototype.setGridEnabled = Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.isGridEnabled =  Constants.ABSTRACT_FUNCTION;
+
+  ns.AbstractRenderer.prototype.setZoom = Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.getZoom = Constants.ABSTRACT_FUNCTION;
+
+  ns.AbstractRenderer.prototype.moveOffset = Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.setOffset = Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.getOffset = Constants.ABSTRACT_FUNCTION;
+
+  ns.AbstractRenderer.prototype.setDisplaySize = Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.getDisplaySize = Constants.ABSTRACT_FUNCTION;
+})();;(function () {
+  var ns = $.namespace('pskl.rendering');
+
+  ns.CompositeRenderer = function () {
+    this.renderers = [];
+  };
+
+  pskl.utils.inherit(pskl.rendering.CompositeRenderer, pskl.rendering.AbstractRenderer);
+
+  ns.CompositeRenderer.prototype.add = function (renderer) {
+    this.renderers.push(renderer);
+    return this;
+  };
+
+  ns.CompositeRenderer.prototype.clear = function () {
+    this.renderers.forEach(function (renderer) {
+      renderer.clear();
+    });
+  };
+
+  ns.CompositeRenderer.prototype.setZoom = function (zoom) {
+    this.renderers.forEach(function (renderer) {
+      renderer.setZoom(zoom);
+    });
+  };
+
+  ns.CompositeRenderer.prototype.getZoom = function () {
+    return this.getSampleRenderer_().getZoom();
+  };
+
+  ns.CompositeRenderer.prototype.setDisplaySize = function (w, h) {
+    this.renderers.forEach(function (renderer) {
+      renderer.setDisplaySize(w, h);
+    });
+  };
+
+  ns.CompositeRenderer.prototype.getDisplaySize = function () {
+    return this.getSampleRenderer_().getDisplaySize();
+  };
+
+  ns.CompositeRenderer.prototype.moveOffset = function (x, y) {
+    this.renderers.forEach(function (renderer) {
+      renderer.moveOffset(x, y);
+    });
+  };
+
+  ns.CompositeRenderer.prototype.setOffset = function (x, y) {
+    this.renderers.forEach(function (renderer) {
+      renderer.setOffset(x, y);
+    });
+  };
+
+  ns.CompositeRenderer.prototype.getOffset = function () {
+    return this.getSampleRenderer_().getOffset();
+  };
+
+
+  ns.CompositeRenderer.prototype.setGridEnabled = function (b) {
+    this.renderers.forEach(function (renderer) {
+      renderer.setGridEnabled(b);
+    });
+  };
+
+  ns.CompositeRenderer.prototype.isGridEnabled = function () {
+    return this.getSampleRenderer_().isGridEnabled();
+  };
+
+  ns.CompositeRenderer.prototype.getSampleRenderer_ = function () {
+    if (this.renderers.length > 0) {
+      return this.renderers[0];
+    } else {
+      throw 'Renderer manager is empty';
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.rendering.layer');
+
+  ns.LayersRenderer = function (container, renderingOptions, piskelController) {
+    pskl.rendering.CompositeRenderer.call(this);
+
+    this.piskelController = piskelController;
+
+    // Do not use CachedFrameRenderers here, since the caching will be performed in the render method of LayersRenderer
+    this.belowRenderer = new pskl.rendering.frame.FrameRenderer(container, renderingOptions, ["layers-canvas", "layers-below-canvas"]);
+    this.aboveRenderer = new pskl.rendering.frame.FrameRenderer(container, renderingOptions, ["layers-canvas", "layers-above-canvas"]);
+
+    this.add(this.belowRenderer);
+    this.add(this.aboveRenderer);
+
+    this.serializedRendering = '';
+  };
+
+  pskl.utils.inherit(pskl.rendering.layer.LayersRenderer, pskl.rendering.CompositeRenderer);
+
+  ns.LayersRenderer.prototype.render = function () {
+    var offset = this.getOffset();
+    var size = this.getDisplaySize();
+    var layers = this.piskelController.getLayers();
+    var currentFrameIndex = this.piskelController.currentFrameIndex;
+    var currentLayerIndex = this.piskelController.currentLayerIndex;
+
+    var serializedRendering = [
+      this.getZoom(),
+      this.isGridEnabled(),
+      offset.x,
+      offset.y,
+      size.width,
+      size.height,
+      currentFrameIndex,
+      currentLayerIndex,
+      layers.length
+    ].join("-");
+
+
+    if (this.serializedRendering != serializedRendering) {
+      this.serializedRendering = serializedRendering;
+
+      this.clear();
+
+      var downLayers = layers.slice(0, currentLayerIndex);
+      if (downLayers.length > 0) {
+        var downFrame = this.getFrameForLayersAt_(currentFrameIndex, downLayers);
+        this.belowRenderer.render(downFrame);
+      }
+
+      var upLayers = layers.slice(currentLayerIndex + 1, layers.length);
+      if (upLayers.length > 0) {
+        var upFrame = this.getFrameForLayersAt_(currentFrameIndex, upLayers);
+        this.aboveRenderer.render(upFrame);
+      }
+
+    }
+  };
+
+  ns.LayersRenderer.prototype.getFrameForLayersAt_ = function (frameIndex, layers) {
+    var frames = layers.map(function (l) {
+      return l.getFrameAt(frameIndex);
+    });
+    return pskl.utils.FrameUtils.merge(frames);
+  };
+})();
+;(function () {
+  var ns = $.namespace("pskl.rendering.frame");
+
+  /**
+   * FrameRenderer will display a given frame inside a canvas element.
+   * @param {HtmlElement} container HtmlElement to use as parentNode of the Frame
+   * @param {Object} renderingOptions
+   * @param {Array} classes array of strings to use for css classes
+   */
+  ns.FrameRenderer = function (container, renderingOptions, classes) {
+    this.defaultRenderingOptions = {
+      'supportGridRendering' : false,
+      'zoom' : 1
+    };
+
+    renderingOptions = $.extend(true, {}, this.defaultRenderingOptions, renderingOptions);
+
+    if(container === undefined) {
+      throw 'Bad FrameRenderer initialization. <container> undefined.';
+    }
+
+    if(isNaN(renderingOptions.zoom)) {
+      throw 'Bad FrameRenderer initialization. <zoom> not well defined.';
+    }
+
+    this.container = container;
+
+    this.zoom = renderingOptions.zoom;
+
+    this.offset = {
+      x : 0,
+      y : 0
+    };
+
+    this.margin = {
+      x : 0,
+      y : 0
+    };
+
+    this.isGridEnabled_ = false;
+    this.supportGridRendering = renderingOptions.supportGridRendering;
+
+    this.classes = classes || [];
+    this.classes.push('canvas');
+
+    /**
+     * Off dom canvas, will be used to draw the frame at 1:1 ratio
+     * @type {HTMLElement}
+     */
+    this.canvas = null;
+
+    /**
+     * Displayed canvas, scaled-up from the offdom canvas
+     * @type {HTMLElement}
+     */
+    this.displayCanvas = null;
+    this.setDisplaySize(renderingOptions.width, renderingOptions.height);
+
+    this.setGridEnabled(pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID));
+
+    this.updateBackgroundClass_(pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND));
+    $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
+  };
+
+  pskl.utils.inherit(pskl.rendering.frame.FrameRenderer, pskl.rendering.AbstractRenderer);
+
+  ns.FrameRenderer.prototype.render = function (frame) {
+    if (frame) {
+      this.clear();
+      this.renderFrame_(frame);
+    }
+  };
+
+  ns.FrameRenderer.prototype.clear = function () {
+    pskl.CanvasUtils.clear(this.canvas);
+    pskl.CanvasUtils.clear(this.displayCanvas);
+  };
+
+  ns.FrameRenderer.prototype.setZoom = function (zoom) {
+    if (zoom > Constants.MINIMUM_ZOOM) {
+      // back up center coordinates
+      var centerX = this.offset.x + (this.displayWidth/(2*this.zoom));
+      var centerY = this.offset.y + (this.displayHeight/(2*this.zoom));
+
+      this.zoom = zoom;
+      // recenter
+      this.setOffset(
+        centerX - (this.displayWidth/(2*this.zoom)),
+        centerY - (this.displayHeight/(2*this.zoom))
+      );
+    }
+  };
+
+  ns.FrameRenderer.prototype.getZoom = function () {
+    return this.zoom;
+  };
+
+  ns.FrameRenderer.prototype.setDisplaySize = function (width, height) {
+    this.displayWidth = width;
+    this.displayHeight = height;
+    if (this.displayCanvas) {
+      $(this.displayCanvas).remove();
+      this.displayCanvas = null;
+    }
+    this.createDisplayCanvas_();
+  };
+
+  ns.FrameRenderer.prototype.getDisplaySize = function () {
+    return {
+      height : this.displayHeight,
+      width : this.displayWidth
+    };
+  };
+
+  ns.FrameRenderer.prototype.getOffset = function () {
+    return {
+      x : this.offset.x,
+      y : this.offset.y
+    };
+  };
+
+  ns.FrameRenderer.prototype.moveOffset = function (x, y) {
+    this.setOffset(this.offset.x + x, this.offset.y + y);
+  };
+
+  ns.FrameRenderer.prototype.setOffset = function (x, y) {
+    // TODO : provide frame size information to the FrameRenderer constructor
+    // here I first need to verify I have a 'canvas' which I can use to infer the frame information
+    // and then perform my boundaries checking. This sucks
+    if (this.canvas) {
+      var maxX = this.canvas.width - (this.displayWidth/this.zoom);
+      x = pskl.utils.Math.minmax(x, 0, maxX);
+      var maxY = this.canvas.height - (this.displayHeight/this.zoom);
+      y = pskl.utils.Math.minmax(y, 0, maxY);
+    }
+    this.offset.x = x;
+    this.offset.y = y;
+  };
+
+  ns.FrameRenderer.prototype.setGridEnabled = function (flag) {
+    this.isGridEnabled_ = flag && this.supportGridRendering;
+  };
+
+  ns.FrameRenderer.prototype.isGridEnabled = function () {
+    return this.isGridEnabled_;
+  };
+
+  ns.FrameRenderer.prototype.updateMargins_ = function () {
+    var deltaX = this.displayWidth - (this.zoom * this.canvas.width);
+    this.margin.x = Math.max(0, deltaX) / 2;
+
+    var deltaY = this.displayHeight - (this.zoom * this.canvas.height);
+    this.margin.y = Math.max(0, deltaY) / 2;
+  };
+
+  ns.FrameRenderer.prototype.createDisplayCanvas_ = function () {
+    var height = this.displayHeight;
+    var width = this.displayWidth;
+
+    this.displayCanvas = pskl.CanvasUtils.createCanvas(width, height, this.classes);
+    if (true || this.zoom > 2) {
+      pskl.CanvasUtils.disableImageSmoothing(this.displayCanvas);
+    }
+    this.container.append(this.displayCanvas);
+  };
+
+  ns.FrameRenderer.prototype.onUserSettingsChange_ = function (evt, settingName, settingValue) {
+    if(settingName == pskl.UserSettings.SHOW_GRID) {
+      this.setGridEnabled(settingValue);
+    } else if (settingName == pskl.UserSettings.CANVAS_BACKGROUND) {
+      this.updateBackgroundClass_(settingValue);
+    }
+  };
+
+  ns.FrameRenderer.prototype.updateBackgroundClass_ = function (newClass) {
+    var currentClass = this.container.data('current-background-class');
+    if (currentClass) {
+      this.container.removeClass(currentClass);
+    }
+    this.container.addClass(newClass);
+    this.container.data('current-background-class', newClass);
+  };
+
+  ns.FrameRenderer.prototype.renderPixel_ = function (color, x, y, context) {
+    if(color != Constants.TRANSPARENT_COLOR) {
+      context.fillStyle = color;
+      context.fillRect(x, y, 1, 1);
+    }
+  };
+
+  /**
+   * Transform a screen pixel-based coordinate (relative to the top-left corner of the rendered
+   * frame) into a sprite coordinate in column and row.
+   * @public
+   */
+  ns.FrameRenderer.prototype.getCoordinates = function(x, y) {
+    var containerOffset = this.container.offset();
+    x = x - containerOffset.left;
+    y = y - containerOffset.top;
+
+    // apply margins
+    x = x - this.margin.x;
+    y = y - this.margin.y;
+
+    var cellSize = this.zoom;
+    // apply frame offset
+    x = x + this.offset.x * cellSize;
+    y = y + this.offset.y * cellSize;
+
+    return {
+      x : Math.floor(x / cellSize),
+      y : Math.floor(y / cellSize)
+    };
+  };
+
+  /**
+   * @private
+   */
+  ns.FrameRenderer.prototype.renderFrame_ = function (frame) {
+    if (!this.canvas || frame.getWidth() != this.canvas.width || frame.getHeight() != this.canvas.height) {
+      this.canvas = pskl.CanvasUtils.createCanvas(frame.getWidth(), frame.getHeight());
+    }
+
+    var context = this.canvas.getContext('2d');
+    for(var x = 0, width = frame.getWidth(); x < width; x++) {
+      for(var y = 0, height = frame.getHeight(); y < height; y++) {
+        var color = frame.getPixel(x, y);
+        this.renderPixel_(color, x, y, context);
+      }
+    }
+
+    this.updateMargins_();
+
+    context = this.displayCanvas.getContext('2d');
+    context.save();
+
+    if (this.canvas.width*this.zoom < this.displayCanvas.width) {
+      context.fillStyle = Constants.ZOOMED_OUT_BACKGROUND_COLOR;
+      context.fillRect(0,0,this.displayCanvas.width, this.displayCanvas.height);
+    }
+
+    context.translate(
+      this.margin.x-this.offset.x*this.zoom,
+      this.margin.y-this.offset.y*this.zoom
+    );
+
+    context.clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+
+    var isIE10 = pskl.utils.UserAgent.isIE && pskl.utils.UserAgent.version === 10;
+    if (this.isGridEnabled() || isIE10) {
+      var gridWidth = this.isGridEnabled() ? Constants.GRID_STROKE_WIDTH : 0;
+      var scaled = pskl.utils.ImageResizer.resizeNearestNeighbour(this.canvas, this.zoom, gridWidth);
+      context.drawImage(scaled, 0, 0);
+    } else {
+      context.scale(this.zoom, this.zoom);
+      context.drawImage(this.canvas, 0, 0);
+    }
+    context.restore();
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.rendering.frame');
+
+  /**
+   * FrameRenderer implementation that prevents unnecessary redraws.
+   * @param {HtmlElement} container HtmlElement to use as parentNode of the Frame
+   * @param {Object} renderingOptions
+   * @param {Array} classes array of strings to use for css classes
+   */
+  ns.CachedFrameRenderer = function (container, renderingOptions, classes) {
+    pskl.rendering.frame.FrameRenderer.call(this, container, renderingOptions, classes);
+    this.serializedFrame = '';
+  };
+
+  pskl.utils.inherit(pskl.rendering.frame.CachedFrameRenderer, pskl.rendering.frame.FrameRenderer);
+
+  ns.CachedFrameRenderer.prototype.render = function (frame) {
+    var offset = this.getOffset();
+    var size = this.getDisplaySize();
+    var serializedFrame = [
+      this.getZoom(),
+      this.isGridEnabled(),
+      offset.x, offset.y,
+      size.width, size.height,
+      frame.serialize()
+    ].join('-');
+    if (this.serializedFrame != serializedFrame) {
+      this.serializedFrame = serializedFrame;
+      this.superclass.render.call(this, frame);
+    }
+  };
+})();
+;(function () {
 
   var ns = $.namespace("pskl.rendering");
-  ns.CanvasRenderer = function (frame, dpi) {
+  ns.CanvasRenderer = function (frame, zoom) {
     this.frame = frame;
-    this.dpi = dpi;
+    this.zoom = zoom;
     this.transparentColor_ = 'white';
   };
 
@@ -13948,218 +15709,82 @@ var jscolor = {
   ns.CanvasRenderer.prototype.render = function  () {
     var canvas = this.createCanvas_();
     var context = canvas.getContext('2d');
-    for(var col = 0, width = this.frame.getWidth(); col < width; col++) {
-      for(var row = 0, height = this.frame.getHeight(); row < height; row++) {
-        var color = this.frame.getPixel(col, row);
-        this.renderPixel_(color, col, row, context);
-      }
-    }
 
-    return context;
+    this.frame.forEachPixel(function (color, x, y) {
+      this.renderPixel_(color, x, y, context);
+    }.bind(this));
+
+    return canvas;
   };
 
-  ns.CanvasRenderer.prototype.renderPixel_ = function (color, col, row, context) {
-
+  ns.CanvasRenderer.prototype.renderPixel_ = function (color, x, y, context) {
     if(color == Constants.TRANSPARENT_COLOR) {
       color = this.transparentColor_;
     }
     context.fillStyle = color;
-
-    context.fillRect(col * this.dpi, row * this.dpi, this.dpi, this.dpi);
+    context.fillRect(x * this.zoom, y * this.zoom, this.zoom, this.zoom);
   };
 
   ns.CanvasRenderer.prototype.createCanvas_ = function () {
-    var width = this.frame.getWidth() * this.dpi;
-    var height = this.frame.getHeight() * this.dpi;
+    var width = this.frame.getWidth() * this.zoom;
+    var height = this.frame.getHeight() * this.zoom;
     return pskl.CanvasUtils.createCanvas(width, height);
   };
 })();;(function () {
-  var ns = $.namespace("pskl.rendering");
+  var ns = $.namespace('pskl.rendering');
 
   /**
-   * FrameRenderer will display a given frame inside a canvas element.
-   * @param {HtmlElement} container HtmlElement to use as parentNode of the Frame
-   * @param {Object} renderingOptions
-   * @param {Array} classes array of strings to use for css classes
+   * Render an array of frames
+   * @param {Array.<pskl.model.Frame>} frames
    */
-  ns.FrameRenderer = function (container, renderingOptions, classes) {
-    this.defaultRenderingOptions = {
-      'supportGridRendering' : false
-    };
-    renderingOptions = $.extend(true, {}, this.defaultRenderingOptions, renderingOptions);
-
-    if(container === undefined) {
-      throw 'Bad FrameRenderer initialization. <container> undefined.';
-    }
-
-    if(isNaN(renderingOptions.dpi)) {
-      throw 'Bad FrameRenderer initialization. <dpi> not well defined.';
-    }
-
-    this.container = container;
-
-    this.dpi = renderingOptions.dpi;
-    this.supportGridRendering = renderingOptions.supportGridRendering;
-
-    this.classes = classes || [];
-    this.classes.push('canvas');
-
-    this.canvas = null;
-
-    this.enableGrid(pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID));
-
-    // Flag to know if the config was altered
-    this.canvasConfigDirty = true;
-    this.updateBackgroundClass_(pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND));
-    $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
-  };
-
-  ns.FrameRenderer.prototype.setDPI = function (dpi) {
-    this.dpi = dpi;
-    this.canvasConfigDirty = true;
-  };
-
-  /**
-   * @private
-   */
-  ns.FrameRenderer.prototype.onUserSettingsChange_ = function (evt, settingName, settingValue) {
-
-    if(settingName == pskl.UserSettings.SHOW_GRID) {
-      this.enableGrid(settingValue);
-    }
-    else if (settingName == pskl.UserSettings.CANVAS_BACKGROUND) {
-      this.updateBackgroundClass_(settingValue);
+  ns.FramesheetRenderer = function (frames) {
+    if (frames.length > 0) {
+      this.frames = frames;
+    } else {
+      throw 'FramesheetRenderer : Invalid argument : frames is empty';
     }
   };
 
-  /**
-   * @private
-   */
-  ns.FrameRenderer.prototype.updateBackgroundClass_ = function (newClass) {
-    var currentClass = this.container.data('current-background-class');
-    if (currentClass) {
-      this.container.removeClass(currentClass);
-    }
-    this.container.addClass(newClass);
-    this.container.data('current-background-class', newClass);
-  };
-
-  ns.FrameRenderer.prototype.enableGrid = function (flag) {
-    this.gridStrokeWidth = (flag && this.supportGridRendering) ? Constants.GRID_STROKE_WIDTH : 0;
-    this.canvasConfigDirty = true;
-  };
-
-  ns.FrameRenderer.prototype.render = function (frame) {
-    if (frame) {
-      this.clear();
-      var context = this.getCanvas_(frame).getContext('2d');
-      for(var col = 0, width = frame.getWidth(); col < width; col++) {
-        for(var row = 0, height = frame.getHeight(); row < height; row++) {
-          var color = frame.getPixel(col, row);
-          this.renderPixel_(color, col, row, context);
-        }
-      }
-      this.lastRenderedFrame = frame;
-    }
-  };
-
-  ns.FrameRenderer.prototype.renderPixel_ = function (color, col, row, context) {
-    if(color != Constants.TRANSPARENT_COLOR) {
-      context.fillStyle = color;
-      context.fillRect(this.getFramePos_(col), this.getFramePos_(row), this.dpi, this.dpi);
-    }
-  };
-
-  ns.FrameRenderer.prototype.clear = function () {
-    if (this.canvas) {
-      this.canvas.getContext("2d").clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-  };
-
-  /**
-   * Transform a screen pixel-based coordinate (relative to the top-left corner of the rendered
-   * frame) into a sprite coordinate in column and row.
-   * @public
-   */
-  ns.FrameRenderer.prototype.convertPixelCoordinatesIntoSpriteCoordinate = function(coords) {
-    var cellSize = this.dpi + this.gridStrokeWidth;
-    return {
-      "col" : (coords.x - coords.x % cellSize) / cellSize,
-      "row" : (coords.y - coords.y % cellSize) / cellSize
-    };
-  };
-
-  /**
-   * @private
-   */
-  ns.FrameRenderer.prototype.getFramePos_ = function(index) {
-    return index * this.dpi + ((index - 1) * this.gridStrokeWidth);
-  };
-
-  /**
-   * @private
-   */
-  ns.FrameRenderer.prototype.getCanvas_ = function (frame) {
-    if(this.canvasConfigDirty) {
-      $(this.canvas).remove();
-
-      var col = frame.getWidth(),
-        row = frame.getHeight();
-
-      var pixelWidth =  col * this.dpi + this.gridStrokeWidth * (col - 1);
-      var pixelHeight =  row * this.dpi + this.gridStrokeWidth * (row - 1);
-
-      var canvas = pskl.CanvasUtils.createCanvas(pixelWidth, pixelHeight, this.classes);
-      this.container.append(canvas);
-
-      this.canvas = canvas;
-      this.canvasConfigDirty = false;
-    }
-    return this.canvas;
-  };
-})();;(function () {
-
-  var ns = $.namespace("pskl.rendering");
-
-  ns.SpritesheetRenderer = function (piskelController) {
-    this.piskelController = piskelController;
-  };
-
-  ns.SpritesheetRenderer.prototype.render = function () {
+  ns.FramesheetRenderer.prototype.renderAsCanvas = function () {
     var canvas = this.createCanvas_();
-    for (var i = 0 ; i < this.piskelController.getFrameCount() ; i++) {
-      var frame = this.piskelController.getFrameAt(i);
-      this.drawFrameInCanvas_(frame, canvas, i * this.piskelController.getWidth(), 0);
+    for (var i = 0 ; i < this.frames.length ; i++) {
+      var frame = this.frames[i];
+      this.drawFrameInCanvas_(frame, canvas, i * frame.getWidth(), 0);
     }
     return canvas;
   };
 
-  /**
-   * TODO(juliandescottes): Mutualize with code already present in FrameRenderer
-   */
-  ns.SpritesheetRenderer.prototype.drawFrameInCanvas_ = function (frame, canvas, offsetWidth, offsetHeight) {
+  ns.FramesheetRenderer.prototype.drawFrameInCanvas_ = function (frame, canvas, offsetWidth, offsetHeight) {
     var context = canvas.getContext('2d');
-    for(var col = 0, width = frame.getWidth(); col < width; col++) {
-      for(var row = 0, height = frame.getHeight(); row < height; row++) {
-        var color = frame.getPixel(col, row);
-        if(color != Constants.TRANSPARENT_COLOR) {
-          context.fillStyle = color;
-          context.fillRect(col + offsetWidth, row + offsetHeight, 1, 1);
-        }
+    frame.forEachPixel(function (color, x, y) {
+      if(color != Constants.TRANSPARENT_COLOR) {
+        context.fillStyle = color;
+        context.fillRect(x + offsetWidth, y + offsetHeight, 1, 1);
       }
-    }
+    });
   };
 
-  ns.SpritesheetRenderer.prototype.createCanvas_ = function () {
-    var frameCount = this.piskelController.getFrameCount();
-    if (frameCount > 0){
-      var width = frameCount * this.piskelController.getWidth();
-      var height = this.piskelController.getHeight();
-      return pskl.CanvasUtils.createCanvas(width, height);
-    } else {
-      throw "Cannot render empty Spritesheet";
-    }
+  ns.FramesheetRenderer.prototype.createCanvas_ = function () {
+    var sampleFrame = this.frames[0];
+    var count = this.frames.length;
+    var width = count * sampleFrame.getWidth();
+    var height = sampleFrame.getHeight();
+    return pskl.CanvasUtils.createCanvas(width, height);
   };
+
+})();;(function () {
+
+  var ns = $.namespace("pskl.rendering");
+
+  ns.PiskelRenderer = function (piskelController) {
+    var frames = [];
+    for (var i = 0 ; i < piskelController.getFrameCount() ; i++) {
+      frames.push(piskelController.getFrameAt(i));
+    }
+    ns.FramesheetRenderer.call(this, frames);
+  };
+
+  pskl.utils.inherit(ns.PiskelRenderer, ns.FramesheetRenderer);
 })();;(function () {
   var ns = $.namespace('pskl.controller');
 
@@ -14178,8 +15803,15 @@ var jscolor = {
 
     this.layerIdCounter = 1;
 
-    $.publish(Events.PISKEL_RESET);
     $.publish(Events.FRAME_SIZE_CHANGED);
+    $.publish(Events.PISKEL_RESET);
+  };
+
+  ns.PiskelController.prototype.init = function () {
+    pskl.app.shortcutService.addShortcut('up', this.selectPreviousFrame.bind(this));
+    pskl.app.shortcutService.addShortcut('down', this.selectNextFrame.bind(this));
+    pskl.app.shortcutService.addShortcut('n', this.addFrameAtCurrentIndex.bind(this));
+    pskl.app.shortcutService.addShortcut('shift+n', this.duplicateCurrentFrame.bind(this));
   };
 
   ns.PiskelController.prototype.getHeight = function () {
@@ -14225,15 +15857,21 @@ var jscolor = {
     return !!this.getCurrentLayer().getFrameAt(index);
   };
 
-  // backward from framesheet
-  ns.PiskelController.prototype.getFrameByIndex =
-    ns.PiskelController.prototype.getMergedFrameAt;
+  ns.PiskelController.prototype.addFrame = function () {
+    this.addFrameAt(this.getFrameCount());
+  };
 
-  ns.PiskelController.prototype.addEmptyFrame = function () {
+  ns.PiskelController.prototype.addFrameAtCurrentIndex = function () {
+    this.addFrameAt(this.currentFrameIndex + 1);
+  };
+
+  ns.PiskelController.prototype.addFrameAt = function (index) {
     var layers = this.getLayers();
     layers.forEach(function (l) {
-      l.addFrame(this.createEmptyFrame_());
+      l.addFrameAt(this.createEmptyFrame_(), index);
     }.bind(this));
+
+    $.publish(Events.PISKEL_RESET);
   };
 
   ns.PiskelController.prototype.createEmptyFrame_ = function () {
@@ -14254,11 +15892,17 @@ var jscolor = {
     $.publish(Events.PISKEL_RESET);
   };
 
+  ns.PiskelController.prototype.duplicateCurrentFrame = function () {
+    this.duplicateFrameAt(this.currentFrameIndex);
+  };
+
   ns.PiskelController.prototype.duplicateFrameAt = function (index) {
     var layers = this.getLayers();
     layers.forEach(function (l) {
       l.duplicateFrameAt(index);
     });
+
+    $.publish(Events.PISKEL_RESET);
   };
 
   ns.PiskelController.prototype.moveFrame = function (fromIndex, toIndex) {
@@ -14276,6 +15920,20 @@ var jscolor = {
   ns.PiskelController.prototype.setCurrentFrameIndex = function (index) {
     this.currentFrameIndex = index;
     $.publish(Events.PISKEL_RESET);
+  };
+
+  ns.PiskelController.prototype.selectNextFrame = function () {
+    var nextIndex = this.currentFrameIndex + 1;
+    if (nextIndex < this.getFrameCount()) {
+      this.setCurrentFrameIndex(nextIndex);
+    }
+  };
+
+  ns.PiskelController.prototype.selectPreviousFrame = function () {
+    var nextIndex = this.currentFrameIndex - 1;
+    if (nextIndex >= 0) {
+      this.setCurrentFrameIndex(nextIndex);
+    }
   };
 
   ns.PiskelController.prototype.setCurrentLayerIndex = function (index) {
@@ -14355,11 +16013,13 @@ var jscolor = {
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
-  ns.DrawingController = function (piskelController, container) {
+  ns.DrawingController = function (piskelController, paletteController, container) {
     /**
      * @public
      */
     this.piskelController = piskelController;
+
+    this.paletteController = paletteController;
 
     /**
      * @public
@@ -14371,78 +16031,81 @@ var jscolor = {
      */
     this.container = container;
 
-    this.dpi = this.calculateDPI_();
-
     // TODO(vincz): Store user prefs in a localstorage string ?
     var renderingOptions = {
-      "dpi": this.dpi,
-      "supportGridRendering" : true
+      "zoom": this.calculateZoom_(),
+      "supportGridRendering" : true,
+      "height" : this.getContainerHeight_(),
+      "width" : this.getContainerWidth_(),
+      "xOffset" : 0,
+      "yOffset" : 0
     };
 
-    this.overlayRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["canvas-overlay"]);
-    this.renderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["drawing-canvas"]);
-    this.layersBelowRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["layers-canvas", "layers-below-canvas"]);
-    this.layersAboveRenderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions, ["layers-canvas", "layers-above-canvas"]);
+    this.overlayRenderer = new pskl.rendering.frame.CachedFrameRenderer(this.container, renderingOptions, ["canvas-overlay"]);
+    this.renderer = new pskl.rendering.frame.CachedFrameRenderer(this.container, renderingOptions, ["drawing-canvas"]);
+    this.layersRenderer = new pskl.rendering.layer.LayersRenderer(this.container, renderingOptions, piskelController);
 
+    this.compositeRenderer = new pskl.rendering.CompositeRenderer();
+    this.compositeRenderer
+      .add(this.overlayRenderer)
+      .add(this.renderer)
+      .add(this.layersRenderer);
 
     // State of drawing controller:
     this.isClicked = false;
-    this.isRightClicked = false;
     this.previousMousemoveTime = 0;
     this.currentToolBehavior = null;
-    this.primaryColor =  Constants.DEFAULT_PEN_COLOR;
-    this.secondaryColor =  Constants.TRANSPARENT_COLOR;
   };
 
   ns.DrawingController.prototype.init = function () {
     this.initMouseBehavior();
 
     $.subscribe(Events.TOOL_SELECTED, $.proxy(function(evt, toolBehavior) {
-      console.log("Tool selected: ", toolBehavior);
       this.currentToolBehavior = toolBehavior;
       this.overlayFrame.clear();
     }, this));
 
-    /**
-     * TODO(grosbouddha): Primary/secondary color state are kept in this general controller.
-     *     Find a better place to store that. Perhaps PaletteController?
-     */
-    $.subscribe(Events.PRIMARY_COLOR_SELECTED, $.proxy(function(evt, color) {
-      console.log("Primary color selected: ", color);
-      this.primaryColor = color;
-      $.publish(Events.PRIMARY_COLOR_UPDATED, [color]);
-    }, this));
-    $.subscribe(Events.SECONDARY_COLOR_SELECTED, $.proxy(function(evt, color) {
-      console.log("Secondary color selected: ", color);
-      this.secondaryColor = color;
-      $.publish(Events.SECONDARY_COLOR_UPDATED, [color]);
-    }, this));
-
-    $(window).resize($.proxy(this.startDPIUpdateTimer_, this));
+    $(window).resize($.proxy(this.startResizeTimer_, this));
 
     $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
-    $.subscribe(Events.FRAME_SIZE_CHANGED, $.proxy(this.updateDPI_, this));
+    $.subscribe(Events.FRAME_SIZE_CHANGED, $.proxy(this.onFrameSizeChanged_, this));
 
-    this.updateDPI_();
+    this.centerColumnWrapperHorizontally_();
   };
 
   ns.DrawingController.prototype.initMouseBehavior = function() {
     var body = $('body');
     this.container.mousedown($.proxy(this.onMousedown_, this));
     this.container.mousemove($.proxy(this.onMousemove_, this));
+
+    if (pskl.utils.UserAgent.isChrome) {
+      this.container.on('mousewheel', $.proxy(this.onMousewheel_, this));
+    } else {
+      this.container.on('wheel', $.proxy(this.onMousewheel_, this));
+    }
+
     body.mouseup($.proxy(this.onMouseup_, this));
 
     // Deactivate right click:
     body.contextmenu(this.onCanvasContextMenu_);
   };
 
-
-
-  ns.DrawingController.prototype.startDPIUpdateTimer_ = function () {
-    if (this.dpiUpdateTimer) {
-      window.clearInterval(this.dpiUpdateTimer);
+  ns.DrawingController.prototype.startResizeTimer_ = function () {
+    if (this.resizeTimer) {
+      window.clearInterval(this.resizeTimer);
     }
-    this.dpiUpdateTimer = window.setTimeout($.proxy(this.updateDPI_, this), 200);
+    this.resizeTimer = window.setTimeout($.proxy(this.afterWindowResize_, this), 200);
+  },
+
+  ns.DrawingController.prototype.afterWindowResize_ = function () {
+    var initialWidth = this.compositeRenderer.getDisplaySize().width;
+    this.compositeRenderer.setDisplaySize(this.getContainerWidth_(), this.getContainerHeight_());
+    this.centerColumnWrapperHorizontally_();
+    var ratio = this.compositeRenderer.getDisplaySize().width / initialWidth;
+    var newZoom = ratio * this.compositeRenderer.getZoom();
+    this.compositeRenderer.setZoom(newZoom);
+
+    $.publish(Events.ZOOM_CHANGED);
   },
 
   /**
@@ -14450,32 +16113,42 @@ var jscolor = {
    */
   ns.DrawingController.prototype.onUserSettingsChange_ = function (evt, settingsName, settingsValue) {
     if(settingsName == pskl.UserSettings.SHOW_GRID) {
-      this.updateDPI_();
+      console.warn('DrawingController:onUserSettingsChange_ not implemented !');
     }
   },
+
+  ns.DrawingController.prototype.onFrameSizeChanged_ = function () {
+    this.compositeRenderer.setDisplaySize(this.getContainerWidth_(), this.getContainerHeight_());
+    this.compositeRenderer.setZoom(this.calculateZoom_());
+    this.compositeRenderer.setOffset(0, 0);
+    $.publish(Events.ZOOM_CHANGED);
+  };
 
   /**
    * @private
    */
   ns.DrawingController.prototype.onMousedown_ = function (event) {
-    this.isClicked = true;
+    var frame = this.piskelController.getCurrentFrame();
+    var coords = this.renderer.getCoordinates(event.clientX, event.clientY);
 
-    if(event.button == 2) { // right click
-      this.isRightClicked = true;
-      $.publish(Events.CANVAS_RIGHT_CLICKED);
+    if (event.button === Constants.MIDDLE_BUTTON) {
+      if (frame.containsPixel(coords.x, coords.y)) {
+        $.publish(Events.SELECT_PRIMARY_COLOR, [frame.getPixel(coords.x, coords.y)]);
+      }
+    } else {
+      this.isClicked = true;
+
+      this.currentToolBehavior.applyToolAt(
+        coords.x,
+        coords.y,
+        this.getCurrentColor_(event),
+        frame,
+        this.overlayFrame,
+        event
+      );
+
+      $.publish(Events.LOCALSTORAGE_REQUEST);
     }
-
-    var coords = this.getSpriteCoordinates(event);
-
-    this.currentToolBehavior.applyToolAt(
-      coords.col, coords.row,
-      this.getCurrentColor_(),
-      this.piskelController.getCurrentFrame(),
-      this.overlayFrame,
-      this.wrapEvtInfo_(event)
-    );
-
-    $.publish(Events.LOCALSTORAGE_REQUEST);
   };
 
   /**
@@ -14484,16 +16157,19 @@ var jscolor = {
   ns.DrawingController.prototype.onMousemove_ = function (event) {
     var currentTime = new Date().getTime();
     // Throttling of the mousemove event:
-    if ((currentTime - this.previousMousemoveTime) > 40 ) {
-      var coords = this.getSpriteCoordinates(event);
+
+    if ((currentTime - this.previousMousemoveTime) > Constants.MOUSEMOVE_THROTTLING ) {
+      var coords = this.renderer.getCoordinates(event.clientX, event.clientY);
+
       if (this.isClicked) {
 
         this.currentToolBehavior.moveToolAt(
-          coords.col, coords.row,
-          this.getCurrentColor_(),
+          coords.x,
+          coords.y,
+          this.getCurrentColor_(event),
           this.piskelController.getCurrentFrame(),
           this.overlayFrame,
-          this.wrapEvtInfo_(event)
+          event
         );
 
         // TODO(vincz): Find a way to move that to the model instead of being at the interaction level.
@@ -14503,38 +16179,54 @@ var jscolor = {
       } else {
 
         this.currentToolBehavior.moveUnactiveToolAt(
-          coords.col, coords.row,
-          this.getCurrentColor_(),
+          coords.x,
+          coords.y,
+          this.getCurrentColor_(event),
           this.piskelController.getCurrentFrame(),
           this.overlayFrame,
-          this.wrapEvtInfo_(event)
+          event
         );
       }
       this.previousMousemoveTime = currentTime;
     }
   };
 
+  ns.DrawingController.prototype.onMousewheel_ = function (jQueryEvent) {
+    var event = jQueryEvent.originalEvent;
+    var delta = event.wheelDeltaY || (-2 * event.deltaY);
+    var currentZoom = this.renderer.getZoom();
+
+    var perfectZoom = this.calculateZoom_();
+    var step = perfectZoom / 10;
+
+    if (delta > 0) {
+      this.compositeRenderer.setZoom(currentZoom + step);
+    } else if (delta < 0) {
+      this.compositeRenderer.setZoom(currentZoom - step);
+    }
+    $.publish(Events.ZOOM_CHANGED);
+  };
+
   /**
    * @private
    */
   ns.DrawingController.prototype.onMouseup_ = function (event) {
-    if(this.isClicked || this.isRightClicked) {
+    if(this.isClicked) {
       // A mouse button was clicked on the drawing canvas before this mouseup event,
       // the user was probably drawing on the canvas.
       // Note: The mousemove movement (and the mouseup) may end up outside
       // of the drawing canvas.
 
       this.isClicked = false;
-      this.isRightClicked = false;
 
-      var coords = this.getSpriteCoordinates(event);
-      //console.log("mousemove: col: " + spriteCoordinate.col + " - row: " + spriteCoordinate.row);
+      var coords = this.renderer.getCoordinates(event.clientX, event.clientY);
       this.currentToolBehavior.releaseToolAt(
-        coords.col, coords.row,
-        this.getCurrentColor_(),
+        coords.x,
+        coords.y,
+        this.getCurrentColor_(event),
         this.piskelController.getCurrentFrame(),
         this.overlayFrame,
-        this.wrapEvtInfo_(event)
+        event
       );
 
       $.publish(Events.TOOL_RELEASED);
@@ -14544,43 +16236,20 @@ var jscolor = {
   /**
    * @private
    */
-  ns.DrawingController.prototype.wrapEvtInfo_ = function (event) {
-    var evtInfo = {};
-    if (event.button === 0) {
-      evtInfo.button = Constants.LEFT_BUTTON;
-    } else if (event.button == 2) {
-      evtInfo.button = Constants.RIGHT_BUTTON;
-    }
-    return evtInfo;
-  };
-
-  /**
-   * @private
-   */
-  ns.DrawingController.prototype.getRelativeCoordinates = function (clientX, clientY) {
-    var canvasPageOffset = this.container.offset();
-    return {
-      x : clientX - canvasPageOffset.left,
-      y : clientY - canvasPageOffset.top
-    };
-  };
-
-  /**
-   * @private
-   */
   ns.DrawingController.prototype.getSpriteCoordinates = function(event) {
-    var coords = this.getRelativeCoordinates(event.clientX, event.clientY);
-    return this.renderer.convertPixelCoordinatesIntoSpriteCoordinate(coords);
+    return this.renderer.getCoordinates(event.clientX, event.clientY);
   };
 
   /**
    * @private
    */
-  ns.DrawingController.prototype.getCurrentColor_ = function () {
-    if(this.isRightClicked) {
-      return this.secondaryColor;
+  ns.DrawingController.prototype.getCurrentColor_ = function (event) {
+    if(event.button == Constants.RIGHT_BUTTON) {
+      return this.paletteController.getSecondaryColor();
+    } else if(event.button == Constants.LEFT_BUTTON) {
+      return this.paletteController.getPrimaryColor();
     } else {
-      return this.primaryColor;
+      return Constants.DEFAULT_PEN_COLOR;
     }
   };
 
@@ -14598,120 +16267,80 @@ var jscolor = {
   };
 
   ns.DrawingController.prototype.render = function () {
-    this.renderLayers();
-    this.renderFrame();
-    this.renderOverlay();
-  };
-
-  ns.DrawingController.prototype.renderFrame = function () {
-    var frame = this.piskelController.getCurrentFrame();
-    var serializedFrame = this.dpi + "-" + frame.serialize();
-    if (this.serializedFrame != serializedFrame) {
-      if (!frame.isSameSize(this.overlayFrame)) {
-        this.overlayFrame = pskl.model.Frame.createEmptyFromFrame(frame);
-      }
-      this.serializedFrame = serializedFrame;
-      this.renderer.render(frame);
+    var currentFrame = this.piskelController.getCurrentFrame();
+    if (!currentFrame.isSameSize(this.overlayFrame)) {
+      this.overlayFrame = pskl.model.Frame.createEmptyFromFrame(currentFrame);
     }
-  };
 
-  ns.DrawingController.prototype.renderOverlay = function () {
-    var serializedOverlay = this.dpi + "-" + this.overlayFrame.serialize();
-    if (this.serializedOverlay != serializedOverlay) {
-      this.serializedOverlay = serializedOverlay;
-      this.overlayRenderer.render(this.overlayFrame);
-    }
-  };
-
-  ns.DrawingController.prototype.renderLayers = function () {
-    var layers = this.piskelController.getLayers();
-    var currentFrameIndex = this.piskelController.currentFrameIndex;
-    var currentLayerIndex = this.piskelController.currentLayerIndex;
-
-    var serializedLayerFrame = [
-      this.dpi,
-      currentFrameIndex,
-      currentLayerIndex,
-      layers.length
-    ].join("-");
-
-    if (this.serializedLayerFrame != serializedLayerFrame) {
-      this.layersAboveRenderer.clear();
-      this.layersBelowRenderer.clear();
-
-      var downLayers = layers.slice(0, currentLayerIndex);
-      var downFrame = this.getFrameForLayersAt_(currentFrameIndex, downLayers);
-      this.layersBelowRenderer.render(downFrame);
-
-      if (currentLayerIndex + 1 < layers.length) {
-        var upLayers = layers.slice(currentLayerIndex + 1, layers.length);
-        var upFrame = this.getFrameForLayersAt_(currentFrameIndex, upLayers);
-        this.layersAboveRenderer.render(upFrame);
-      }
-
-      this.serializedLayerFrame = serializedLayerFrame;
-    }
-  };
-
-  ns.DrawingController.prototype.getFrameForLayersAt_ = function (frameIndex, layers) {
-    var frames = layers.map(function (l) {
-      return l.getFrameAt(frameIndex);
-    });
-    return pskl.utils.FrameUtils.merge(frames);
+    this.layersRenderer.render();
+    this.renderer.render(currentFrame);
+    this.overlayRenderer.render(this.overlayFrame);
   };
 
   /**
    * @private
    */
-  ns.DrawingController.prototype.calculateDPI_ = function() {
-    var availableViewportHeight = $('#main-wrapper').height(),
-      leftSectionWidth = $('.left-column').outerWidth(true),
-      rightSectionWidth = $('.right-column').outerWidth(true),
-      availableViewportWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth,
-      framePixelHeight = this.piskelController.getCurrentFrame().getHeight(),
-      framePixelWidth = this.piskelController.getCurrentFrame().getWidth();
+  ns.DrawingController.prototype.calculateZoom_ = function() {
+    var frameHeight = this.piskelController.getCurrentFrame().getHeight(),
+        frameWidth = this.piskelController.getCurrentFrame().getWidth();
 
-    if (pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID)) {
-      availableViewportWidth = availableViewportWidth - (framePixelWidth * Constants.GRID_STROKE_WIDTH);
-      availableViewportHeight = availableViewportHeight - (framePixelHeight * Constants.GRID_STROKE_WIDTH);
-    }
+    return Math.min(this.getAvailableWidth_()/frameWidth, this.getAvailableHeight_()/frameHeight);
+  };
 
-    var dpi = pskl.PixelUtils.calculateDPI(
-      availableViewportHeight, availableViewportWidth, framePixelHeight, framePixelWidth);
+  ns.DrawingController.prototype.getAvailableHeight_ = function () {
+    return $('#main-wrapper').height();
+  };
 
-    return dpi;
+  ns.DrawingController.prototype.getAvailableWidth_ = function () {
+    var leftSectionWidth = $('.left-column').outerWidth(true),
+    rightSectionWidth = $('.right-column').outerWidth(true),
+    toolsContainerWidth = $('#tool-section').outerWidth(true),
+    settingsContainerWidth = $('#application-action-section').outerWidth(true),
+    availableWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth - toolsContainerWidth - settingsContainerWidth;
+    // availableWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth;
+    console.log('leftSectionWidth', leftSectionWidth);
+    console.log('rightSectionWidth', rightSectionWidth);
+    console.log('toolsContainerWidth', toolsContainerWidth);
+    console.log('settingsContainerWidth', settingsContainerWidth);
+    console.log('main-wrapper', $('#main-wrapper').width());
+
+    return availableWidth-50;
+  };
+
+  ns.DrawingController.prototype.getContainerHeight_ = function () {
+    return this.calculateZoom_() * this.piskelController.getCurrentFrame().getHeight();
+  };
+
+  ns.DrawingController.prototype.getContainerWidth_ = function () {
+    return this.calculateZoom_() * this.piskelController.getCurrentFrame().getWidth();
   };
 
   /**
    * @private
    */
-  ns.DrawingController.prototype.updateDPI_ = function() {
-    this.dpi = this.calculateDPI_();
-
-    this.overlayRenderer.setDPI(this.dpi);
-    this.renderer.setDPI(this.dpi);
-    this.layersAboveRenderer.setDPI(this.dpi);
-    this.layersBelowRenderer.setDPI(this.dpi);
-
-    var currentFrameHeight =  this.piskelController.getCurrentFrame().getHeight();
-    var canvasHeight = currentFrameHeight * this.dpi;
-    if (pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID)) {
-      canvasHeight += Constants.GRID_STROKE_WIDTH * currentFrameHeight;
-    }
-
-    var verticalGapInPixel = Math.floor(($('#main-wrapper').height() - canvasHeight) / 2);
+  ns.DrawingController.prototype.centerColumnWrapperHorizontally_ = function() {
+    var containerHeight = this.getContainerHeight_();
+    var verticalGapInPixel = Math.floor(($('#main-wrapper').height() - containerHeight) / 2);
     $('#column-wrapper').css({
-      'top': verticalGapInPixel + 'px',
-      'height': canvasHeight + 'px'
+      'top': verticalGapInPixel + 'px'
     });
+  };
+
+  ns.DrawingController.prototype.getRenderer = function () {
+    return this.compositeRenderer;
+  };
+
+  ns.DrawingController.prototype.setOffset = function (x, y) {
+    this.compositeRenderer.setOffset(x, y);
+    $.publish(Events.ZOOM_CHANGED);
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
-  ns.PreviewFilmController = function (piskelController, container, dpi) {
+  ns.PreviewFilmController = function (piskelController, container) {
 
     this.piskelController = piskelController;
     this.container = container;
-    this.dpi = this.calculateDPI_();
+    this.refreshZoom_();
 
     this.redrawFlag = true;
   };
@@ -14719,14 +16348,14 @@ var jscolor = {
   ns.PreviewFilmController.prototype.init = function() {
     $.subscribe(Events.TOOL_RELEASED, this.flagForRedraw_.bind(this));
     $.subscribe(Events.PISKEL_RESET, this.flagForRedraw_.bind(this));
-    $.subscribe(Events.PISKEL_RESET, this.refreshDPI_.bind(this));
+    $.subscribe(Events.PISKEL_RESET, this.refreshZoom_.bind(this));
 
     $('#preview-list-scroller').scroll(this.updateScrollerOverflows.bind(this));
     this.updateScrollerOverflows();
   };
 
   ns.PreviewFilmController.prototype.addFrame = function () {
-    this.piskelController.addEmptyFrame();
+    this.piskelController.addFrame();
     this.piskelController.setCurrentFrameIndex(this.piskelController.getFrameCount() - 1);
     this.updateScrollerOverflows();
   };
@@ -14735,8 +16364,8 @@ var jscolor = {
     this.redrawFlag = true;
   };
 
-  ns.PreviewFilmController.prototype.refreshDPI_ = function () {
-    this.dpi = this.calculateDPI_();
+  ns.PreviewFilmController.prototype.refreshZoom_ = function () {
+    this.zoom = this.calculateZoom_();
   };
 
   ns.PreviewFilmController.prototype.render = function () {
@@ -14860,8 +16489,12 @@ var jscolor = {
 
     // TODO(vincz): Eventually optimize this part by not recreating a FrameRenderer. Note that the real optim
     // is to make this update function (#createPreviewTile) less aggressive.
-    var renderingOptions = {"dpi": this.dpi };
-    var currentFrameRenderer = new pskl.rendering.FrameRenderer($(canvasContainer), renderingOptions, ["tile-view"]);
+    var renderingOptions = {
+      "zoom" : this.zoom,
+      "height" : this.piskelController.getCurrentFrame().getHeight() * this.zoom,
+      "width" : this.piskelController.getCurrentFrame().getWidth() * this.zoom
+    };
+    var currentFrameRenderer = new pskl.rendering.frame.FrameRenderer($(canvasContainer), renderingOptions, ["tile-view"]);
     currentFrameRenderer.render(currentFrame);
 
     previewTileRoot.appendChild(canvasContainer);
@@ -14911,9 +16544,9 @@ var jscolor = {
   };
 
   /**
-   * Calculate the preview DPI depending on the piskel size
+   * Calculate the preview zoom depending on the piskel size
    */
-  ns.PreviewFilmController.prototype.calculateDPI_ = function () {
+  ns.PreviewFilmController.prototype.calculateZoom_ = function () {
     var curFrame = this.piskelController.getCurrentFrame(),
       frameHeight = curFrame.getHeight(),
       frameWidth = curFrame.getWidth(),
@@ -14922,7 +16555,7 @@ var jscolor = {
     var previewHeight = Constants.PREVIEW_FILM_SIZE * frameHeight / maxFrameDim;
     var previewWidth = Constants.PREVIEW_FILM_SIZE * frameWidth / maxFrameDim;
 
-    return pskl.PixelUtils.calculateDPI(previewHeight, previewWidth, frameHeight, frameWidth) || 1;
+    return pskl.PixelUtils.calculateZoom(previewHeight, previewWidth, frameHeight, frameWidth) || 1;
   };
 })();;(function () {
   var ns = $.namespace('pskl.controller');
@@ -14984,7 +16617,7 @@ var jscolor = {
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
-  ns.AnimatedPreviewController = function (piskelController, container, dpi) {
+  ns.AnimatedPreviewController = function (piskelController, container) {
     this.piskelController = piskelController;
     this.container = container;
 
@@ -14993,12 +16626,16 @@ var jscolor = {
 
     this.setFPS(Constants.DEFAULT.FPS);
 
+    var zoom = this.calculateZoom_();
+    var frame = this.piskelController.getCurrentFrame();
     var renderingOptions = {
-      "dpi": this.calculateDPI_()
+      "zoom": zoom,
+      "height" : frame.getHeight() * zoom,
+      "width" : frame.getWidth() * zoom
     };
-    this.renderer = new pskl.rendering.FrameRenderer(this.container, renderingOptions);
+    this.renderer = new pskl.rendering.frame.FrameRenderer(this.container, renderingOptions);
 
-    $.subscribe(Events.FRAME_SIZE_CHANGED, this.updateDPI_.bind(this));
+    $.subscribe(Events.FRAME_SIZE_CHANGED, this.onFrameSizeChange_.bind(this));
   };
 
   ns.AnimatedPreviewController.prototype.init = function () {
@@ -15036,55 +16673,150 @@ var jscolor = {
   };
 
   /**
-   * Calculate the preview DPI depending on the framesheet size
+   * Calculate the preview zoom depending on the framesheet size
    */
-  ns.AnimatedPreviewController.prototype.calculateDPI_ = function () {
+  ns.AnimatedPreviewController.prototype.calculateZoom_ = function () {
+    var frame = this.piskelController.getCurrentFrame();
     var previewSize = 200,
-      framePixelHeight = this.piskelController.getCurrentFrame().getHeight(),
-      framePixelWidth = this.piskelController.getCurrentFrame().getWidth();
-    // TODO (julz) : should have a utility to get a Size from framesheet easily (what about empty framesheets though ?)
+      hZoom = previewSize / frame.getHeight(),
+      wZoom = previewSize / frame.getWidth();
 
-    //return pskl.PixelUtils.calculateDPIForContainer($(".preview-container"), framePixelHeight, framePixelWidth);
-    return pskl.PixelUtils.calculateDPI(previewSize, previewSize, framePixelHeight, framePixelWidth);
+    return Math.min(hZoom, wZoom);
   };
 
-  ns.AnimatedPreviewController.prototype.updateDPI_ = function () {
-    this.dpi = this.calculateDPI_();
-    this.renderer.setDPI(this.dpi);
+  ns.AnimatedPreviewController.prototype.onFrameSizeChange_ = function () {
+    var frame = this.piskelController.getCurrentFrame();
+    var zoom = this.calculateZoom_();
+    this.renderer.setDisplaySize(frame.getWidth() * zoom, frame.getHeight() * zoom);
+    this.renderer.setZoom(zoom);
+    this.renderer.setOffset(0, 0);
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.controller');
+
+  ns.MinimapController = function (piskelController, animationController, drawingController, container) {
+    this.piskelController = piskelController;
+    this.animationController = animationController;
+    this.drawingController = drawingController;
+    this.container = container;
+
+    this.isClicked = false;
+  };
+
+  ns.MinimapController.prototype.init = function () {
+    // Create minimap DOM elements
+    this.cropFrame = document.createElement('DIV');
+    this.cropFrame.className = 'minimap-crop-frame';
+    this.cropFrame.style.display = 'none';
+    $(this.container).append(this.cropFrame);
+
+    // Init mouse events
+    $(this.container).mousedown(this.onMinimapMousedown_.bind(this));
+    $('body').mousemove(this.onMinimapMousemove_.bind(this));
+    $('body').mouseup(this.onMinimapMouseup_.bind(this));
+
+    $.subscribe(Events.ZOOM_CHANGED, $.proxy(this.renderMinimap_, this));
+  };
+
+  ns.MinimapController.prototype.renderMinimap_ = function () {
+    var zoomRatio = this.getDrawingAreaZoomRatio_();
+    if (zoomRatio > 1) {
+      this.displayCropFrame_(zoomRatio, this.drawingController.getRenderer().getOffset());
+    } else {
+      this.hideCropFrame_();
+    }
+  };
+
+  ns.MinimapController.prototype.displayCropFrame_ = function (ratio, offset) {
+    this.cropFrame.style.display = 'block';
+    this.cropFrame.style.top = (offset.y * this.animationController.renderer.getZoom()) +  'px';
+    this.cropFrame.style.left = (offset.x * this.animationController.renderer.getZoom()) +  'px';
+    var zoomRatio = this.getDrawingAreaZoomRatio_();
+    this.cropFrame.style.width = (this.container.width() / zoomRatio) +  'px';
+    this.cropFrame.style.height = (this.container.height() / zoomRatio) +  'px';
+
+  };
+
+  ns.MinimapController.prototype.hideCropFrame_ = function () {
+    this.cropFrame.style.display = 'none';
+  };
+
+  ns.MinimapController.prototype.onMinimapMousemove_ = function (evt) {
+    if (this.isClicked) {
+      if (this.getDrawingAreaZoomRatio_() > 1) {
+        var coords = this.getCoordinatesCenteredAround_(evt.clientX, evt.clientY);
+        this.drawingController.setOffset(coords.x, coords.y);
+      }
+    }
+  };
+
+  ns.MinimapController.prototype.onMinimapMousedown_ = function (evt) {
+    this.isClicked = true;
+  };
+
+  ns.MinimapController.prototype.onMinimapMouseup_ = function (evt) {
+    this.isClicked = false;
+  };
+
+  ns.MinimapController.prototype.getCoordinatesCenteredAround_ = function (x, y) {
+    var frameCoords = this.animationController.renderer.getCoordinates(x, y);
+    var zoomRatio = this.getDrawingAreaZoomRatio_();
+    var frameWidth = this.piskelController.getCurrentFrame().getWidth();
+    var frameHeight = this.piskelController.getCurrentFrame().getHeight();
+
+    var width = frameWidth / zoomRatio;
+    var height = frameHeight / zoomRatio;
+
+    return {
+      x : frameCoords.x - (width/2),
+      y : frameCoords.y - (height/2)
+    };
+  };
+
+  ns.MinimapController.prototype.getDrawingAreaZoomRatio_ = function () {
+    var drawingAreaZoom = this.drawingController.getRenderer().getZoom();
+    var drawingAreaFullHeight = this.piskelController.getCurrentFrame().getHeight() * drawingAreaZoom;
+    var zoomRatio = drawingAreaFullHeight / this.drawingController.getRenderer().getDisplaySize().height;
+
+    return zoomRatio;
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
 
-  
+
   ns.ToolController = function () {
-  
-    this.toolInstances = {
-      "simplePen" : new pskl.drawingtools.SimplePen(),
-      "verticalMirrorPen" : new pskl.drawingtools.VerticalMirrorPen(),
-      "eraser" : new pskl.drawingtools.Eraser(),
-      "paintBucket" : new pskl.drawingtools.PaintBucket(),
-      "stroke" : new pskl.drawingtools.Stroke(),
-      "rectangle" : new pskl.drawingtools.Rectangle(),
-      "circle" : new pskl.drawingtools.Circle(),
-      "move" : new pskl.drawingtools.Move(),
-      "rectangleSelect" : new pskl.drawingtools.RectangleSelect(),
-      "shapeSelect" : new pskl.drawingtools.ShapeSelect(),
-      "colorPicker" : new pskl.drawingtools.ColorPicker()
+    var toDescriptor = function (id, shortcut, instance) {
+      return {id:id, shortcut:shortcut, instance:instance};
     };
 
-    this.currentSelectedTool = this.toolInstances.simplePen;
-    this.previousSelectedTool = this.toolInstances.simplePen;
+    this.tools = [
+      toDescriptor('simplePen', 'P', new pskl.drawingtools.SimplePen()),
+      toDescriptor('verticalMirrorPen', 'V', new pskl.drawingtools.VerticalMirrorPen()),
+      toDescriptor('eraser', 'E', new pskl.drawingtools.Eraser()),
+      toDescriptor('paintBucket', 'B', new pskl.drawingtools.PaintBucket()),
+      toDescriptor('stroke', 'L', new pskl.drawingtools.Stroke()),
+      toDescriptor('rectangle', 'R', new pskl.drawingtools.Rectangle()),
+      toDescriptor('circle', 'C', new pskl.drawingtools.Circle()),
+      toDescriptor('move', 'M', new pskl.drawingtools.Move()),
+      toDescriptor('rectangleSelect', 'S', new pskl.drawingtools.RectangleSelect()),
+      toDescriptor('shapeSelect', 'Z', new pskl.drawingtools.ShapeSelect()),
+      toDescriptor('colorPicker', 'O', new pskl.drawingtools.ColorPicker())
+    ];
+
+    this.currentSelectedTool = this.tools[0];
+    this.previousSelectedTool = this.tools[0];
   };
 
   /**
    * @public
    */
   ns.ToolController.prototype.init = function() {
-    this.createToolMarkup_();
+    this.createToolsDom_();
+    this.addKeyboardShortcuts_();
 
     // Initialize tool:
     // Set SimplePen as default selected tool:
-    this.selectTool_(this.toolInstances.simplePen);
+    this.selectTool_(this.tools[0]);
     // Activate listener on tool panel:
     $("#tool-section").click($.proxy(this.onToolIconClicked_, this));
   };
@@ -15098,18 +16830,24 @@ var jscolor = {
     if(previousSelectedToolClass) {
       stage.removeClass(previousSelectedToolClass);
     }
-    stage.addClass(tool.toolId);
-    stage.data("selected-tool-class", tool.toolId);
+    stage.addClass(tool.instance.toolId);
+    stage.data("selected-tool-class", tool.instance.toolId);
   };
 
   /**
    * @private
    */
   ns.ToolController.prototype.selectTool_ = function(tool) {
-    console.log("Selecting Tool:" , this.currentSelectedTool);
     this.currentSelectedTool = tool;
     this.activateToolOnStage_(this.currentSelectedTool);
-    $.publish(Events.TOOL_SELECTED, [tool]);
+
+    var selectedToolElement = $('#tool-section .tool-icon.selected');
+    var toolElement = $('[data-tool-id=' + tool.instance.toolId + ']');
+
+    selectedToolElement.removeClass('selected');
+    toolElement.addClass('selected');
+
+    $.publish(Events.TOOL_SELECTED, [tool.instance]);
   };
 
   /**
@@ -15124,18 +16862,24 @@ var jscolor = {
       var tool = this.getToolById_(toolId);
       if (tool) {
         this.selectTool_(tool);
+      }
+    }
+  };
 
-        // Show tool as selected:
-        $('#tool-section .tool-icon.selected').removeClass('selected');
-        clickedTool.addClass('selected');
+  ns.ToolController.prototype.onKeyboardShortcut_ = function(charkey) {
+    for (var i = 0 ; i < this.tools.length ; i++) {
+      var tool = this.tools[i];
+      if (tool.shortcut.toLowerCase() === charkey.toLowerCase()) {
+        this.selectTool_(tool);
       }
     }
   };
 
   ns.ToolController.prototype.getToolById_ = function (toolId) {
-    for(var key in this.toolInstances) {
-      if (this.toolInstances[key].toolId == toolId) {
-        return this.toolInstances[key];
+    for(var i = 0 ; i < this.tools.length ; i++) {
+      var tool = this.tools[i];
+      if (tool.instance.toolId == toolId) {
+        return tool;
       }
     }
     return null;
@@ -15144,24 +16888,41 @@ var jscolor = {
   /**
    * @private
    */
-  ns.ToolController.prototype.createToolMarkup_ = function() {
-    var currentTool, toolMarkup = '', extraClass;
-    // TODO(vincz): Tools rendering order is not enforced by the data stucture (this.toolInstances), fix that.
-    for (var toolKey in this.toolInstances) {
-      currentTool = this.toolInstances[toolKey];
-      extraClass = currentTool.toolId;
-      if (this.currentSelectedTool == currentTool) {
-        extraClass = extraClass + " selected";
-      }
-      toolMarkup += '<li rel="tooltip" data-placement="right" class="tool-icon ' + extraClass + '" data-tool-id="' + currentTool.toolId +
-              '" title="' + currentTool.helpText + '"></li>';
+  ns.ToolController.prototype.createToolsDom_ = function() {
+    var toolMarkup = '';
+    for(var i = 0 ; i < this.tools.length ; i++) {
+      toolMarkup += this.getToolMarkup_(this.tools[i]);
     }
     $('#tools-container').html(toolMarkup);
+  };
+
+  /**
+   * @private
+   */
+  ns.ToolController.prototype.getToolMarkup_ = function(tool) {
+    var instance = tool.instance;
+
+    var classList = ['tool-icon', instance.toolId];
+    if (this.currentSelectedTool == tool) {
+      classList.push('selected');
+    }
+
+    return '<li rel="tooltip" data-placement="right" class="' + classList.join(' ') + '" data-tool-id="' + instance.toolId +
+              '" title="' + instance.helpText + '"></li>';
+  };
+
+  ns.ToolController.prototype.addKeyboardShortcuts_ = function () {
+    for(var i = 0 ; i < this.tools.length ; i++) {
+      pskl.app.shortcutService.addShortcut(this.tools[i].shortcut, this.onKeyboardShortcut_.bind(this));
+    }
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
 
-  ns.PaletteController = function () {};
+  ns.PaletteController = function () {
+    this.primaryColor =  Constants.DEFAULT_PEN_COLOR;
+    this.secondaryColor =  Constants.TRANSPARENT_COLOR;
+  };
 
   /**
    * @public
@@ -15170,25 +16931,36 @@ var jscolor = {
     var transparentColorPalette = $(".palette-color[data-color=TRANSPARENT]");
     transparentColorPalette.mouseup($.proxy(this.onPaletteColorClick_, this));
 
-    $.subscribe(Events.PRIMARY_COLOR_UPDATED, $.proxy(function(evt, color) {
-      this.updateColorPicker_(color, $('#color-picker'));
-    }, this));
+    $.subscribe(Events.SELECT_PRIMARY_COLOR, this.onColorSelected_.bind(this, {isPrimary:true}));
+    $.subscribe(Events.SELECT_SECONDARY_COLOR, this.onColorSelected_.bind(this, {isPrimary:false}));
 
-    $.subscribe(Events.SECONDARY_COLOR_UPDATED, $.proxy(function(evt, color) {
-      this.updateColorPicker_(color, $('#secondary-color-picker'));
-    }, this));
+    pskl.app.shortcutService.addShortcut('X', this.swapColors.bind(this));
+    pskl.app.shortcutService.addShortcut('D', this.resetColors.bind(this));
+
+    var spectrumCfg = {
+      showPalette: true,
+      showButtons: false,
+      palette: [
+        ['rgba(0,0,0,0)']
+      ],
+      clickoutFiresChange : true,
+
+      beforeShow : function(tinycolor) {
+        tinycolor.setAlpha(1);
+      }
+    };
 
     // Initialize colorpickers:
     var colorPicker = $('#color-picker');
-    colorPicker.val(Constants.DEFAULT_PEN_COLOR);
+    colorPicker.spectrum($.extend({color: Constants.DEFAULT_PEN_COLOR}, spectrumCfg));
     colorPicker.change({isPrimary : true}, $.proxy(this.onPickerChange_, this));
-
+    this.setTitleOnPicker_(Constants.DEFAULT_PEN_COLOR, colorPicker);
 
     var secondaryColorPicker = $('#secondary-color-picker');
-    secondaryColorPicker.val(Constants.TRANSPARENT_COLOR);
+    secondaryColorPicker.spectrum($.extend({color: Constants.TRANSPARENT_COLOR}, spectrumCfg));
     secondaryColorPicker.change({isPrimary : false}, $.proxy(this.onPickerChange_, this));
+    this.setTitleOnPicker_(Constants.TRANSPARENT_COLOR, secondaryColorPicker);
 
-    window.jscolor.install();
   };
 
   /**
@@ -15197,10 +16969,51 @@ var jscolor = {
   ns.PaletteController.prototype.onPickerChange_ = function(evt, isPrimary) {
     var inputPicker = $(evt.target);
     if(evt.data.isPrimary) {
-      $.publish(Events.PRIMARY_COLOR_SELECTED, [inputPicker.val()]);
+      this.setPrimaryColor(inputPicker.val());
     } else {
-      $.publish(Events.SECONDARY_COLOR_SELECTED, [inputPicker.val()]);
+      this.setSecondaryColor(inputPicker.val());
     }
+  };
+
+  /**
+   * @private
+   */
+  ns.PaletteController.prototype.onColorSelected_ = function(args, evt, color) {
+    var inputPicker = $(evt.target);
+    if(args.isPrimary) {
+      this.setPrimaryColor(color);
+    } else {
+      this.setSecondaryColor(color);
+    }
+  };
+
+  ns.PaletteController.prototype.setPrimaryColor = function (color) {
+    this.primaryColor = color;
+    this.updateColorPicker_(color, $('#color-picker'));
+  };
+
+  ns.PaletteController.prototype.setSecondaryColor = function (color) {
+    this.secondaryColor = color;
+    this.updateColorPicker_(color, $('#secondary-color-picker'));
+  };
+
+  ns.PaletteController.prototype.getPrimaryColor = function () {
+    return this.primaryColor;
+  };
+
+  ns.PaletteController.prototype.getSecondaryColor = function () {
+    return this.secondaryColor;
+  };
+
+  ns.PaletteController.prototype.swapColors = function () {
+    var primaryColor = this.getPrimaryColor();
+    this.setPrimaryColor(this.getSecondaryColor());
+    this.setSecondaryColor(primaryColor);
+  };
+
+  ns.PaletteController.prototype.resetColors = function () {
+    this.setPrimaryColor(Constants.DEFAULT_PEN_COLOR);
+    this.setSecondaryColor(Constants.TRANSPARENT_COLOR);
   };
 
   /**
@@ -15224,18 +17037,24 @@ var jscolor = {
     if (color == Constants.TRANSPARENT_COLOR) {
       // We can set the current palette color to transparent.
       // You can then combine this transparent color with an advanced
-      // tool for customized deletions. 
+      // tool for customized deletions.
       // Eg: bucket + transparent: Delete a colored area
       //     Stroke + transparent: hollow out the equivalent of a stroke
 
       // The colorpicker can't be set to a transparent state.
       // We set its background to white and insert the
       // string "TRANSPARENT" to mimic this state:
-      colorPicker[0].color.fromString("#fff");
+      colorPicker.spectrum("set", Constants.TRANSPARENT_COLOR);
       colorPicker.val(Constants.TRANSPARENT_COLOR);
     } else {
-      colorPicker[0].color.fromString(color);
+      colorPicker.spectrum("set", color);
     }
+    this.setTitleOnPicker_(color, colorPicker);
+  };
+
+  ns.PaletteController.prototype.setTitleOnPicker_ = function (title, colorPicker) {
+    var spectrumInputSelector = '.sp-replacer';
+    colorPicker.next(spectrumInputSelector).attr('title', title);
   };
 })();
 
@@ -15282,7 +17101,7 @@ var jscolor = {
 })();
 ;(function () {
   var ns = $.namespace("pskl.controller.settings");
-  
+
   ns.ApplicationSettingsController = function () {};
 
   /**
@@ -15300,23 +17119,28 @@ var jscolor = {
     $('#show-grid').prop('checked', show_grid);
 
     // Handle grid display changes:
-    $('#show-grid').change($.proxy(function(evt) {
-      var checked = $('#show-grid').prop('checked');
-      pskl.UserSettings.set(pskl.UserSettings.SHOW_GRID, checked);
-    }, this));
+    $('#show-grid').change(this.onShowGridClick.bind(this));
 
     // Handle canvas background changes:
-    $('#background-picker-wrapper').click(function(evt) {
-      var target = $(evt.target).closest('.background-picker');
-      if (target.length) {
-        var backgroundClass = target.data('background-class');
-        pskl.UserSettings.set(pskl.UserSettings.CANVAS_BACKGROUND, backgroundClass);
-
-        $('.background-picker').removeClass('selected');
-        target.addClass('selected');
-      }
-    });
+    $('#background-picker-wrapper').click(this.onBackgroundClick.bind(this));
   };
+
+  ns.ApplicationSettingsController.prototype.onShowGridClick = function (evt) {
+    var checked = $('#show-grid').prop('checked');
+    pskl.UserSettings.set(pskl.UserSettings.SHOW_GRID, checked);
+  };
+
+  ns.ApplicationSettingsController.prototype.onBackgroundClick = function (evt) {
+    var target = $(evt.target).closest('.background-picker');
+    if (target.length) {
+      var backgroundClass = target.data('background-class');
+      pskl.UserSettings.set(pskl.UserSettings.CANVAS_BACKGROUND, backgroundClass);
+
+      $('.background-picker').removeClass('selected');
+      target.addClass('selected');
+    }
+  };
+
 })();;(function () {
   var ns = $.namespace("pskl.controller.settings");
 
@@ -15327,18 +17151,18 @@ var jscolor = {
   /**
    * List of Resolutions applicable for Gif export
    * @static
-   * @type {Array} array of Objects {dpi:{Number}, default:{Boolean}}
+   * @type {Array} array of Objects {zoom:{Number}, default:{Boolean}}
    */
   ns.GifExportController.RESOLUTIONS = [
     {
-      'dpi' : 1
+      'zoom' : 1
     },{
-      'dpi' : 5
+      'zoom' : 5
     },{
-      'dpi' : 10,
+      'zoom' : 10,
       'default' : true
     },{
-      'dpi' : 20
+      'zoom' : 20
     }
   ];
 
@@ -15356,11 +17180,11 @@ var jscolor = {
 
   ns.GifExportController.prototype.onUploadFormSubmit_ = function (evt) {
     evt.originalEvent.preventDefault();
-    var selectedDpi = this.getSelectedDpi_(),
+    var selectedZoom = this.getSelectedZoom_(),
         fps = this.piskelController.getFPS(),
-        dpi = selectedDpi;
+        zoom = selectedZoom;
 
-    this.renderAsImageDataAnimatedGIF(dpi, fps, this.onGifRenderingCompleted_.bind(this));
+    this.renderAsImageDataAnimatedGIF(zoom, fps, this.onGifRenderingCompleted_.bind(this));
   };
 
   ns.GifExportController.prototype.onGifRenderingCompleted_ = function (imageData) {
@@ -15378,15 +17202,15 @@ var jscolor = {
     this.previewContainerEl.innerHTML = "<div><img style='max-width:240px;' src='"+src+"'/></div>";
   };
 
-  ns.GifExportController.prototype.getSelectedDpi_ = function () {
-    var radiosColl = this.uploadForm.get(0).querySelectorAll("[name=gif-dpi]"),
+  ns.GifExportController.prototype.getSelectedZoom_ = function () {
+    var radiosColl = this.uploadForm.get(0).querySelectorAll("[name=gif-zoom-level]"),
         radios = Array.prototype.slice.call(radiosColl,0);
     var selectedRadios = radios.filter(function(radio) {return !!radio.checked;});
 
     if (selectedRadios.length == 1) {
       return selectedRadios[0].value;
     } else {
-      throw "Unexpected error when retrieving selected dpi";
+      throw "Unexpected error when retrieving selected zoom";
     }
   };
 
@@ -15399,9 +17223,9 @@ var jscolor = {
   };
 
   ns.GifExportController.prototype.createRadioForResolution_ = function (resolution) {
-    var dpi = resolution.dpi;
-    var label = dpi*this.piskelController.getWidth() + "x" + dpi*this.piskelController.getHeight();
-    var value = dpi;
+    var zoom = resolution.zoom;
+    var label = zoom*this.piskelController.getWidth() + "x" + zoom*this.piskelController.getHeight();
+    var value = zoom;
 
     var radioHTML = pskl.utils.Template.replace(this.radioTemplate_, {value : value, label : label});
     var radioEl = pskl.utils.Template.createFromHTML(radioHTML);
@@ -15423,18 +17247,19 @@ var jscolor = {
     reader.readAsDataURL(blob);
   };
 
-  ns.GifExportController.prototype.renderAsImageDataAnimatedGIF = function(dpi, fps, cb) {
+  ns.GifExportController.prototype.renderAsImageDataAnimatedGIF = function(zoom, fps, cb) {
     var gif = new window.GIF({
       workers: 2,
       quality: 10,
-      width: this.piskelController.getWidth()*dpi,
-      height: this.piskelController.getHeight()*dpi
+      width: this.piskelController.getWidth()*zoom,
+      height: this.piskelController.getHeight()*zoom
     });
 
     for (var i = 0; i < this.piskelController.getFrameCount(); i++) {
       var frame = this.piskelController.getFrameAt(i);
-      var renderer = new pskl.rendering.CanvasRenderer(frame, dpi);
-      gif.addFrame(renderer.render(), {
+      var canvasRenderer = new pskl.rendering.CanvasRenderer(frame, zoom);
+      var canvas = canvasRenderer.render();
+      gif.addFrame(canvas.getContext('2d'), {
         delay: 1000 / fps
       });
     }
@@ -15456,18 +17281,18 @@ var jscolor = {
   };
 
   ns.ImportController.prototype.init = function () {
-    this.importForm = $("[name=import-form]");
-    this.hiddenFileInput = $("[name=file-upload-input]");
-    this.fileInputButton = $(".file-input-button");
-    this.fileInputStatus = $(".file-input-status");
+    this.importForm = $('[name=import-form]');
+    this.hiddenFileInput = $('[name=file-upload-input]');
+    this.fileInputButton = $('.file-input-button');
+    this.fileInputStatus = $('.file-input-status');
     this.fileInputStatus.html(DEFAULT_FILE_STATUS);
 
-    this.importPreview = $(".import-section-preview");
+    this.importPreview = $('.import-section-preview');
 
-    this.resizeWidth = $("[name=resize-width]");
-    this.resizeHeight = $("[name=resize-height]");
-    this.smoothResize =  $("[name=smooth-resize-checkbox]");
-    this.submitButton =  $("[name=import-submit]");
+    this.resizeWidth = $('[name=resize-width]');
+    this.resizeHeight = $('[name=resize-height]');
+    this.smoothResize =  $('[name=smooth-resize-checkbox]');
+    this.submitButton =  $('[name=import-submit]');
 
     this.importForm.submit(this.onImportFormSubmit_.bind(this));
     this.hiddenFileInput.change(this.onFileUploadChange_.bind(this));
@@ -15524,7 +17349,7 @@ var jscolor = {
         this.enableDisabledSections_();
       } else {
         this.reset_();
-        throw "File is not an image : " + file.type;
+        throw 'File is not an image : ' + file.type;
       }
     }
   };
@@ -15566,7 +17391,8 @@ var jscolor = {
     this.resizeWidth.val(w);
     this.resizeHeight.val(h);
 
-    this.importPreview.width("auto");
+    this.importPreview.width('auto');
+    this.importPreview.html('');
     this.importPreview.append(this.createImagePreview_());
   };
 
@@ -15591,7 +17417,7 @@ var jscolor = {
 
   ns.ImportController.prototype.importImageToPiskel_ = function () {
     if (this.importedImage_) {
-      if (window.confirm("You are about to create a new Piskel, unsaved changes will be lost.")) {
+      if (window.confirm('You are about to create a new Piskel, unsaved changes will be lost.')) {
         var w = this.resizeWidth.val(),
           h = this.resizeHeight.val(),
           smoothing = !!this.smoothResize.prop('checked');
@@ -15599,10 +17425,11 @@ var jscolor = {
         var image = pskl.utils.ImageResizer.resize(this.importedImage_, w, h, smoothing);
         var frame = pskl.utils.FrameUtils.createFromImage(image);
 
-        var piskel = pskl.utils.Serializer.createPiskel([frame]);
+        var layer = pskl.model.Layer.fromFrames('Layer 1', [frame]);
+        var piskel = pskl.model.Piskel.fromLayers([layer]);
+
         pskl.app.piskelController.setPiskel(piskel);
         pskl.app.animationController.setFPS(Constants.DEFAULT.FPS);
-
         this.reset_();
       }
     }
@@ -15725,7 +17552,6 @@ var jscolor = {
    * @private
    */
   ns.LocalStorageService.prototype.persistToLocalStorage_ = function() {
-    
     console.log('[LocalStorage service]: Snapshot stored');
     window.localStorage.snapShot = this.piskelController.serialize();
   };
@@ -15734,9 +17560,10 @@ var jscolor = {
    * @private
    */
   ns.LocalStorageService.prototype.restoreFromLocalStorage_ = function() {
-
-    this.piskelController.deserialize(window.localStorage.snapShot);
-    this.piskelController.setCurrentFrameIndex(0);
+    var framesheet = JSON.parse(window.localStorage.snapShot);
+    pskl.utils.serialization.Deserializer.deserialize(framesheet, function (piskel) {
+      pskl.app.piskelController.setPiskel(piskel);
+    });
   };
 
   /**
@@ -15783,8 +17610,9 @@ var jscolor = {
   ns.HistoryService.prototype.init = function () {
 
     $.subscribe(Events.TOOL_RELEASED, this.saveState.bind(this));
-    $.subscribe(Events.UNDO, this.undo.bind(this));
-    $.subscribe(Events.REDO, this.redo.bind(this));
+
+    pskl.app.shortcutService.addShortcut('ctrl+Z', this.undo.bind(this));
+    pskl.app.shortcutService.addShortcut('ctrl+Y', this.redo.bind(this));
   };
 
   ns.HistoryService.prototype.saveState = function () {
@@ -15802,69 +17630,222 @@ var jscolor = {
   };
 
 })();;(function () {
-  var ns = $.namespace("pskl.service");
+  var ns = $.namespace('pskl.service.keyboard');
 
-  ns.KeyboardEventService = function () {};
-
-  /**
-   * @private
-   */
-  ns.KeyboardEventService.prototype.KeyboardActions_ = {
-
-    "ctrl" : {
-      "z" : Events.UNDO,
-      "y" : Events.REDO,
-      "x" : Events.CUT,
-      "c" : Events.COPY,
-      "v" : Events.PASTE
-    }
-  };
-
-  /**
-   * @private
-   */
-  ns.KeyboardEventService.prototype.CharCodeToKeyCodeMap_ = {
-
-    90 : "z",
-    89 : "y",
-    88 : "x",
-    67 : "c",
-    86 : "v"
-  };
-
-  /**
-   * @private
-   */
-  ns.KeyboardEventService.prototype.onKeyUp_ = function(evt) {
-    var isMac = false;
-    if (navigator.appVersion.indexOf("Mac")!=-1) {
-      // Welcome in mac world where vowels are consons and meta used instead of ctrl:
-      isMac = true;
-    }
-    
-    if (isMac ? evt.metaKey : evt.ctrlKey) {
-      // Get key pressed:
-      var letter = this.CharCodeToKeyCodeMap_[evt.which];
-      if(letter) {
-        var eventToTrigger = this.KeyboardActions_.ctrl[letter];
-        if(eventToTrigger) {
-          $.publish(eventToTrigger);
-
-          evt.preventDefault();
-          return false;
-        }
-      }
-    }
+  ns.ShortcutService = function () {
+    this.shortcuts_ = {};
   };
 
   /**
    * @public
    */
-  ns.KeyboardEventService.prototype.init = function() {
+  ns.ShortcutService.prototype.init = function() {
     $(document.body).keydown($.proxy(this.onKeyUp_, this));
   };
-  
+
+  ns.ShortcutService.prototype.addShortcut = function (rawKey, callback) {
+    var parsedKey = this.parseKey_(rawKey.toLowerCase());
+
+    var key = parsedKey.key,
+      meta = parsedKey.meta;
+
+    this.shortcuts_[key] = this.shortcuts_[key] || {};
+
+    if (this.shortcuts_[key][meta]) {
+      throw 'Shortcut ' + meta + ' + ' + key + ' already registered';
+    } else {
+      this.shortcuts_[key][meta] = callback;
+    }
+  };
+
+  ns.ShortcutService.prototype.removeShortcut = function (rawKey) {
+    var parsedKey = this.parseKey_(rawKey.toLowerCase());
+
+    var key = parsedKey.key,
+      meta = parsedKey.meta;
+
+    this.shortcuts_[key] = this.shortcuts_[key] || {};
+
+    this.shortcuts_[key][meta] = null;
+  };
+
+  ns.ShortcutService.prototype.parseKey_ = function (key) {
+    var meta = 'normal';
+    if (key.indexOf('ctrl+') === 0) {
+      meta = 'ctrl';
+      key = key.replace('ctrl+', '');
+    } else if (key.indexOf('shift+') === 0) {
+      meta = 'shift';
+      key = key.replace('shift+', '');
+    }
+    return {meta : meta, key : key};
+  };
+
+  /**
+   * @private
+   */
+  ns.ShortcutService.prototype.onKeyUp_ = function(evt) {
+    // jquery names FTW ...
+    var keycode = evt.which;
+    var charkey = pskl.service.keyboard.KeycodeTranslator.toChar(keycode);
+
+    var keyShortcuts = this.shortcuts_[charkey];
+    if(keyShortcuts) {
+      var cb;
+      if (this.isCtrlKeyPressed_(evt)) {
+        cb = keyShortcuts.ctrl;
+      } else if (this.isShiftKeyPressed_(evt)) {
+        cb = keyShortcuts.shift;
+      } else {
+        cb = keyShortcuts.normal;
+      }
+
+      if(cb) {
+        cb(charkey);
+        evt.preventDefault();
+      }
+    }
+  };
+
+  ns.ShortcutService.prototype.isCtrlKeyPressed_ = function (evt) {
+    return this.isMac_() ? evt.metaKey : evt.ctrlKey;
+  };
+
+  ns.ShortcutService.prototype.isShiftKeyPressed_ = function (evt) {
+    return evt.shiftKey;
+  };
+
+  ns.ShortcutService.prototype.isMac_ = function () {
+    return navigator.appVersion.indexOf("Mac") != -1;
+  };
 })();;(function () {
+  var specialKeys = {
+    191 : "?",
+    27 : "esc",
+    38 : "up",
+    40 : "down"
+  };
+
+  var ns = $.namespace('pskl.service.keyboard');
+
+  ns.KeycodeTranslator= {
+    toChar : function (keycode) {
+      if (keycode >= 48 && keycode <= 57) {
+        // key is 0-9
+        return (keycode - 48) + "";
+      } else if (keycode >= 65 && keycode <= 90) {
+        // key is a-z, use base 36 to get the string representation
+        return (keycode - 65 + 10).toString(36);
+      } else {
+        return specialKeys[keycode];
+      }
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.service.keyboard');
+
+  ns.CheatsheetService = function () {
+    this.isDisplayed_ = false;
+  };
+
+  ns.CheatsheetService.prototype.init = function () {
+    this.cheatsheetEl_ = document.getElementById('cheatsheet-wrapper');
+    if (!this.cheatsheetEl_) {
+      throw 'cheatsheetEl_ DOM element could not be retrieved';
+    }
+    this.initMarkup_();
+    pskl.app.shortcutService.addShortcut('shift+?', this.toggleCheatsheet_.bind(this));
+    pskl.app.shortcutService.addShortcut('?', this.toggleCheatsheet_.bind(this));
+    $.subscribe(Events.TOGGLE_HELP, this.toggleCheatsheet_.bind(this));
+    $.subscribe(Events.ESCAPE, this.onEscape_.bind(this));
+  };
+
+  ns.CheatsheetService.prototype.toggleCheatsheet_ = function () {
+    if (this.isDisplayed_) {
+      this.hideCheatsheet_();
+    } else {
+      this.showCheatsheet_();
+    }
+  };
+
+  ns.CheatsheetService.prototype.onEscape_ = function () {
+    if (this.isDisplayed_) {
+      this.hideCheatsheet_();
+    }
+  };
+
+  ns.CheatsheetService.prototype.showCheatsheet_ = function () {
+    pskl.app.shortcutService.addShortcut('ESC', this.hideCheatsheet_.bind(this));
+    this.cheatsheetEl_.style.display = 'block';
+    this.isDisplayed_ = true;
+  };
+
+
+  ns.CheatsheetService.prototype.hideCheatsheet_ = function () {
+    pskl.app.shortcutService.removeShortcut('ESC');
+    this.cheatsheetEl_.style.display = 'none';
+    this.isDisplayed_ = false;
+  };
+
+  ns.CheatsheetService.prototype.initMarkup_ = function () {
+    this.initMarkupForTools_();
+    this.initMarkupForMisc_();
+  };
+
+  ns.CheatsheetService.prototype.initMarkupForTools_ = function () {
+    var shortcutTemplate = pskl.utils.Template.get('cheatsheet-shortcut-template');
+
+    var toolShortcutsContainer = $('.cheatsheet-tool-shortcuts', this.cheatsheetEl_).get(0);
+    var tools = pskl.app.toolController.tools;
+    for (var i = 0 ; i < tools.length ; i++) {
+      var tool = tools[i];
+      var shortcutEl = pskl.utils.Template.createFromHTML(
+        pskl.utils.Template.replace(shortcutTemplate, {
+          shortcutIcon : 'tool-icon ' + tool.instance.toolId,
+          shortcutDescription : tool.instance.helpText,
+          shortcutKey : tool.shortcut
+        })
+      );
+      toolShortcutsContainer.appendChild(shortcutEl);
+    }
+  };
+
+  ns.CheatsheetService.prototype.initMarkupForMisc_ = function () {
+    var shortcutTemplate = pskl.utils.Template.get('cheatsheet-shortcut-template');
+
+    var miscShortcutsContainer = $('.cheatsheet-misc-shortcuts', this.cheatsheetEl_).get(0);
+    var toDescriptor = function (shortcut, description) {
+      return {shortcut:shortcut, description:description};
+    };
+    var miscKeys = [
+      toDescriptor('X', 'Swap primary/secondary colors'),
+      toDescriptor('D', 'Reset default colors'),
+      toDescriptor('ctrl + X', 'Cut selection'),
+      toDescriptor('ctrl + C', 'Copy selection'),
+      toDescriptor('ctrl + V', 'Paste selection'),
+      toDescriptor('ctrl + Z', 'Undo'),
+      toDescriptor('ctrl + Y', 'Redo'),
+      toDescriptor('&#65514;', 'Select previous frame'), /* ASCII for up-arrow */
+      toDescriptor('&#65516;', 'Select next frame'), /* ASCII for down-arrow */
+      toDescriptor('N', 'Create new frame'),
+      toDescriptor('shift + N', 'Duplicate selected frame'),
+      toDescriptor('shift + ?', 'Open/Close this popup')
+    ];
+    for (var i = 0 ; i < miscKeys.length ; i++) {
+      var key = miscKeys[i];
+      var shortcutEl = pskl.utils.Template.createFromHTML(
+        pskl.utils.Template.replace(shortcutTemplate, {
+          shortcutIcon : '',
+          shortcutDescription : key.description,
+          shortcutKey : key.shortcut
+        })
+      );
+      miscShortcutsContainer.appendChild(shortcutEl);
+    }
+  };
+
+})();
+;(function () {
   var ns = $.namespace("pskl.service");
   ns.ImageUploadService = function () {};
   ns.ImageUploadService.prototype.init = function () {};
@@ -15902,11 +17883,11 @@ var jscolor = {
 
   ns.BaseTool = function() {};
 
-  ns.BaseTool.prototype.applyToolAt = function(col, row, color, frame, overlay) {};
+  ns.BaseTool.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {};
 
-  ns.BaseTool.prototype.moveToolAt = function(col, row, color, frame, overlay) {};
+  ns.BaseTool.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {};
 
-  ns.BaseTool.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
+  ns.BaseTool.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay, event) {
     if (overlay.containsPixel(col, row)) {
       if (!isNaN(this.highlightedPixelCol) &&
         !isNaN(this.highlightedPixelRow) &&
@@ -15925,7 +17906,7 @@ var jscolor = {
     }
   };
 
-  ns.BaseTool.prototype.releaseToolAt = function(col, row, color, frame, overlay) {};
+  ns.BaseTool.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {};
 
   /**
    * Bresenham line algorihtm: Get an array of pixels from
@@ -15985,11 +17966,11 @@ var jscolor = {
   };
 
   pskl.utils.inherit(ns.SimplePen, ns.BaseTool);
-  
+
   /**
    * @override
    */
-  ns.SimplePen.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.SimplePen.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     if (frame.containsPixel(col, row)) {
       frame.setPixel(col, row, color);
     }
@@ -15997,7 +17978,7 @@ var jscolor = {
     this.previousRow = row;
   };
 
-  ns.SimplePen.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+  ns.SimplePen.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
     if((Math.abs(col - this.previousCol) > 1) || (Math.abs(row - this.previousRow) > 1)) {
       // The pen movement is too fast for the mousemove frequency, there is a gap between the
       // current point and the previously drawn one.
@@ -16044,7 +18025,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.VerticalMirrorPen.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.VerticalMirrorPen.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     this.superclass.applyToolAt.call(this, col, row, color, frame, overlay);
 
     var mirroredCol = this.getSymmetricCol_(col, frame);
@@ -16081,8 +18062,8 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Eraser.prototype.applyToolAt = function(col, row, color, frame, overlay) {
-    this.superclass.applyToolAt.call(this, col, row, Constants.TRANSPARENT_COLOR, frame, overlay);
+  ns.Eraser.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
+    this.superclass.applyToolAt.call(this, col, row, Constants.TRANSPARENT_COLOR, frame, overlay, event);
   };
 })();;/**
  * @provide pskl.drawingtools.Stroke
@@ -16106,7 +18087,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Stroke.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.Stroke.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     this.startCol = col;
     this.startRow = row;
 
@@ -16122,7 +18103,7 @@ var jscolor = {
     overlay.setPixel(col, row, color);
   };
 
-  ns.Stroke.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+  ns.Stroke.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
     overlay.clear();
 
     // When the user moussemove (before releasing), we dynamically compute the
@@ -16148,7 +18129,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Stroke.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+  ns.Stroke.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
     // If the stroke tool is released outside of the canvas, we cancel the stroke:
     // TODO: Mutualize this check in common method
     if(frame.containsPixel(col, row)) {
@@ -16182,7 +18163,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.PaintBucket.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.PaintBucket.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
 
     pskl.PixelUtils.paintSimilarConnectedPixelsFromFrame(frame, col, row, color);
   };
@@ -16222,7 +18203,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Rectangle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.Rectangle.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     this.startCol = col;
     this.startRow = row;
 
@@ -16230,7 +18211,7 @@ var jscolor = {
     overlay.setPixel(col, row, color);
   };
 
-  ns.Rectangle.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+  ns.Rectangle.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
     overlay.clear();
     if(color == Constants.TRANSPARENT_COLOR) {
       color = Constants.SELECTION_TRANSPARENT_COLOR;
@@ -16243,7 +18224,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+  ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
     overlay.clear();
     if(frame.containsPixel(col, row)) { // cancel if outside of canvas
       // draw in frame to finalize
@@ -16281,7 +18262,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Circle.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.Circle.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     this.startCol = col;
     this.startRow = row;
 
@@ -16289,7 +18270,7 @@ var jscolor = {
     overlay.setPixel(col, row, color);
   };
 
-  ns.Circle.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+  ns.Circle.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
     overlay.clear();
     if(color == Constants.TRANSPARENT_COLOR) {
       color = Constants.SELECTION_TRANSPARENT_COLOR;
@@ -16302,7 +18283,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+  ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
     overlay.clear();
     if(frame.containsPixel(col, row)) { // cancel if outside of canvas
       // draw in frame to finalize
@@ -16366,13 +18347,13 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Move.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.Move.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     this.startCol = col;
     this.startRow = row;
     this.frameClone = frame.clone();
   };
 
-  ns.Move.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+  ns.Move.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
     var colDiff = col - this.startCol, rowDiff = row - this.startRow;
     this.shiftFrame(colDiff, rowDiff, frame, this.frameClone);
   };
@@ -16394,7 +18375,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.Move.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+  ns.Move.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
     this.moveToolAt(col, row, color, frame, overlay);
   };
 })();
@@ -16420,7 +18401,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.BaseSelect.prototype.applyToolAt = function(col, row, color, frame, overlay) {
+  ns.BaseSelect.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     this.startCol = col;
     this.startRow = row;
 
@@ -16447,7 +18428,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.BaseSelect.prototype.moveToolAt = function(col, row, color, frame, overlay) {
+  ns.BaseSelect.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
     if(this.mode == "select") {
 
       this.onSelect_(col, row, color, frame, overlay);
@@ -16461,7 +18442,7 @@ var jscolor = {
   /**
    * @override
    */
-  ns.BaseSelect.prototype.releaseToolAt = function(col, row, color, frame, overlay) {
+  ns.BaseSelect.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
     if(this.mode == "select") {
       this.onSelectEnd_(col, row, color, frame, overlay);
     } else if(this.mode == "moveSelection") {
@@ -16476,7 +18457,7 @@ var jscolor = {
    * instead of the 'select' one. It indicates that we can move the selection by dragndroping it.
    * @override
    */
-  ns.BaseSelect.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay) {
+  ns.BaseSelect.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay, event) {
 
     if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
       // We're hovering the selection, show the move tool:
@@ -16569,12 +18550,12 @@ var jscolor = {
   ns.RectangleSelect = function() {
     this.toolId = "tool-rectangle-select";
     this.helpText = "Rectangle selection tool";
-    
+
     ns.BaseSelect.call(this);
   };
 
   pskl.utils.inherit(ns.RectangleSelect, ns.BaseSelect);
-  
+
 
   /**
    * @override
@@ -16621,12 +18602,12 @@ var jscolor = {
   ns.ShapeSelect = function() {
     this.toolId = "tool-shape-select";
     this.helpText = "Shape selection tool";
-    
+
     ns.BaseSelect.call(this);
   };
 
   pskl.utils.inherit(ns.ShapeSelect, ns.BaseSelect);
-  
+
   /**
    * For the shape select tool, you just need to click one time to create a selection.
    * So we jsut need to implement onSelectStart_ (no need for onSelect_ & onSelectEnd_)
@@ -16636,7 +18617,7 @@ var jscolor = {
     // Clean previous selection:
     $.publish(Events.SELECTION_DISMISSED);
     overlay.clear();
-    
+
     // From the pixel cliked, get shape using an algorithm similar to the paintbucket one:
     var pixels = pskl.PixelUtils.getSimilarConnectedPixelsFromFrame(frame, col, row);
     var selection = new pskl.selection.ShapeSelection(pixels);
@@ -16660,17 +18641,17 @@ var jscolor = {
   };
 
   pskl.utils.inherit(ns.ColorPicker, ns.BaseTool);
-  
+
   /**
    * @override
    */
-  ns.ColorPicker.prototype.applyToolAt = function(col, row, color, frame, overlay, context) {
+  ns.ColorPicker.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
     if (frame.containsPixel(col, row)) {
       var sampledColor = frame.getPixel(col, row);
-      if (context.button == Constants.LEFT_BUTTON) {
-        $.publish(Events.PRIMARY_COLOR_SELECTED, [sampledColor]);
-      } else if (context.button == Constants.RIGHT_BUTTON) {
-        $.publish(Events.SECONDARY_COLOR_SELECTED, [sampledColor]);
+      if (event.button == Constants.LEFT_BUTTON) {
+        $.publish(Events.SELECT_PRIMARY_COLOR, [sampledColor]);
+      } else if (event.button == Constants.RIGHT_BUTTON) {
+        $.publish(Events.SELECT_SECONDARY_COLOR, [sampledColor]);
       }
     }
   };
@@ -16687,6 +18668,9 @@ var jscolor = {
   ns.app = {
 
     init : function () {
+      this.shortcutService = new pskl.service.keyboard.ShortcutService();
+      this.shortcutService.init();
+
       var size = this.readSizeFromURL_();
       var piskel = new pskl.model.Piskel(size.width, size.height);
 
@@ -16697,12 +18681,19 @@ var jscolor = {
       piskel.addLayer(layer);
 
       this.piskelController = new pskl.controller.PiskelController(piskel);
+      this.piskelController.init();
 
-      this.drawingController = new pskl.controller.DrawingController(this.piskelController, $('#drawing-canvas-container'));
+      this.paletteController = new pskl.controller.PaletteController();
+      this.paletteController.init();
+
+      this.drawingController = new pskl.controller.DrawingController(this.piskelController, this.paletteController, $('#drawing-canvas-container'));
       this.drawingController.init();
 
       this.animationController = new pskl.controller.AnimatedPreviewController(this.piskelController, $('#preview-canvas-container'));
       this.animationController.init();
+
+      this.minimapController = new pskl.controller.MinimapController(this.piskelController, this.animationController, this.drawingController, $('#preview-canvas-container'));
+      this.minimapController.init();
 
       this.previewsController = new pskl.controller.PreviewFilmController(this.piskelController, $('#preview-list'));
       this.previewsController.init();
@@ -16713,14 +18704,14 @@ var jscolor = {
       this.settingsController = new pskl.controller.settings.SettingsController(this.piskelController);
       this.settingsController.init();
 
+      this.toolController = new pskl.controller.ToolController();
+      this.toolController.init();
+
       this.selectionManager = new pskl.selection.SelectionManager(this.piskelController);
       this.selectionManager.init();
 
       this.historyService = new pskl.service.HistoryService(this.piskelController);
       this.historyService.init();
-
-      this.keyboardEventService = new pskl.service.KeyboardEventService();
-      this.keyboardEventService.init();
 
       this.notificationController = new pskl.controller.NotificationController();
       this.notificationController.init();
@@ -16731,11 +18722,10 @@ var jscolor = {
       this.imageUploadService = new pskl.service.ImageUploadService();
       this.imageUploadService.init();
 
-      this.toolController = new pskl.controller.ToolController();
-      this.toolController.init();
 
-      this.paletteController = new pskl.controller.PaletteController();
-      this.paletteController.init();
+      this.cheatsheetService = new pskl.service.keyboard.CheatsheetService();
+      this.cheatsheetService.init();
+
 
       var drawingLoop = new pskl.rendering.DrawingLoop();
       drawingLoop.addCallback(this.render, this);
@@ -16770,9 +18760,10 @@ var jscolor = {
 
     finishInitAppEngine_ : function () {
       if (pskl.framesheetData_ && pskl.framesheetData_.content) {
-        var piskel = pskl.utils.Serializer.createPiskel(pskl.framesheetData_.content);
-        pskl.app.piskelController.setPiskel(piskel);
-        pskl.app.animationController.setFPS(pskl.framesheetData_.fps);
+        pskl.utils.serialization.Deserializer.deserialize(pskl.framesheetData_.content, function (piskel) {
+          pskl.app.piskelController.setPiskel(piskel);
+          pskl.app.animationController.setFPS(pskl.framesheetData_.fps);
+        });
       }
     },
 
@@ -16833,10 +18824,12 @@ var jscolor = {
       xhr.responseType = 'text';
       xhr.onload = function (e) {
         var res = JSON.parse(this.responseText);
-        var piskel = pskl.utils.Serializer.createPiskel(res.framesheet);
-        pskl.app.piskelController.setPiskel(piskel);
-        pskl.app.animationController.setFPS(res.fps);
-        $.publish(Events.HIDE_NOTIFICATION);
+        pskl.utils.serialization.Deserializer.deserialize(res.framesheet, function (piskel) {
+          pskl.app.piskelController.setPiskel(piskel);
+          pskl.app.animationController.setFPS(res.fps);
+
+          $.publish(Events.HIDE_NOTIFICATION);
+        });
       };
 
       xhr.onerror = function () {
@@ -16909,15 +18902,15 @@ var jscolor = {
 
     getFirstFrameAsPng : function () {
       var firstFrame = this.piskelController.getFrameAt(0);
-      var frameRenderer = new pskl.rendering.CanvasRenderer(firstFrame, 1);
-      frameRenderer.drawTransparentAs('rgba(0,0,0,0)');
-      var firstFrameCanvas = frameRenderer.render().canvas;
+      var canvasRenderer = new pskl.rendering.CanvasRenderer(firstFrame, 1);
+      canvasRenderer.drawTransparentAs('rgba(0,0,0,0)');
+      var firstFrameCanvas = canvasRenderer.render();
       return firstFrameCanvas.toDataURL("image/png");
     },
 
     getFramesheetAsPng : function () {
-      var renderer = new pskl.rendering.SpritesheetRenderer(this.piskelController);
-      var framesheetCanvas = renderer.render();
+      var renderer = new pskl.rendering.PiskelRenderer(this.piskelController);
+      var framesheetCanvas = renderer.renderAsCanvas();
       return framesheetCanvas.toDataURL("image/png");
     },
 
