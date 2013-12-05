@@ -1,6 +1,19 @@
 <div class="navigation">
+  <span class="piskel-name"/>{{ piskel.name }}</span>
   <a class="link anchor-left  piskel-logo" href="/"><img src="/static/resources/logo_transparent.png" /></a>
-  <a class="piskel-button  create-piskel-button  anchor-left" href="/p/create" target="_blank">Create <span class="create-piskel-icon">+</span></a>
+
+  {% if is_logged_in %}
+    <button
+        class="piskel-button  flat-button  save-button  anchor-left"
+        onclick="pskl.app.storeSheet()">
+      Save
+    </button>
+    <button
+        class="piskel-button  flat-button  info-button  anchor-left"
+        onclick="pskl.app.storeSheet()">
+      Info
+    </button>
+  {% endif %}
   {% if is_logged_in %}
     <a class="link link-login anchor-right" href="/logout">logout</a>
     <a class="link link-login link-highlight anchor-right" href="/user/{{ session.user_id }}">

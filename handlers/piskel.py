@@ -10,16 +10,16 @@ from handlers import image as image_handler
 _ANONYMOUS_USER = long(100000001)
 
 class PiskelHandler(BaseHandler):
-  def _authorize(self, piskel):   
+  def _authorize(self, piskel):
     if self.is_logged_in:
       if self.session_user['user_id'] == piskel.owner:
         return True
     return False
 
-  def _authorize_for_view(self, piskel):   
+  def _authorize_for_view(self, piskel):
     return self._authorize(piskel) or not piskel.private
 
-  def _authorize_for_clone(self, piskel):   
+  def _authorize_for_clone(self, piskel):
     return self.is_logged_in and not piskel.private
 
   def _get_logged_user_id(self):
@@ -46,14 +46,15 @@ class PiskelHandler(BaseHandler):
       else:
         content = 'null'
         fps = 12
-        
+
       values = {
         'user': self.current_user if self.is_logged_in else False,
+        'session': self.session_user if self.is_logged_in else False,
+        'is_logged_in': self.is_logged_in,
         'piskel_id' : piskel_id,
         'piskel_content' : content,
         'piskel_fps' : fps,
-        'piskel': piskel,
-        'is_logged_in': self.is_logged_in
+        'piskel': piskel
       }
 
       self.render("editor.html", values)
@@ -74,7 +75,7 @@ class PiskelHandler(BaseHandler):
     if valid_for_clone:
       if self._authorize_for_clone(piskel):
         user_id = self.session_user['user_id']
-        
+
         clone = self._clone_piskel(piskel, user_id)
         clone.put()
         clone_id = str(clone.key())
@@ -90,7 +91,7 @@ class PiskelHandler(BaseHandler):
       else:
         self.abort(403)
     else:
-      self.abort(404)   
+      self.abort(404)
 
   def _get_piskel_details(self, piskel):
     framesheets = piskel.get_framesheets()
@@ -136,7 +137,7 @@ class PiskelHandler(BaseHandler):
     piskel = db.get(piskel_id)
     if self._authorize(piskel):
       piskel.delete()
-      db.get(piskel_id) # funny looks like this forces 
+      db.get(piskel_id) # funny looks like this forces
       self.redirect(self.request.get('callback_url'))
     else:
       self.abort(403)
@@ -154,7 +155,7 @@ class PiskelHandler(BaseHandler):
       piskel.put()
 
       # force consistency
-      db.get(piskel_id) 
+      db.get(piskel_id)
 
       self.redirect(redirect_url)
     else:
@@ -188,11 +189,11 @@ class PiskelHandler(BaseHandler):
       framesheet_link=image_handler.create_link(post_data.get('framesheet'))
 
       framesheet = Framesheet(
-        piskel_id=piskel_id, 
-        fps=fps, 
-        content=content, 
-        frames=frames, 
-        preview_link=preview_link, 
+        piskel_id=piskel_id,
+        fps=fps,
+        content=content,
+        frames=frames,
+        preview_link=preview_link,
         framesheet_link=framesheet_link,
         active=True
       )
@@ -202,10 +203,10 @@ class PiskelHandler(BaseHandler):
       piskel.name = post_data.get('name')
       piskel.garbage = False # remove garbage flag to avoid collection by CRON task + enable listing
       piskel.put()
-      
+
       # force consistency
-      db.get(piskel_id) 
-      
+      db.get(piskel_id)
+
       self.response.out.write(piskel.key())
     else:
       self.abort(403)

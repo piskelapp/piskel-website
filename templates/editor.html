@@ -9,6 +9,9 @@
   <meta name="author"       content="Julian Descottes">
   <meta name="viewport"     content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" type="image/png" href="../../static/resources/favicon.png"/>
+  <link rel="stylesheet"    type="text/css"  href="/static/css/piskel-app.css"/>
+  <link rel="stylesheet"    type="text/css"  href="/static/css/piskel-app-editor.css"/>
+
   <link rel="stylesheet"    type="text/css"  href="../css/reset.css">
   <link rel="stylesheet"    type="text/css"  href="../css/style.css">
   <link rel="stylesheet"    type="text/css"  href="../css/forms.css">
@@ -23,6 +26,9 @@
   <link rel="stylesheet" type="text/css" href="../css/minimap.css">
 </head>
 <body>
+  <div class="editor-header-wrap">
+    {% include "editor/header.html" %}
+  </div>
   <script src="../js/lib/iframeLoader.js" type="text/javascript"></script>
   {% autoescape off %}
     <script type="text/javascript">
@@ -37,12 +43,6 @@
     </script>
   {% endautoescape %}
 
-  <div class="piskel-name-container">
-    <input {% if is_logged_in %}{% else %}readonly{% endif %}
-      id="piskel-name"
-      type="text"
-      value="{{ piskel.name }}"/>
-  </div>
   <script type="text/javascript">
     var input = document.getElementById('piskel-name');
     input.addEventListener('keydown', function (evt) {evt.stopPropagation();});
