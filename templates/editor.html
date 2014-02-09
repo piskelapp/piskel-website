@@ -11,21 +11,11 @@
   <link rel="shortcut icon" type="image/png" href="../../static/resources/favicon.png"/>
   <link rel="stylesheet"    type="text/css"  href="/static/css/piskel-app.css"/>
   <link rel="stylesheet"    type="text/css"  href="/static/css/piskel-app-editor.css"/>
-
-  <link rel="stylesheet"    type="text/css"  href="../css/reset.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/style.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/forms.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/settings.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/tools.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/cheatsheet.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/spectrum/spectrum.css"/>
-  <link rel="stylesheet"    type="text/css"  href="../css/spectrum/spectrum-overrides.css"/>
-  <link rel="stylesheet"    type="text/css"  href="../css/bootstrap/bootstrap.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/bootstrap/bootstrap-tooltip-custom.css">
-  <link rel="stylesheet"    type="text/css"  href="../css/preview-film-section.css">
-  <link rel="stylesheet" type="text/css" href="../css/minimap.css">
 </head>
 <body>
+  <div id="loading-mask">
+      <div>Loading your piskel ...</div>
+  </div>
   <div class="editor-header-wrap">
     {% include "editor/header.html" %}
   </div>
@@ -35,18 +25,19 @@
       window.pskl = window.pskl || {};
       window.pskl.appEngineToken_ = true;
       {% if piskel_content %}
-        window.pskl.framesheetData_ = {
-          content : {{ piskel_content }},
-          fps : {{ piskel_fps }}
+        window.pskl.appEnginePiskelData_ = {
+          piskel : {{ piskel_content }},
+          fps : {{ piskel_fps }},
+          descriptor : {
+            name : "{{piskel.name}}",
+            description : {% if piskel.description %}"{{piskel.description}}"{% else %}""{% endif %},
+            isPublic : {% if piskel.private %}false{% else %}true{% endif %}
+          }
         };
       {% endif %}
     </script>
   {% endautoescape %}
 
-  <script type="text/javascript">
-    var input = document.getElementById('piskel-name');
-    input.addEventListener('keydown', function (evt) {evt.stopPropagation();});
-  </script>
   <div id="main-wrapper" class="main-wrapper">
     <iframe src="../templates/drawing-tools.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
 
@@ -73,8 +64,10 @@
         <div class="drawer vertical-centerer">
           <div class="drawer-content" id="drawer-container">
             <iframe src="../templates/settings/application.html" onload="iframeloader.onLoad(event)" data-iframe-loader="store"></iframe>
+            <iframe src="../templates/settings/resize.html" onload="iframeloader.onLoad(event)" data-iframe-loader="store"></iframe>
             <iframe src="../templates/settings/export-gif.html" onload="iframeloader.onLoad(event)"  data-iframe-loader="store"></iframe>
             <iframe src="../templates/settings/import.html" onload="iframeloader.onLoad(event)"  data-iframe-loader="store"></iframe>
+            <iframe src="../templates/settings/save.html" onload="iframeloader.onLoad(event)"  data-iframe-loader="store"></iframe>
           </div>
         </div>
       </div>
