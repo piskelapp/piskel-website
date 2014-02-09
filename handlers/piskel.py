@@ -1,13 +1,16 @@
-import webapp2, logging
-import models
-
 from models import Framesheet, Piskel
 from google.appengine.ext import db
-from webapp2_extras import jinja2
 from base import BaseHandler
 from handlers import image as image_handler
 
 _ANONYMOUS_USER = long(100000001)
+
+def hasFramesheetChanged_(piskel, content, fps):
+  current_framesheet = piskel.get_current_framesheet()
+  if current_framesheet:
+    return current_framesheet.content != content or current_framesheet.fps != fps
+  else:
+    return True
 
 class PiskelHandler(BaseHandler):
   def _authorize(self, piskel):
@@ -181,26 +184,30 @@ class PiskelHandler(BaseHandler):
     if self._authorize(piskel):
       post_data = self.request.POST
 
-      content = post_data.get('framesheet_content')
-      fps = post_data.get('fps_speed')
+      content = post_data.get('framesheet')
+      fps = post_data.get('fps')
       frames = long(post_data.get('frames'))
 
-      preview_link=image_handler.create_link(post_data.get('preview'))
-      framesheet_link=image_handler.create_link(post_data.get('framesheet'))
+      preview_link=image_handler.create_link(post_data.get('first_frame_as_png'))
+      framesheet_link=image_handler.create_link(post_data.get('framesheet_as_png'))
 
-      framesheet = Framesheet(
-        piskel_id=piskel_id,
-        fps=fps,
-        content=content,
-        frames=frames,
-        preview_link=preview_link,
-        framesheet_link=framesheet_link,
-        active=True
-      )
-
-      piskel.set_current_framesheet(framesheet)
+      if hasFramesheetChanged_(piskel, content, fps):
+        framesheet = Framesheet(
+          piskel_id=piskel_id,
+          fps=fps,
+          content=content,
+          frames=frames,
+          preview_link=preview_link,
+          framesheet_link=framesheet_link,
+          active=True
+        )
+        piskel.set_current_framesheet(framesheet)
 
       piskel.name = post_data.get('name')
+      piskel.description = post_data.get('description')
+
+      piskel.private = not bool(post_data.get('public'))
+
       piskel.garbage = False # remove garbage flag to avoid collection by CRON task + enable listing
       piskel.put()
 

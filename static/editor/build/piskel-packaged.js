@@ -6322,7 +6322,7 @@ jQuery.sub = function() {
 	var rootjQuerySub = jQuerySub(document);
 	return jQuerySub;
 };
-
+	
 })();
 var curCSS, iframe, iframeDoc,
 	ralpha = /alpha\([^)]*\)/i,
@@ -13891,7 +13891,7 @@ if (typeof Function.prototype.bind !== "function") {
     if (r > 255 || g > 255 || b > 255) {
       throw "Invalid color component";
     }
-
+    
     return ((r << 16) | (g << 8) | b).toString(16);
   };
 
@@ -14587,7 +14587,9 @@ if (typeof Function.prototype.bind !== "function") {
   ns.Deserializer.prototype.deserialize = function () {
     var data = this.data_;
     var piskelData = data.piskel;
-    this.piskel_ = new pskl.model.Piskel(piskelData.width, piskelData.height);
+
+    var descriptor = new pskl.model.piskel.Descriptor('Deserialized piskel', '');
+    this.piskel_ = new pskl.model.Piskel(piskelData.width, piskelData.height, descriptor);
 
     this.layersToLoad_ = piskelData.layers.length;
 
@@ -14642,9 +14644,10 @@ if (typeof Function.prototype.bind !== "function") {
     var frames = pixelGrids.map(function (grid) {
       return pskl.model.Frame.fromPixelGrid(grid);
     });
+    var descriptor = new pskl.model.piskel.Descriptor('Deserialized piskel', '');
     var layer = pskl.model.Layer.fromFrames('Layer 1', frames);
 
-    this.callback_(pskl.model.Piskel.fromLayers([layer]));
+    this.callback_(pskl.model.Piskel.fromLayers([layer], descriptor));
   };
 })();;(function () {
   var ns = $.namespace('pskl.utils.serialization.backward');
@@ -14656,7 +14659,8 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.Deserializer_v1.prototype.deserialize = function () {
     var piskelData = this.data_.piskel;
-    var piskel = new pskl.model.Piskel(piskelData.width, piskelData.height);
+    var descriptor = new pskl.model.piskel.Descriptor('Deserialized piskel', '');
+    var piskel = new pskl.model.Piskel(piskelData.width, piskelData.height, descriptor);
 
     piskelData.layers.forEach(function (serializedLayer) {
       var layer = this.deserializeLayer(serializedLayer);
@@ -14974,15 +14978,25 @@ if (typeof Function.prototype.bind !== "function") {
     return this.frames.length;
   };
 })();;(function () {
+  var ns = $.namespace('pskl.model.piskel');
+
+  ns.Descriptor = function (name, description, isPublic) {
+    this.name = name;
+    this.description = description;
+    this.isPublic = isPublic;
+  };
+})();;(function () {
   var ns = $.namespace('pskl.model');
 
   /**
    * @constructor
    * @param {Number} width
    * @param {Number} height
+   * @param {String} name
+   * @param {String} description
    */
-  ns.Piskel = function (width, height) {
-    if (width && height) {
+  ns.Piskel = function (width, height, descriptor) {
+    if (width && height && descriptor) {
       /** @type {Array} */
       this.layers = [];
 
@@ -14991,6 +15005,8 @@ if (typeof Function.prototype.bind !== "function") {
 
       /** @type {Number} */
       this.height = height;
+
+      this.descriptor = descriptor;
     } else {
       throw 'Missing arguments in Piskel constructor : ' + Array.prototype.join.call(arguments, ",");
     }
@@ -15002,11 +15018,11 @@ if (typeof Function.prototype.bind !== "function") {
    * @param  {Array<pskl.model.Layer>} layers
    * @return {pskl.model.Piskel}
    */
-  ns.Piskel.fromLayers = function (layers) {
+  ns.Piskel.fromLayers = function (layers, descriptor) {
     var piskel = null;
     if (layers.length > 0 && layers[0].length() > 0) {
       var sampleFrame = layers[0].getFrameAt(0);
-      piskel = new pskl.model.Piskel(sampleFrame.getWidth(), sampleFrame.getHeight());
+      piskel = new pskl.model.Piskel(sampleFrame.getWidth(), sampleFrame.getHeight(), descriptor);
       layers.forEach(piskel.addLayer.bind(piskel));
     } else {
       throw 'Piskel.fromLayers expects array of non empty pskl.model.Layer as first argument';
@@ -15069,6 +15085,15 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.Piskel.prototype.removeLayerAt = function (index) {
     this.layers.splice(index, 1);
+  };
+
+  ns.Piskel.prototype.getDescriptor = function () {
+    return this.descriptor;
+  };
+
+  ns.Piskel.prototype.setDescriptor = function (descriptor) {
+    this.descriptor = descriptor;
+    var appEngineEditorHeader = $('.piskel-name').html(this.descriptor.name);
   };
 
 })();;(function () {
@@ -15885,7 +15910,7 @@ if (typeof Function.prototype.bind !== "function") {
       l.removeFrameAt(index);
     });
     // Current frame index is impacted if the removed frame was before the current frame
-    if (this.currentFrameIndex >= index) {
+    if (this.currentFrameIndex >= index && this.currentFrameIndex > 0) {
       this.setCurrentFrameIndex(this.currentFrameIndex - 1);
     }
 
@@ -16076,7 +16101,8 @@ if (typeof Function.prototype.bind !== "function") {
   ns.DrawingController.prototype.initMouseBehavior = function() {
     var body = $('body');
     this.container.mousedown($.proxy(this.onMousedown_, this));
-    this.container.mousemove($.proxy(this.onMousemove_, this));
+    this.container.mouseenter($.proxy(this.onMouseenter_, this));
+    this.container.mouseleave($.proxy(this.onMouseleave_, this));
 
     if (pskl.utils.UserAgent.isChrome) {
       this.container.on('mousewheel', $.proxy(this.onMousewheel_, this));
@@ -16095,7 +16121,7 @@ if (typeof Function.prototype.bind !== "function") {
       window.clearInterval(this.resizeTimer);
     }
     this.resizeTimer = window.setTimeout($.proxy(this.afterWindowResize_, this), 200);
-  },
+  };
 
   ns.DrawingController.prototype.afterWindowResize_ = function () {
     var initialWidth = this.compositeRenderer.getDisplaySize().width;
@@ -16106,7 +16132,7 @@ if (typeof Function.prototype.bind !== "function") {
     this.compositeRenderer.setZoom(newZoom);
 
     $.publish(Events.ZOOM_CHANGED);
-  },
+  };
 
   /**
    * @private
@@ -16115,13 +16141,28 @@ if (typeof Function.prototype.bind !== "function") {
     if(settingsName == pskl.UserSettings.SHOW_GRID) {
       console.warn('DrawingController:onUserSettingsChange_ not implemented !');
     }
-  },
+  };
 
   ns.DrawingController.prototype.onFrameSizeChanged_ = function () {
     this.compositeRenderer.setDisplaySize(this.getContainerWidth_(), this.getContainerHeight_());
     this.compositeRenderer.setZoom(this.calculateZoom_());
     this.compositeRenderer.setOffset(0, 0);
     $.publish(Events.ZOOM_CHANGED);
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.onMouseenter_ = function (event) {
+    this.container.bind('mousemove', $.proxy(this.onMousemove_, this));
+  };
+
+  /**
+   * @private
+   */
+  ns.DrawingController.prototype.onMouseleave_ = function (event) {
+    this.container.unbind('mousemove');
+    this.currentToolBehavior.hideHighlightedPixel(this.overlayFrame);
   };
 
   /**
@@ -16137,6 +16178,7 @@ if (typeof Function.prototype.bind !== "function") {
       }
     } else {
       this.isClicked = true;
+      this.currentToolBehavior.hideHighlightedPixel(this.overlayFrame);
 
       this.currentToolBehavior.applyToolAt(
         coords.x,
@@ -16297,12 +16339,6 @@ if (typeof Function.prototype.bind !== "function") {
     toolsContainerWidth = $('#tool-section').outerWidth(true),
     settingsContainerWidth = $('#application-action-section').outerWidth(true),
     availableWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth - toolsContainerWidth - settingsContainerWidth;
-    // availableWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth;
-    console.log('leftSectionWidth', leftSectionWidth);
-    console.log('rightSectionWidth', rightSectionWidth);
-    console.log('toolsContainerWidth', toolsContainerWidth);
-    console.log('settingsContainerWidth', settingsContainerWidth);
-    console.log('main-wrapper', $('#main-wrapper').width());
 
     return availableWidth-50;
   };
@@ -17077,6 +17113,8 @@ if (typeof Function.prototype.bind !== "function") {
    * @private
    */
   ns.NotificationController.prototype.displayMessage_ = function (evt, messageInfo) {
+    this.removeMessage_();
+
     var message = document.createElement('div');
     message.id = "user-message";
     message.className = "user-message";
@@ -17272,6 +17310,80 @@ if (typeof Function.prototype.bind !== "function") {
   };
 })();;(function () {
   var ns = $.namespace('pskl.controller.settings');
+
+  ns.SaveController = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+  /**
+   * @public
+   */
+  ns.SaveController.prototype.init = function () {
+    this.saveForm = $('form[name=save-form]');
+    this.nameInput =  $('#save-name');
+    this.descriptionInput = $('#save-description');
+    this.isPublicCheckbox = $('input[name=save-public-checkbox]');
+    this.saveButton = $('#save-button');
+    this.status = $('#save-status');
+
+    var descriptor = this.piskelController.piskel.getDescriptor();
+    this.nameInput.val(descriptor.name);
+    this.descriptionInput.val(descriptor.description);
+
+    this.isPublicCheckbox.prop('checked', descriptor.isPublic);
+
+    if (!pskl.app.isAppEngineVersion) {
+      this.nameInput.attr('disabled', 'disabled');
+      this.descriptionInput.attr('disabled', 'disabled');
+      this.isPublicCheckbox.attr('disabled', 'disabled');
+    }
+
+    this.saveForm.submit(this.onSaveFormSubmit_.bind(this));
+  };
+
+  ns.SaveController.prototype.onSaveFormSubmit_ = function (evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+
+    var name = this.nameInput.val();
+    var description = this.descriptionInput.val();
+    var isPublic = !!this.isPublicCheckbox.prop('checked');
+
+    var descriptor = new pskl.model.piskel.Descriptor(name, description, isPublic);
+    this.piskelController.piskel.setDescriptor(descriptor);
+
+    this.beforeSaving_();
+    pskl.app.store({
+      success : this.onSaveSuccess_.bind(this),
+      error : this.onSaveError_.bind(this),
+      after : this.afterSaving_.bind(this)
+    });
+  };
+
+  ns.SaveController.prototype.beforeSaving_ = function () {
+    this.saveButton.attr('disabled', true);
+    this.status.html('Saving ...');
+    $('.piskel-name').get(0).classList.add('piskel-name-saving');
+  };
+
+  ns.SaveController.prototype.onSaveSuccess_ = function () {
+    $.publish(Events.CLOSE_SETTINGS_DRAWER);
+    $.publish(Events.SHOW_NOTIFICATION, [{"content": "Successfully saved !"}]);
+  };
+
+  ns.SaveController.prototype.onSaveError_ = function (status) {
+    $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+status+")"}]);
+  };
+
+  ns.SaveController.prototype.afterSaving_ = function () {
+    this.saveButton.attr('disabled', false);
+    this.status.html('');
+    $('.piskel-name').get(0).classList.remove('piskel-name-saving');
+
+    window.setTimeout($.publish.bind($, Events.HIDE_NOTIFICATION), 2000);
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.controller.settings');
   var DEFAULT_FILE_STATUS = 'No file selected ...';
   var PREVIEW_HEIGHT  = 60;
 
@@ -17426,7 +17538,9 @@ if (typeof Function.prototype.bind !== "function") {
         var frame = pskl.utils.FrameUtils.createFromImage(image);
 
         var layer = pskl.model.Layer.fromFrames('Layer 1', [frame]);
-        var piskel = pskl.model.Piskel.fromLayers([layer]);
+
+        var descriptor = new pskl.model.piskel.Descriptor('Imported piskel', '');
+        var piskel = pskl.model.Piskel.fromLayers([layer], descriptor);
 
         pskl.app.piskelController.setPiskel(piskel);
         pskl.app.animationController.setFPS(Constants.DEFAULT.FPS);
@@ -17454,6 +17568,10 @@ if (typeof Function.prototype.bind !== "function") {
     'import' : {
       template : 'templates/settings/import.html',
       controller : ns.ImportController
+    },
+    'save' : {
+      template : 'templates/settings/save.html',
+      controller : ns.SaveController
     }
   };
 
@@ -17561,6 +17679,7 @@ if (typeof Function.prototype.bind !== "function") {
    */
   ns.LocalStorageService.prototype.restoreFromLocalStorage_ = function() {
     var framesheet = JSON.parse(window.localStorage.snapShot);
+
     pskl.utils.serialization.Deserializer.deserialize(framesheet, function (piskel) {
       pskl.app.piskelController.setPiskel(piskel);
     });
@@ -17602,14 +17721,94 @@ if (typeof Function.prototype.bind !== "function") {
     }
   };
 })();;(function () {
+  var ns = $.namespace('pskl.service');
+
+  ns.GithubStorageService = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+  ns.GithubStorageService.prototype.init = function () {};
+
+  ns.GithubStorageService.prototype.store = function (callbacks) {
+    var xhr = new XMLHttpRequest();
+    var formData = new FormData();
+    formData.append('framesheet_content', this.piskelController.serialize());
+    formData.append('fps_speed', this.piskelController.getFPS());
+
+    xhr.open('POST', Constants.STATIC.URL.SAVE, true);
+
+    xhr.onload = function(e) {
+      if (this.status == 200) {
+        var baseUrl = window.location.href.replace(window.location.search, "");
+        window.location.href = baseUrl + "?frameId=" + this.responseText;
+      } else {
+        this.onerror(e);
+      }
+    };
+    xhr.onerror = function(e) {
+      $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+this.status+")"}]);
+    };
+    xhr.send(formData);
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.service');
+
+  ns.AppEngineStorageService = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+  ns.AppEngineStorageService.prototype.init = function () {};
+
+  ns.AppEngineStorageService.prototype.store = function (callbacks) {
+    var formData = this.prepareFormData_();
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', Constants.APPENGINE.URL.SAVE, true);
+
+    xhr.onload = function(e) {
+      if (this.status == 200) {
+        callbacks.success();
+        callbacks.after();
+      } else {
+        this.onerror(e);
+      }
+    };
+    xhr.onerror = function(e) {
+      callbacks.error(this.status);
+      callbacks.after();
+    };
+    xhr.send(formData);
+  };
+
+  ns.AppEngineStorageService.prototype.prepareFormData_ = function () {
+    var piskel = this.piskelController.piskel;
+    var descriptor = piskel.getDescriptor();
+
+    var formData = new FormData();
+    formData.append('framesheet', this.piskelController.serialize());
+    formData.append('fps', this.piskelController.getFPS());
+    formData.append('name', descriptor.name);
+    formData.append('description', descriptor.description);
+    if (descriptor.isPublic) {
+      formData.append('public', true);
+    }
+    formData.append('frames', this.piskelController.getFrameCount());
+    formData.append('first_frame_as_png', pskl.app.getFirstFrameAsPng());
+    formData.append('framesheet_as_png', pskl.app.getFramesheetAsPng());
+
+    return formData;
+  };
+})();;(function () {
   var ns = $.namespace("pskl.service");
   ns.HistoryService = function (piskelController) {
     this.piskelController = piskelController;
+    this.saveState__b = this.saveState.bind(this);
   };
 
   ns.HistoryService.prototype.init = function () {
 
-    $.subscribe(Events.TOOL_RELEASED, this.saveState.bind(this));
+    $.subscribe(Events.PISKEL_RESET, this.saveState__b);
+    $.subscribe(Events.TOOL_RELEASED, this.saveState__b);
 
     pskl.app.shortcutService.addShortcut('ctrl+Z', this.undo.bind(this));
     pskl.app.shortcutService.addShortcut('ctrl+Y', this.redo.bind(this));
@@ -17621,12 +17820,16 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.HistoryService.prototype.undo = function () {
     this.piskelController.getCurrentFrame().loadPreviousState();
+    $.unsubscribe(Events.PISKEL_RESET, this.saveState__b);
     $.publish(Events.PISKEL_RESET);
+    $.subscribe(Events.PISKEL_RESET, this.saveState__b);
   };
 
   ns.HistoryService.prototype.redo = function () {
     this.piskelController.getCurrentFrame().loadNextState();
+    $.unsubscribe(Events.PISKEL_RESET, this.saveState__b);
     $.publish(Events.PISKEL_RESET);
+    $.subscribe(Events.PISKEL_RESET, this.saveState__b);
   };
 
 })();;(function () {
@@ -17685,26 +17888,34 @@ if (typeof Function.prototype.bind !== "function") {
    * @private
    */
   ns.ShortcutService.prototype.onKeyUp_ = function(evt) {
-    // jquery names FTW ...
-    var keycode = evt.which;
-    var charkey = pskl.service.keyboard.KeycodeTranslator.toChar(keycode);
+    if (!this.isInInput_(evt)) {
+      // jquery names FTW ...
+      var keycode = evt.which;
+      var targetTagName = evt.target.nodeName.toUpperCase();
+      var charkey = pskl.service.keyboard.KeycodeTranslator.toChar(keycode);
 
-    var keyShortcuts = this.shortcuts_[charkey];
-    if(keyShortcuts) {
-      var cb;
-      if (this.isCtrlKeyPressed_(evt)) {
-        cb = keyShortcuts.ctrl;
-      } else if (this.isShiftKeyPressed_(evt)) {
-        cb = keyShortcuts.shift;
-      } else {
-        cb = keyShortcuts.normal;
-      }
+      var keyShortcuts = this.shortcuts_[charkey];
+      if(keyShortcuts) {
+        var cb;
+        if (this.isCtrlKeyPressed_(evt)) {
+          cb = keyShortcuts.ctrl;
+        } else if (this.isShiftKeyPressed_(evt)) {
+          cb = keyShortcuts.shift;
+        } else {
+          cb = keyShortcuts.normal;
+        }
 
-      if(cb) {
-        cb(charkey);
-        evt.preventDefault();
+        if(cb) {
+          cb(charkey);
+          evt.preventDefault();
+        }
       }
     }
+  };
+
+  ns.ShortcutService.prototype.isInInput_ = function (evt) {
+    var targetTagName = evt.target.nodeName.toUpperCase();
+    return targetTagName === 'INPUT' || targetTagName === 'TEXTAREA';
   };
 
   ns.ShortcutService.prototype.isCtrlKeyPressed_ = function (evt) {
@@ -17905,6 +18116,13 @@ if (typeof Function.prototype.bind !== "function") {
       this.highlightedPixelRow = row;
     }
   };
+
+  ns.BaseTool.prototype.hideHighlightedPixel = function(overlay) {
+    overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
+    this.highlightedPixelRow = null;
+    this.highlightedPixelCol = null;
+  };
+
 
   ns.BaseTool.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {};
 
@@ -18470,6 +18688,10 @@ if (typeof Function.prototype.bind !== "function") {
     }
   };
 
+  ns.BaseSelect.prototype.hideHighlightedPixel = function() {
+    // there is no highlighted pixel for selection tools, do nothing
+  };
+
   /**
    * For each pixel in the selection draw it in white transparent on the tool overlay
    * @protected
@@ -18550,12 +18772,12 @@ if (typeof Function.prototype.bind !== "function") {
   ns.RectangleSelect = function() {
     this.toolId = "tool-rectangle-select";
     this.helpText = "Rectangle selection tool";
-
+    
     ns.BaseSelect.call(this);
   };
 
   pskl.utils.inherit(ns.RectangleSelect, ns.BaseSelect);
-
+  
 
   /**
    * @override
@@ -18602,12 +18824,12 @@ if (typeof Function.prototype.bind !== "function") {
   ns.ShapeSelect = function() {
     this.toolId = "tool-shape-select";
     this.helpText = "Shape selection tool";
-
+    
     ns.BaseSelect.call(this);
   };
 
   pskl.utils.inherit(ns.ShapeSelect, ns.BaseSelect);
-
+  
   /**
    * For the shape select tool, you just need to click one time to create a selection.
    * So we jsut need to implement onSelectStart_ (no need for onSelect_ & onSelectEnd_)
@@ -18617,7 +18839,7 @@ if (typeof Function.prototype.bind !== "function") {
     // Clean previous selection:
     $.publish(Events.SELECTION_DISMISSED);
     overlay.clear();
-
+    
     // From the pixel cliked, get shape using an algorithm similar to the paintbucket one:
     var pixels = pskl.PixelUtils.getSimilarConnectedPixelsFromFrame(frame, col, row);
     var selection = new pskl.selection.ShapeSelection(pixels);
@@ -18668,11 +18890,19 @@ if (typeof Function.prototype.bind !== "function") {
   ns.app = {
 
     init : function () {
+      /**
+       * True when piskel is running in static mode (no back end needed).
+       * When started from APP Engine, appEngineToken_ (Boolean) should be set on window.pskl
+       */
+      this.isAppEngineVersion = !!pskl.appEngineToken_;
+
       this.shortcutService = new pskl.service.keyboard.ShortcutService();
       this.shortcutService.init();
 
       var size = this.readSizeFromURL_();
-      var piskel = new pskl.model.Piskel(size.width, size.height);
+
+      var descriptor = new pskl.model.piskel.Descriptor('New Piskel', '');
+      var piskel = new pskl.model.Piskel(size.width, size.height, descriptor);
 
       var layer = new pskl.model.Layer("Layer 1");
       var frame = new pskl.model.Frame(size.width, size.height);
@@ -18722,31 +18952,31 @@ if (typeof Function.prototype.bind !== "function") {
       this.imageUploadService = new pskl.service.ImageUploadService();
       this.imageUploadService.init();
 
-
       this.cheatsheetService = new pskl.service.keyboard.CheatsheetService();
       this.cheatsheetService.init();
+
+      if (this.isAppEngineVersion) {
+        this.storageService = new pskl.service.AppEngineStorageService(this.piskelController);
+      } else {
+        this.storageService = new pskl.service.GithubStorageService(this.piskelController);
+      }
+      this.storageService.init();
 
 
       var drawingLoop = new pskl.rendering.DrawingLoop();
       drawingLoop.addCallback(this.render, this);
       drawingLoop.start();
 
-      this.initBootstrapTooltips_();
+      this.initTooltips_();
 
-      /**
-       * True when piskel is running in static mode (no back end needed).
-       * When started from APP Engine, appEngineToken_ (Boolean) should be set on window.pskl
-       */
-      this.isStaticVersion = !pskl.appEngineToken_;
-
-      if (this.isStaticVersion) {
-        this.finishInitStatic_();
-      } else {
+      if (this.isAppEngineVersion) {
         this.finishInitAppEngine_();
+      } else {
+        this.finishInitGithub_();
       }
     },
 
-    finishInitStatic_ : function () {
+    finishInitGithub_ : function () {
       var framesheetId = this.readFramesheetIdFromURL_();
       if (framesheetId) {
         $.publish(Events.SHOW_NOTIFICATION, [{
@@ -18759,15 +18989,16 @@ if (typeof Function.prototype.bind !== "function") {
     },
 
     finishInitAppEngine_ : function () {
-      if (pskl.framesheetData_ && pskl.framesheetData_.content) {
-        pskl.utils.serialization.Deserializer.deserialize(pskl.framesheetData_.content, function (piskel) {
+      if (pskl.appEnginePiskelData_ && pskl.appEnginePiskelData_.piskel) {
+        pskl.utils.serialization.Deserializer.deserialize(pskl.appEnginePiskelData_.piskel, function (piskel) {
+          piskel.setDescriptor(pskl.appEnginePiskelData_.descriptor);
           pskl.app.piskelController.setPiskel(piskel);
-          pskl.app.animationController.setFPS(pskl.framesheetData_.fps);
+          pskl.app.animationController.setFPS(pskl.appEnginePiskelData_.fps);
         });
       }
     },
 
-    initBootstrapTooltips_ : function () {
+    initTooltips_ : function () {
       $('body').tooltip({
         selector: '[rel=tooltip]'
       });
@@ -18780,8 +19011,8 @@ if (typeof Function.prototype.bind !== "function") {
     },
 
     readSizeFromURL_ : function () {
-      var sizeParam = this.readUrlParameter_("size"),
-        size;
+      var sizeParam = this.readUrlParameter_("size");
+      var size;
       // parameter expected as size=64x48 => size=widthxheight
       var parts = sizeParam.split("x");
       if (parts && parts.length == 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
@@ -18806,13 +19037,12 @@ if (typeof Function.prototype.bind !== "function") {
     },
 
     readUrlParameter_ : function (paramName) {
-      var searchString = window.location.search.substring(1),
-        i, val, params = searchString.split("&");
-
-      for (i = 0; i < params.length; i++) {
-        val = params[i].split("=");
-        if (val[0] == paramName) {
-          return window.unescape(val[1]);
+      var searchString = window.location.search.substring(1);
+      var params = searchString.split("&");
+      for (var i = 0; i < params.length; i++) {
+        var param = params[i].split("=");
+        if (param[0] == paramName) {
+          return window.unescape(param[1]);
         }
       }
       return "";
@@ -18839,65 +19069,8 @@ if (typeof Function.prototype.bind !== "function") {
       xhr.send();
     },
 
-    storeSheet : function (event) {
-      if (this.isStaticVersion) {
-        this.storeSheetStatic_();
-      } else {
-        this.storeSheetAppEngine_();
-      }
-
-      if(event) {
-        event.stopPropagation();
-        event.preventDefault();
-      }
-      return false;
-    },
-
-    storeSheetStatic_ : function () {
-      var xhr = new XMLHttpRequest();
-      var formData = new FormData();
-      formData.append('framesheet_content', this.piskelController.serialize());
-      formData.append('fps_speed', $('#preview-fps').val());
-
-      xhr.open('POST', Constants.STATIC.URL.SAVE, true);
-
-      xhr.onload = function(e) {
-        if (this.status == 200) {
-          var baseUrl = window.location.href.replace(window.location.search, "");
-          window.location.href = baseUrl + "?frameId=" + this.responseText;
-        } else {
-          this.onerror(e);
-        }
-      };
-      xhr.onerror = function(e) {
-        $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+this.status+")"}]);
-      };
-      xhr.send(formData);
-    },
-
-    storeSheetAppEngine_ : function () {
-      var xhr = new XMLHttpRequest();
-      var formData = new FormData();
-      formData.append('framesheet_content', this.piskelController.serialize());
-      formData.append('fps_speed', $('#preview-fps').val());
-      formData.append('name', $('#piskel-name').val());
-      formData.append('frames', this.piskelController.getFrameCount());
-      formData.append('preview', this.getFirstFrameAsPng());
-      formData.append('framesheet', this.getFramesheetAsPng());
-
-      xhr.open('POST', Constants.APPENGINE.URL.SAVE, true);
-
-      xhr.onload = function(e) {
-        if (this.status == 200) {
-          $.publish(Events.SHOW_NOTIFICATION, [{"content": "Successfully saved !"}]);
-        } else {
-          this.onerror(e);
-        }
-      };
-      xhr.onerror = function(e) {
-        $.publish(Events.SHOW_NOTIFICATION, [{"content": "Saving failed ("+this.status+")"}]);
-      };
-      xhr.send(formData);
+    store : function (callbacks) {
+      this.storageService.store(callbacks);
     },
 
     getFirstFrameAsPng : function () {

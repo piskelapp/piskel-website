@@ -2,14 +2,18 @@
   z-index: 10000;
   position: relative;
   font-size: 12pt;
-  /*used to center the title (see .piskel-name)*/
-  text-align: center;
 }
 
 .editor-header-wrap .navigation {
   height : 36px;
   line-height : 36px;
 }
+
+.editor-header-wrap .link {
+  position: relative;
+  z-index : 2;
+}
+
 
 .editor-header-wrap .small-user-avatar {
   width: 36px;
@@ -46,7 +50,7 @@
 .editor-header-wrap .info-button {
   background-image: url('http://localhost:10080/p/img/info.png');
   background-repeat: no-repeat;
-  background-size: 20px;
+  background-size: 25px;
   background-position: 5px;
 }
 
@@ -60,9 +64,22 @@
 }
 
 .piskel-name {
+  position : absolute;
+  width : 100%;
+  text-align: center;
   font-size: 16pt;
   color: #888;
   text-shadow: 0 -1px 0 #000;
+}
+
+.piskel-name-saving:after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  width: 25px;
+  background-image: url('/static/resources/pacman-loader.gif');
+  height: 25px;
+  margin-left: 5px;
 }
 
 .main-wrapper {
