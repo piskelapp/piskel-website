@@ -15910,7 +15910,7 @@ if (typeof Function.prototype.bind !== "function") {
       l.removeFrameAt(index);
     });
     // Current frame index is impacted if the removed frame was before the current frame
-    if (this.currentFrameIndex >= index) {
+    if (this.currentFrameIndex >= index && this.currentFrameIndex > 0) {
       this.setCurrentFrameIndex(this.currentFrameIndex - 1);
     }
 
@@ -18179,11 +18179,17 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.BaseTool.prototype.hideHighlightedPixel = function(overlay) {
+<<<<<<< HEAD
     if (this.highlightedPixelRow !== null && this.highlightedPixelCol !== null) {
       overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
       this.highlightedPixelRow = null;
       this.highlightedPixelCol = null;
     }
+=======
+    overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
+    this.highlightedPixelRow = null;
+    this.highlightedPixelCol = null;
+>>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
   };
 
 
@@ -18752,6 +18758,10 @@ if (typeof Function.prototype.bind !== "function") {
       this.BodyRoot.addClass(this.secondaryToolId);
       this.BodyRoot.removeClass(this.toolId);
     }
+  };
+
+  ns.BaseSelect.prototype.hideHighlightedPixel = function() {
+    // there is no highlighted pixel for selection tools, do nothing
   };
 
   /**
