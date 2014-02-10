@@ -13973,6 +13973,34 @@ if (typeof Function.prototype.bind !== "function") {
 })();;(function () {
   var ns = $.namespace('pskl.utils');
 
+  ns.Dom = {
+    /**
+     * Check if a given HTML element is nested inside another
+     * @param  {HTMLElement}  node  Element to test
+     * @param  {HTMLElement}  parent Potential Ancestor for node
+     * @param  {Boolean}      excludeParent set to true if the parent should be excluded from potential matches
+     * @return {Boolean}      true if parent was found amongst the parentNode chain of node
+     */
+    isParent : function (node, parent, excludeParent) {
+      if (node && parent) {
+
+        if (excludeParent) {
+          node = node.parentNode;
+        }
+
+        while (node) {
+          if (node === parent) {
+            return true;
+          }
+          node = node.parentNode;
+        }
+      }
+      return false;
+    }
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.utils');
+
   ns.Math = {
     minmax : function (val, min, max) {
       return Math.max(Math.min(val, max), min);
@@ -14584,11 +14612,12 @@ if (typeof Function.prototype.bind !== "function") {
     deserializer.deserialize();
   };
 
-  ns.Deserializer.prototype.deserialize = function () {
+  ns.Deserializer.prototype.deserialize = function (name) {
     var data = this.data_;
     var piskelData = data.piskel;
+    name = name || 'Deserialized piskel';
 
-    var descriptor = new pskl.model.piskel.Descriptor('Deserialized piskel', '');
+    var descriptor = new pskl.model.piskel.Descriptor(name, '');
     this.piskel_ = new pskl.model.Piskel(piskelData.width, piskelData.height, descriptor);
 
     this.layersToLoad_ = piskelData.layers.length;
@@ -17366,6 +17395,75 @@ if (typeof Function.prototype.bind !== "function") {
     gif.render();
   };
 })();;(function () {
+  var ns = $.namespace("pskl.controller.settings");
+
+  ns.LocalStorageController = function () {};
+
+  /**
+   * @public
+   */
+  ns.LocalStorageController.prototype.init = function() {
+    this.localStorageItemTemplate_ = pskl.utils.Template.get("local-storage-item-template");
+    this.service_ = pskl.app.localStorageService;
+    this.piskelsList = $('.local-piskels-list');
+
+    this.fillLocalPiskelsList_();
+
+    this.piskelsList.click(this.onPiskelsListClick_.bind(this));
+  };
+
+  ns.LocalStorageController.prototype.onPiskelsListClick_ = function (evt) {
+    var action = evt.target.getAttribute('data-action');
+    var name = evt.target.getAttribute('data-name');
+    if (action === 'load') {
+      if (window.confirm('This will erase your current piskel. Continue ?')) {
+        this.service_.load(name);
+        $.publish(Events.CLOSE_SETTINGS_DRAWER);
+      }
+    } else if (action === 'delete') {
+      if (window.confirm('This will permanently DELETE this piskel from your computer. Continue ?')) {
+        this.service_.remove(name);
+        $.publish(Events.CLOSE_SETTINGS_DRAWER);
+      }
+    }
+  };
+
+  ns.LocalStorageController.prototype.fillLocalPiskelsList_ = function () {
+    var html = "";
+    var keys = this.service_.getKeys();
+
+    var pad = function (num) {
+      if (num < 10) {
+        return "0" + num;
+      } else {
+        return "" + num;
+      }
+    };
+
+
+    keys.sort(function (k1, k2) {
+      if (k1.date < k2.date) {return 1;}
+      if (k1.date > k2.date) {return -1;}
+      return 0;
+    });
+
+    keys.forEach((function (key) {
+      var date = new Date(key.date);
+      var formattedDate = pskl.utils.Template.replace("{{Y}}/{{M}}/{{D}} {{H}}:{{m}}", {
+        Y : date.getFullYear(),
+        M : pad(date.getMonth() + 1),
+        D : pad(date.getDate()),
+        H : pad(date.getHours()),
+        m : pad(date.getMinutes())
+      });
+      html += pskl.utils.Template.replace(this.localStorageItemTemplate_, {name : key.name, date : formattedDate});
+    }).bind(this));
+
+    var tableBody_ = this.piskelsList.get(0).tBodies[0];
+    tableBody_.innerHTML = html;
+  };
+
+})();;(function () {
   var ns = $.namespace('pskl.controller.settings');
 
   ns.SaveController = function (piskelController) {
@@ -17380,7 +17478,12 @@ if (typeof Function.prototype.bind !== "function") {
     this.nameInput =  $('#save-name');
     this.descriptionInput = $('#save-description');
     this.isPublicCheckbox = $('input[name=save-public-checkbox]');
-    this.saveButton = $('#save-button');
+    this.saveCloudButton = $('#save-cloud-button');
+    this.saveLocalButton = $('#save-local-button');
+
+    // Only available in app-engine mode ...
+    this.piskelName = $('.piskel-name').get(0);
+
     this.status = $('#save-status');
 
     var descriptor = this.piskelController.piskel.getDescriptor();
@@ -17389,21 +17492,22 @@ if (typeof Function.prototype.bind !== "function") {
 
     this.isPublicCheckbox.prop('checked', descriptor.isPublic);
 
-    if (!pskl.app.isAppEngineVersion) {
-      this.nameInput.attr('disabled', 'disabled');
-      this.descriptionInput.attr('disabled', 'disabled');
-      this.isPublicCheckbox.attr('disabled', 'disabled');
+    if (!pskl.app.isLoggedIn()) {
+      this.saveCloudButton.attr('disabled', 'disabled');
+      this.status.html('You are not logged in. Only Local Save is available.');
+    } else {
+      this.saveForm.submit(this.onSaveFormSubmit_.bind(this));
     }
 
-    this.saveForm.submit(this.onSaveFormSubmit_.bind(this));
+    this.saveLocalButton.click(this.onSaveLocalClick_.bind(this));
   };
 
   ns.SaveController.prototype.onSaveFormSubmit_ = function (evt) {
     evt.preventDefault();
     evt.stopPropagation();
 
-    var name = this.nameInput.val();
-    var description = this.descriptionInput.val();
+    var name = this.getName();
+    var description = this.getDescription();
     var isPublic = !!this.isPublicCheckbox.prop('checked');
 
     var descriptor = new pskl.model.piskel.Descriptor(name, description, isPublic);
@@ -17417,10 +17521,40 @@ if (typeof Function.prototype.bind !== "function") {
     });
   };
 
+  ns.SaveController.prototype.onSaveLocalClick_ = function (evt) {
+    var localStorageService = pskl.app.localStorageService;
+    var isOk = true;
+    var name = this.getName();
+    var description = this.getDescription();
+    if (localStorageService.getPiskel(name)) {
+      isOk = window.confirm('There is already a piskel saved as ' + name + '. Override ?');
+    }
+
+    if (isOk) {
+      this.beforeSaving_();
+      localStorageService.save(name, description, pskl.app.piskelController.serialize());
+      window.setTimeout(function () {
+        this.onSaveSuccess_();
+        this.afterSaving_();
+      }.bind(this), 1000);
+    }
+  };
+
+  ns.SaveController.prototype.getName = function () {
+    return this.nameInput.val();
+  };
+
+  ns.SaveController.prototype.getDescription = function () {
+    return this.descriptionInput.val();
+  };
+
   ns.SaveController.prototype.beforeSaving_ = function () {
-    this.saveButton.attr('disabled', true);
+    this.saveCloudButton.attr('disabled', true);
     this.status.html('Saving ...');
-    $('.piskel-name').get(0).classList.add('piskel-name-saving');
+
+    if (this.piskelName) {
+      this.piskelName.classList.add('piskel-name-saving');
+    }
   };
 
   ns.SaveController.prototype.onSaveSuccess_ = function () {
@@ -17433,9 +17567,12 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.SaveController.prototype.afterSaving_ = function () {
-    this.saveButton.attr('disabled', false);
+    this.saveCloudButton.attr('disabled', false);
     this.status.html('');
-    $('.piskel-name').get(0).classList.remove('piskel-name-saving');
+
+    if (this.piskelName) {
+      this.piskelName.classList.remove('piskel-name-saving');
+    }
 
     window.setTimeout($.publish.bind($, Events.HIDE_NOTIFICATION), 2000);
   };
@@ -17611,7 +17748,7 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
 })();;(function () {
-  var ns = $.namespace("pskl.controller.settings");
+  var ns = $.namespace('pskl.controller.settings');
 
   var settings = {
     'user' : {
@@ -17630,6 +17767,10 @@ if (typeof Function.prototype.bind !== "function") {
       template : 'templates/settings/import.html',
       controller : ns.ImportController
     },
+    'localstorage' : {
+      template : 'templates/settings/localstorage.html',
+      controller : ns.LocalStorageController
+    },
     'save' : {
       template : 'templates/settings/save.html',
       controller : ns.SaveController
@@ -17641,9 +17782,9 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.SettingsController = function (piskelController) {
     this.piskelController = piskelController;
-    this.drawerContainer = document.getElementById("drawer-container");
+    this.drawerContainer = document.getElementById('drawer-container');
     this.settingsContainer = $('[data-pskl-controller=settings]');
-    this.expanded = false;
+    this.isExpanded = false;
     this.currentSetting = null;
   };
 
@@ -17651,25 +17792,31 @@ if (typeof Function.prototype.bind !== "function") {
    * @public
    */
   ns.SettingsController.prototype.init = function() {
-    // Expand drawer when clicking 'Settings' tab.
-    $('[data-setting]').click(function(evt) {
-      var el = evt.originalEvent.currentTarget;
-      var setting = el.getAttribute("data-setting");
-      if (this.currentSetting != setting) {
-        this.loadSetting(setting);
-      } else {
-        this.closeDrawer();
-      }
-    }.bind(this));
-
-    $('body').click(function (evt) {
-      var isInSettingsContainer = $.contains(this.settingsContainer.get(0), evt.target);
-      if (this.expanded && !isInSettingsContainer) {
-        this.closeDrawer();
-      }
-    }.bind(this));
-
+    $('[data-setting]').click(this.onSettingIconClick.bind(this));
+    $('body').click(this.onBodyClick.bind(this));
     $.subscribe(Events.CLOSE_SETTINGS_DRAWER, this.closeDrawer.bind(this));
+  };
+
+  ns.SettingsController.prototype.onSettingIconClick = function (evt) {
+    var el = evt.originalEvent.currentTarget;
+    var setting = el.getAttribute('data-setting');
+    if (this.currentSetting != setting) {
+      this.loadSetting(setting);
+    } else {
+      this.closeDrawer();
+    }
+  };
+
+  ns.SettingsController.prototype.onBodyClick = function (evt) {
+    var target = evt.target;
+
+    var isInDrawerContainer = pskl.utils.Dom.isParent(target, this.drawerContainer);
+    var isInSettingsIcon = target.getAttribute('data-setting');
+    var isInSettingsContainer = isInDrawerContainer || isInSettingsIcon;
+
+    if (this.isExpanded && !isInSettingsContainer) {
+      this.closeDrawer();
+    }
   };
 
   ns.SettingsController.prototype.loadSetting = function (setting) {
@@ -17681,7 +17828,7 @@ if (typeof Function.prototype.bind !== "function") {
     $('.' + SEL_SETTING_CLS).removeClass(SEL_SETTING_CLS);
     $('[data-setting='+setting+']').addClass(SEL_SETTING_CLS);
 
-    this.expanded = true;
+    this.isExpanded = true;
     this.currentSetting = setting;
   };
 
@@ -17689,7 +17836,7 @@ if (typeof Function.prototype.bind !== "function") {
     this.settingsContainer.removeClass(EXP_DRAWER_CLS);
     $('.' + SEL_SETTING_CLS).removeClass(SEL_SETTING_CLS);
 
-    this.expanded = false;
+    this.isExpanded = false;
     this.currentSetting = null;
   };
 
@@ -17702,85 +17849,76 @@ if (typeof Function.prototype.bind !== "function") {
       throw "Bad LocalStorageService initialization: <undefined piskelController>";
     }
     this.piskelController = piskelController;
-    this.localStorageThrottler_ = null;
   };
 
-  /**
-   * @public
-   */
-  ns.LocalStorageService.prototype.init = function(piskelController) {
-    $.subscribe(Events.LOCALSTORAGE_REQUEST, $.proxy(this.persistToLocalStorageRequest_, this));
+  ns.LocalStorageService.prototype.init = function() {};
+
+// localStorage.setItem('piskel_bkp', pskl.app.piskelController.serialize())
+
+  ns.LocalStorageService.prototype.save = function(name, description, piskel) {
+    this.removeFromKeys_(name);
+    this.addToKeys_(name, description, Date.now());
+    window.localStorage.setItem('piskel.' + name, piskel);
   };
 
-  /**
-   * @private
-   */
-  ns.LocalStorageService.prototype.persistToLocalStorageRequest_ = function () {
-    // Persist to localStorage when drawing. We throttle localStorage accesses
-    // for high frequency drawing (eg mousemove).
-    if(this.localStorageThrottler_ !== null) {
-      window.clearTimeout(this.localStorageThrottler_);
-    }
-    this.localStorageThrottler_ = window.setTimeout($.proxy(function() {
-      this.persistToLocalStorage_();
-      this.localStorageThrottler_ = null;
-    }, this), 1000);
-  };
+  ns.LocalStorageService.prototype.load = function(name) {
+    var piskelString = this.getPiskel(name);
+    var key = this.getKey_(name);
 
-  /**
-   * @private
-   */
-  ns.LocalStorageService.prototype.persistToLocalStorage_ = function() {
-    console.log('[LocalStorage service]: Snapshot stored');
-    window.localStorage.snapShot = this.piskelController.serialize();
-  };
-
-  /**
-   * @private
-   */
-  ns.LocalStorageService.prototype.restoreFromLocalStorage_ = function() {
-    var framesheet = JSON.parse(window.localStorage.snapShot);
-
-    pskl.utils.serialization.Deserializer.deserialize(framesheet, function (piskel) {
+    pskl.utils.serialization.Deserializer.deserialize(JSON.parse(piskelString), function (piskel) {
+      piskel.setDescriptor(new pskl.model.piskel.Descriptor(name, key.description, true));
       pskl.app.piskelController.setPiskel(piskel);
     });
   };
 
-  /**
-   * @private
-   */
-  ns.LocalStorageService.prototype.cleanLocalStorage_ = function() {
-    console.log('[LocalStorage service]: Snapshot removed');
-    delete window.localStorage.snapShot;
+  ns.LocalStorageService.prototype.remove = function(name) {
+    this.removeFromKeys_(name);
+    window.localStorage.removeItem('piskel.' + name);
   };
 
-  /**
-   * @public
-   */
-  ns.LocalStorageService.prototype.displayRestoreNotification = function() {
-    if(window.localStorage && window.localStorage.snapShot) {
-      var reloadLink = "<a href='#' class='localstorage-restore onclick='pskl.app.restoreFromLocalStorage()'>reload</a>";
-      var discardLink = "<a href='#' class='localstorage-discard' onclick='pskl.app.cleanLocalStorage()'>discard</a>";
-      var content = "Non saved version found. " + reloadLink + " or " + discardLink;
+  ns.LocalStorageService.prototype.saveKeys_ = function(keys) {
+    window.localStorage.setItem('piskel.keys', JSON.stringify(keys));
+  };
 
-      $.publish(Events.SHOW_NOTIFICATION, [{
-        "content": content,
-        "behavior": $.proxy(function(rootNode) {
-          rootNode = $(rootNode);
-          rootNode.click($.proxy(function(evt) {
-            var target = $(evt.target);
-            if(target.hasClass("localstorage-restore")) {
-              this.restoreFromLocalStorage_();
-            }
-            else if (target.hasClass("localstorage-discard")) {
-              this.cleanLocalStorage_();
-            }
-            $.publish(Events.HIDE_NOTIFICATION);
-          }, this));
-        }, this)
-      }]);
+  ns.LocalStorageService.prototype.removeFromKeys_ = function(name) {
+    var keys = this.getKeys();
+    var otherKeys = keys.filter(function (key) {
+      return key.name !== name;
+    });
+
+    this.saveKeys_(otherKeys);
+  };
+
+  ns.LocalStorageService.prototype.getKey_ = function(name) {
+    var matches = this.getKeys().filter(function (key) {
+      return key.name === name;
+    });
+    if (matches.length > 0) {
+      return matches[0];
+    } else {
+      return null;
     }
   };
+
+  ns.LocalStorageService.prototype.addToKeys_ = function(name, description, date) {
+    var keys = this.getKeys();
+    keys.push({
+      name : name,
+      description : description,
+      date : date
+    });
+    this.saveKeys_(keys);
+  };
+
+  ns.LocalStorageService.prototype.getPiskel = function(name) {
+    return window.localStorage.getItem('piskel.' + name);
+  };
+
+  ns.LocalStorageService.prototype.getKeys = function(name) {
+    var keysString = window.localStorage.getItem('piskel.keys');
+    return JSON.parse(keysString) || [];
+  };
+
 })();;(function () {
   var ns = $.namespace('pskl.service');
 
@@ -18179,17 +18317,11 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.BaseTool.prototype.hideHighlightedPixel = function(overlay) {
-<<<<<<< HEAD
     if (this.highlightedPixelRow !== null && this.highlightedPixelCol !== null) {
       overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
       this.highlightedPixelRow = null;
       this.highlightedPixelCol = null;
     }
-=======
-    overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
-    this.highlightedPixelRow = null;
-    this.highlightedPixelCol = null;
->>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
   };
 
 
@@ -19055,8 +19187,6 @@ if (typeof Function.prototype.bind !== "function") {
           "content" : "Loading animation with id : [" + framesheetId + "]"
         }]);
         this.loadFramesheetFromService(framesheetId);
-      } else {
-        this.localStorageService.displayRestoreNotification();
       }
     },
 
@@ -19068,6 +19198,10 @@ if (typeof Function.prototype.bind !== "function") {
           pskl.app.animationController.setFPS(pskl.appEnginePiskelData_.fps);
         });
       }
+    },
+
+    isLoggedIn : function () {
+      return pskl.appEnginePiskelData_ && pskl.appEnginePiskelData_.isLoggedIn;
     },
 
     initTooltips_ : function () {

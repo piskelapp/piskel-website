@@ -436,7 +436,6 @@ body {
   margin-right: 0;
 }
 
-<<<<<<< HEAD
 /*
  * Settings icons
  */
@@ -472,6 +471,13 @@ body {
   position: relative;
 }
 
+.tool-icon.local-storage-icon {
+  background-image: url(../img/local-storage-icon.png);
+  background-position: 10px 12px;
+  background-size: 30px;
+  position: relative;
+}
+
 .tool-icon.import-icon {
   background-image: url(../img/import-icon.png);
   background-position: 10px 5px;
@@ -490,8 +496,6 @@ body {
   text-align: center;
 }
 
-=======
->>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
 .drawer-content {
   overflow: hidden;
   background-color: #444;
@@ -605,12 +609,8 @@ body {
 }
 
 /* Import panel */
-<<<<<<< HEAD
 .import-section,
 .resize-section {
-=======
-.import-section {
->>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
   margin: 15px 0;
 }
 
@@ -634,23 +634,15 @@ body {
   border-radius: 3px;
 }
 
-<<<<<<< HEAD
 .import-size-field,
 .resize-size-field {
-=======
-.import-resize-field {
->>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
   width: 50px;
   margin-right: 8px;
   text-align: right;
 }
 
-<<<<<<< HEAD
 .import-size-field:nth-of-type(2),
 .resize-size-field:nth-of-type(2) {
-=======
-.import-resize-field:nth-of-type(2) {
->>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
   margin-left: 5px;
 }
 
@@ -677,12 +669,10 @@ body {
 }
 
 #save-status {
-  margin-left: 10px;
+  margin-top: 10px;
 }
 .status {
   height: 1.5rem;
-
-  word-break : break-all;
   vertical-align: middle;
   font-weight: normal;
   text-shadow: none;
@@ -694,6 +684,35 @@ body {
 
 [name*=checkbox] {
   vertical-align: middle;
+}
+
+.local-piskels-list {
+  width: 100%;
+}
+
+.local-piskel-item {
+  height: 3em;
+}
+
+.local-piskel-name {
+  width: 40%;
+}
+
+.local-piskel-save-date {
+  font-weight : normal;
+}
+
+.local-piskels-list a {
+  text-decoration: none;
+}
+.local-piskels-list a:hover {
+  text-decoration: underline;
+}
+.local-piskel-load-link {
+  color : gold;
+}
+.local-piskel-delete-link {
+  color : red;
 }
 
 .tools-wrapper,
@@ -884,55 +903,6 @@ body {
   );
 }
 
-<<<<<<< HEAD
-=======
-/*
- * Framesheet level actions:
- */
-
-.tool-icon.gallery-icon {
-  background-image: url(../img/gallery.png);
-  background-position: 3px 3px;
-  background-size: 39px 39px;
-}
-
-.tool-icon.save-icon {
-  background-image: url(../img/save.png);
-  background-position: 6px 6px;
-  background-size: 36px 36px;
-}
-
-.tool-icon.gear-icon {
-  background-image: url(../img/gear.png);
-  background-position: 6px 7px;
-  background-size: 32px 32px;
-}
-
-.tool-icon.upload-cloud-icon {
-  background-image: url(../img/cloud_export.png);
-  background-position: 4px 0px;
-  background-size: 36px 36px;
-  position: relative;
-}
-
-.tool-icon.import-icon {
-  background-image: url(../img/import-icon.png);
-  background-position: 10px 5px;
-  background-size: 26px;
-  position: relative;
-}
-
-.upload-cloud-icon .label {
-  position: absolute;
-  left: 0;
-  bottom: 4px;
-  right: 0;
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #fff;
-  text-align: center;
-}
->>>>>>> 496cf122a7c3c16185dfaf7083a1e26dabaafb8e
 
 
 #cheatsheet-wrapper {
