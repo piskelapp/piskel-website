@@ -5,39 +5,47 @@
 
 {% block css %}
 	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css"/>
+	<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=VT323' rel='stylesheet' type='text/css'>
 {% endblock %}
 
 {% block main %}
 	<div class="main-container">
-		<img style="margin-bottom:50px;" src="/static/resources/logo_transparent_big.png"/>
-		<div class="media-container">
-			<div class="media-image" style="padding:10px">
-				<img style="box-shadow:0 0 5px 2px rgba(0,0,0,0.3)" src="/static/resources/home/screenshot.png"/>
+		<img style="margin-bottom:20px" src="/static/resources/logo_transparent_big.png"/>
+		<img style="box-shadow:0 0 5px 2px rgba(0,0,0,0.3); width:576px; margin-bottom:20px" src="/static/resources/home/screenshot.png"/>
+		<h1 style="
+			font-family: 'MiniSet2', cursive;
+			font-size: 2em;
+			color: gold;
+			margin: 0;
+			text-shadow: 0 -1px 0px rgb(49, 49, 45), 0 1px 0px rgb(255, 234, 152);"
+		>Pixel Art and Animated Sprites</h1>
+		<div style="text-align: center;display: inline-block;width: 576px; margin-top:15px;">
+			<div style="display:inline-block; width:300px; text-align:justify;">
+				<p style="margin-bottom:10px; padding-right:15px;">
+					Remember the good old 2D games and their beautiful sprites ? With Piskel you can create your own in a few clicks.
+				</p>
 			</div>
-			<div class="media-body" style="padding-left:30px;text-align:left">
-				<h1 style="font-family:Tahoma; font-weight:normal;color:gold">Animated sprites ! Yeah !</h1>
-				<p style="margin-bottom:10px;">
-					Remember the good old 2D games and their beautifully animated sprites ? With Piskel you can now create your own in a few clicks.
-				</p>
-				<p style="margin-bottom:10px;">
-					If you need some inspiration, take a look at our <a href="/gallery">examples</a>.
-				</p>
-				<a style="line-height:50px; color:gold" class="piskel-button" href="/p/create">Try it !</a>
-				<a style="line-height:50px" class="piskel-button" href="/auth/google">Login with Google</a>
+			<div style="display:inline-block; margin:20px 20px 20px 0; text-align:center; float:right">
+				<!-- <a style="line-height:50px" class="piskel-button" href="/auth/google">login</a> -->
+				<a style="line-height:50px; color:#333; background:gold;
+			font-family: 'MiniSet2', cursive; font-size:1.3em; text-shadow : 0 1px 0 #aaa " class="piskel-button" href="/p/create">
+					Create a Sprite
+				</a>
 			</div>
 		</div>
 		<div class="assets-container">
-			<div class="asset-item">
+			<div class="asset-item" style="padding-right:10px">
 				<div class="media-container">
-					<img class="media-image" width="100px" src="http://screenletstore.appspot.com/img/fd62209e-5ab3-11e3-9c9d-f74d3c0b7c41.gif"/>
-					<div class="media-body">
+					<img class="media-image" width="100px" style="float:right" src="http://screenletstore.appspot.com/img/fd62209e-5ab3-11e3-9c9d-f74d3c0b7c41.gif"/>
+					<div class="media-body" style="text-align:right">
 						<h4 class="asset-title">Live preview</h4>
 						<p class="asset-description">Piskel gives you a live preview of your work.<br/>
 						You no longer have to guess how it will look like when it's done : you see it !</p>
 					</div>
 				</div>
 			</div>
-			<div class="asset-item">
+			<div class="asset-item" style="padding-left:10px">
 				<div class="media-container">
 					<img class="media-image" width="100px" src="http://screenletstore.appspot.com/img/72c26f5e-5a02-11e3-bb1e-c1ae2f3a690a.png"/>
 					<div class="media-body">
@@ -47,17 +55,17 @@
 					</div>
 				</div>
 			</div>
-			<div class="asset-item">
+			<div class="asset-item" style="padding-right:10px">
 				<div class="media-container">
-					<img class="media-image" width="100px" src="http://screenletstore.appspot.com/img/b1b387c0-5a04-11e3-88ce-c1ae2f3a690a.png"/>
-					<div class="media-body">
+					<img class="media-image" width="100px" style="float:right" src="http://screenletstore.appspot.com/img/b1b387c0-5a04-11e3-88ce-c1ae2f3a690a.png"/>
+					<div class="media-body" style="text-align:right">
 						<h4 class="asset-title">Your gallery</h4>
 						<p class="asset-description">Keep track of all the sprites you created.<br/>
 						Everyone can see your public gallery, but you can keep any sprite you want private.</p>
 					</div>
 				</div>
 			</div>
-			<div class="asset-item">
+			<div class="asset-item" style="padding-left:10px">
 				<div class="media-container">
 					<img class="media-image" width="100px" src="/static/resources/github_logo.png"/>
 					<div class="media-body">

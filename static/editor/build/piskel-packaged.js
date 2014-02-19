@@ -13842,6 +13842,8 @@ var Events = {
    */
   PISKEL_RESET: "PISKEL_RESET",
 
+  PISKEL_SAVED: "PISKEL_SAVED",
+
   FRAME_SIZE_CHANGED : "FRAME_SIZE_CHANGED",
 
   SELECTION_CREATED: "SELECTION_CREATED",
@@ -16883,7 +16885,7 @@ if (typeof Function.prototype.bind !== "function") {
     // Set SimplePen as default selected tool:
     this.selectTool_(this.tools[0]);
     // Activate listener on tool panel:
-    $("#tool-section").click($.proxy(this.onToolIconClicked_, this));
+    $("#tool-section").mousedown($.proxy(this.onToolIconClicked_, this));
   };
 
   /**
@@ -16894,6 +16896,7 @@ if (typeof Function.prototype.bind !== "function") {
     var previousSelectedToolClass = stage.data("selected-tool-class");
     if(previousSelectedToolClass) {
       stage.removeClass(previousSelectedToolClass);
+      stage.removeClass(pskl.drawingtools.Move.TOOL_ID);
     }
     stage.addClass(tool.instance.toolId);
     stage.data("selected-tool-class", tool.instance.toolId);
@@ -17560,6 +17563,7 @@ if (typeof Function.prototype.bind !== "function") {
   ns.SaveController.prototype.onSaveSuccess_ = function () {
     $.publish(Events.CLOSE_SETTINGS_DRAWER);
     $.publish(Events.SHOW_NOTIFICATION, [{"content": "Successfully saved !"}]);
+    $.publish(Events.PISKEL_SAVED);
   };
 
   ns.SaveController.prototype.onSaveError_ = function (status) {
@@ -18031,6 +18035,68 @@ if (typeof Function.prototype.bind !== "function") {
     $.subscribe(Events.PISKEL_RESET, this.saveState__b);
   };
 
+})();;(function () {
+  var ns = $.namespace('pskl.service');
+
+  ns.SavedStatusService = function (piskelController) {
+    this.piskelController_ = piskelController;
+  };
+
+  ns.SavedStatusService.prototype.init = function () {
+    $.subscribe(Events.TOOL_RELEASED, this.onToolReleased.bind(this));
+    $.subscribe(Events.PISKEL_RESET, this.onPiskelReset.bind(this));
+
+    $.subscribe(Events.PISKEL_SAVED, this.onPiskelSaved.bind(this));
+
+    window.addEventListener("beforeunload", this.onBeforeUnload.bind(this));
+  };
+
+  ns.SavedStatusService.prototype.onPiskelReset = function () {
+    var piskel = this.piskelController_.piskel;
+    // A first PISKEL_RESET is triggered during the load of a new Piskel, it should be ignored
+    // putting a firstResetDone flag as a nasty workaround for this
+    if (piskel.firstResetDone_) {
+      this.updateDirtyStatus(true);
+    } else {
+      piskel.firstResetDone_ = true;
+    }
+  };
+
+  ns.SavedStatusService.prototype.onToolReleased = function () {
+    this.updateDirtyStatus(true);
+  };
+
+  ns.SavedStatusService.prototype.onPiskelSaved = function () {
+    this.updateDirtyStatus(false);
+  };
+
+  ns.SavedStatusService.prototype.updateDirtyStatus = function (status) {
+    var piskel = this.piskelController_.piskel;
+    if (piskel.isDirty_ !== status) {
+      piskel.isDirty_ = status;
+      this.updatePiskelName();
+    }
+  };
+
+  ns.SavedStatusService.prototype.updatePiskelName = function () {
+    var piskel = this.piskelController_.piskel;
+    var name = piskel.getDescriptor().name;
+    if (piskel.isDirty_) {
+      $('.piskel-name').html(name + ' *');
+    } else {
+      $('.piskel-name').html(name);
+    }
+  };
+
+  ns.SavedStatusService.prototype.onBeforeUnload = function (evt) {
+    var piskel = this.piskelController_.piskel;
+    if (piskel.isDirty_) {
+      var confirmationMessage = "Your Piskel seem to have unsaved changes";
+
+      (evt || window.event).returnValue = confirmationMessage;
+      return confirmationMessage;
+    }
+  };
 })();;(function () {
   var ns = $.namespace('pskl.service.keyboard');
 
@@ -18753,13 +18819,15 @@ if (typeof Function.prototype.bind !== "function") {
   var ns = $.namespace("pskl.drawingtools");
 
   ns.Move = function() {
-    this.toolId = "tool-move";
+    this.toolId = ns.Move.TOOL_ID;
     this.helpText = "Move tool";
 
     // Stroke's first point coordinates (set in applyToolAt)
     this.startCol = null;
     this.startRow = null;
   };
+
+  ns.Move.TOOL_ID = "tool-move";
 
   pskl.utils.inherit(ns.Move, ns.BaseTool);
 
@@ -18807,7 +18875,7 @@ if (typeof Function.prototype.bind !== "function") {
   var ns = $.namespace("pskl.drawingtools");
 
   ns.BaseSelect = function() {
-    this.secondaryToolId = "tool-move";
+    this.secondaryToolId = pskl.drawingtools.Move.TOOL_ID;
     this.BodyRoot = $('body');
 
     // Select's first point coordinates (set in applyToolAt)
@@ -19158,6 +19226,9 @@ if (typeof Function.prototype.bind !== "function") {
 
       this.cheatsheetService = new pskl.service.keyboard.CheatsheetService();
       this.cheatsheetService.init();
+
+      this.savedStatusService = new pskl.service.SavedStatusService(this.piskelController);
+      this.savedStatusService.init();
 
       if (this.isAppEngineVersion) {
         this.storageService = new pskl.service.AppEngineStorageService(this.piskelController);

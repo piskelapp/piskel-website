@@ -1,3 +1,12 @@
+@font-face{
+ font-family:"MiniSet2";
+ font-weight:normal;
+ font-style:normal;
+ src:url("/static/resources/font/MiniSet2.ttf") format("truetype"),
+     url("/static/resources/font/MiniSet2.svg#MiniSet2") format("svg");
+}
+
+
 .piskel-preview-container {
 	vertical-align: middle;
 	display: inline-block;
@@ -25,7 +34,7 @@
 	left: 50%;
 	text-align: center;
 	margin-left: -500px;
-	padding-top: 50px
+	padding-top: 30px
 }
 
 .media-container {
@@ -41,20 +50,22 @@
 }
 
 .assets-container {
-	padding:50px 0;
+	padding:30px 0;
 	text-align:left;
 }
 
 .asset-item {
 	margin-bottom: 20px;
 	width: 500px;
-	height: 150px;
+	height: 110px;
 	float: left;
+	box-sizing : border-box;
 }
 
 .asset-item .media-image {
 	border : 3px solid gold;
 	border-radius: 2px;
+	margin-top: 10px;
 }
 
 .asset-item .media-body {
@@ -63,6 +74,8 @@
 
 .asset-title {
 	color : white;
+	font-family: 'MiniSet2', cursive;
+	font-size:1.3em;
 	margin: 10px 0;
 }
 
