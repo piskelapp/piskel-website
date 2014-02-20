@@ -1,4 +1,4 @@
-<div class="navigation">
+<div class="navigation {% if is_logged_in %}navigation-logged-in{%endif%}">
   <a class="link anchor-left  piskel-logo" href="/"><img src="/static/resources/logo_transparent.png" /></a>
   {% if hide_create %}
   {% else %}

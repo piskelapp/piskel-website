@@ -13,7 +13,7 @@
 	display: none;
 }
 
-.navigation {
+.navigation:not(.navigation-logged-in) {
 	line-height: 32px;
 	height: 32px;
 }
