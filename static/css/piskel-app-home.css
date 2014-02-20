@@ -1,31 +1,90 @@
 @font-face{
- font-family:"MiniSet2";
- font-weight:normal;
- font-style:normal;
- src:url("/static/resources/font/MiniSet2.ttf") format("truetype"),
+ font-family: "MiniSet2";
+ font-weight: normal;
+ font-style: normal;
+ src: url("/static/resources/font/MiniSet2.ttf") format("truetype"),
      url("/static/resources/font/MiniSet2.svg#MiniSet2") format("svg");
 }
 
+/***********************************/
+/*** NAVIGATION HEADER OVERRIDES ***/
+/***********************************/
+.piskel-logo {
+	display: none;
+}
+
+.navigation {
+	line-height: 32px;
+	height: 32px;
+}
+
+.font-pixel {
+  font-family: "MiniSet2", cursive;
+}
+
+.home-tagline {
+	font-size: 2em;
+	color: gold;
+	margin: 0;
+	text-shadow: 0 -1px 0px rgb(49, 49, 45), 0 1px 0px rgb(255, 234, 152);
+}
+
+.home-teaser {
+	margin-top: 15px;
+}
+
+.home-teaser-description {
+	width: 300px;
+	display: inline-block;
+	text-align: justify;
+	margin-bottom: 10px;
+	padding-right: 15px;
+}
+
+.home-main-button {
+	line-height: 50px;
+	color: #333;
+	background: gold;
+	font-size: 1.3em;
+	text-shadow: 0 1px 0 #aaa;
+}
+
+.home-teaser .home-main-button {
+	margin: 20px 20px 20px 0;
+	float: right;
+}
+
+.medium-width-container {
+	display: inline-block;
+	width: 576px;
+}
 
 .piskel-preview-container {
 	vertical-align: middle;
 	display: inline-block;
 }
 
-.piskel-carousel {
-	margin : 20px 0;
-	text-align : center;
+.piskel-screenshot {
+	box-shadow: 0 0 5px 2px rgba(0,0,0,0.3);
+	width: 100%;
+	margin-bottom: 20px;
 }
 
-.piskel-carousel h3{
-	text-align : left;
-	margin : 10px 20px;
+.home-logo-big {
+	margin-bottom: 20px;
+}
+
+.piskel-screenshot-animated-preview {
+	position: absolute;
+	right: 35px;
+	width: 93px;
+	top: 21px;
 }
 
 .preview-separator {
 	width: 994px;
 	border: 1px solid grey;
-	border-bottom-width: 0px;
+	border-bottom-width: 0;
 }
 
 .main-container {
@@ -38,20 +97,20 @@
 }
 
 .media-container {
-	overflow : hidden;
+	overflow: hidden;
 }
 
 .media-container .media-image {
-	float:left;
+	float: left;
 }
 
 .media-container .media-body {
-	overflow : hidden;
+	overflow: hidden;
 }
 
 .assets-container {
-	padding:30px 0;
-	text-align:left;
+	padding: 30px 0;
+	text-align: left;
 }
 
 .asset-item {
@@ -59,23 +118,38 @@
 	width: 500px;
 	height: 110px;
 	float: left;
-	box-sizing : border-box;
+	padding-right: 10px;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+}
+
+.asset-item:nth-child(even) {
+	padding-left: 10px;
 }
 
 .asset-item .media-image {
-	border : 3px solid gold;
+	width: 100px;
+	border: 3px solid gold;
 	border-radius: 2px;
 	margin-top: 10px;
 }
 
+.asset-item:nth-child(odd) .media-image {
+	float: right;
+}
+
 .asset-item .media-body {
-	padding : 0 20px;
+	padding: 0 20px;
+}
+
+.asset-item:nth-child(odd) .media-body {
+	text-align: right;
 }
 
 .asset-title {
-	color : white;
+	color: white;
 	font-family: 'MiniSet2', cursive;
-	font-size:1.3em;
+	font-size: 1.3em;
 	margin: 10px 0;
 }
 
@@ -83,9 +157,9 @@
 	margin: 10px 0;
 }
 .piskel-preview {
-	height : 300px;
-	width : 300px;
-	border : 1px solid grey;
-	margin:0 20px;
-	display : inline-block;
+	height: 300px;
+	width: 300px;
+	border: 1px solid grey;
+	margin: 0 20px;
+	display: inline-block;
 }
