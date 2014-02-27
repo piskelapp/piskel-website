@@ -1,9 +1,11 @@
-@font-face{
- font-family: "MiniSet2";
- font-weight: normal;
- font-style: normal;
- src: url("/static/resources/font/MiniSet2.ttf") format("truetype"),
-     url("/static/resources/font/MiniSet2.svg#MiniSet2") format("svg");
+@font-face {
+    font-family: 'MiniSet2';
+    src: url('/static/resources/font/miniset2-webfont.eot');
+    src: url('/static/resources/font/miniset2-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/static/resources/font/miniset2-webfont.woff') format('woff'),
+         url('/static/resources/font/miniset2-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
 
 /***********************************/
@@ -26,7 +28,9 @@
 	font-size: 2em;
 	color: gold;
 	margin: 0;
-	text-shadow: 0 -1px 0px rgb(49, 49, 45), 0 1px 0px rgb(255, 234, 152);
+	text-shadow:
+		0 -1px 0 rgb(49, 49, 45),
+		0 1px 0 rgb(255, 234, 152);
 }
 
 .home-teaser {
@@ -56,7 +60,7 @@
 
 .medium-width-container {
 	display: inline-block;
-	width: 576px;
+	width: 600px;
 }
 
 .piskel-preview-container {
@@ -156,6 +160,7 @@
 .asset-description {
 	margin: 10px 0;
 }
+
 .piskel-preview {
 	height: 300px;
 	width: 300px;
