@@ -1,12 +1,4 @@
-@font-face {
-    font-family: 'MiniSet2';
-    src: url('/static/resources/font/miniset2-webfont.eot');
-    src: url('/static/resources/font/miniset2-webfont.eot?#iefix') format('embedded-opentype'),
-         url('/static/resources/font/miniset2-webfont.woff') format('woff'),
-         url('/static/resources/font/miniset2-webfont.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-}
+
 
 /***********************************/
 /*** NAVIGATION HEADER OVERRIDES ***/
@@ -18,10 +10,6 @@
 .navigation:not(.navigation-logged-in) {
 	line-height: 32px;
 	height: 32px;
-}
-
-.font-pixel {
-  font-family: "MiniSet2", cursive;
 }
 
 .home-tagline {
@@ -43,6 +31,10 @@
 	text-align: justify;
 	margin-bottom: 10px;
 	padding-right: 15px;
+}
+
+.main {
+	overflow-x : hidden;
 }
 
 .home-main-button {
@@ -80,9 +72,9 @@
 
 .piskel-screenshot-animated-preview {
 	position: absolute;
-	right: 35px;
-	width: 93px;
-	top: 21px;
+	right: 37px;
+	width: 95px;
+	top: 23px;
 }
 
 .preview-separator {

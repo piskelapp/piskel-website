@@ -77,6 +77,25 @@ ul {
    background-color: rgba(50, 50, 50, 0.4);;
 }
 
+
+/*************************/
+/*   			FONTS          */
+/*************************/
+
+@font-face {
+    font-family: 'MiniSet2';
+    src: url('/static/resources/font/miniset2-webfont.eot');
+    src: url('/static/resources/font/miniset2-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/static/resources/font/miniset2-webfont.woff') format('woff'),
+         url('/static/resources/font/miniset2-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.font-pixel {
+  font-family: "MiniSet2", cursive;
+}
+
 /*************************/
 /*   			LINKS          */
 /*************************/
@@ -136,10 +155,9 @@ ul {
 /*************************/
 .footer {
 	position: relative;
-	margin-top: -30px; /* negative value of footer height */
-	height: 30px;
+	margin : 30px 0; /* negative value of footer height */
 
-	font-size : 0.8rem;
+	font-size : 1rem;
 
 	width:100%;
 	line-height: 30px;
@@ -147,7 +165,7 @@ ul {
 	text-align: center;
 	vertical-align: middle;
 
-	color : grey;
+	color : #aaa;
 }
 
 .footer > .link {

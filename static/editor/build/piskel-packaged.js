@@ -17029,6 +17029,8 @@ if (typeof Function.prototype.bind !== "function") {
     secondaryColorPicker.change({isPrimary : false}, $.proxy(this.onPickerChange_, this));
     this.setTitleOnPicker_(Constants.TRANSPARENT_COLOR, secondaryColorPicker);
 
+    var swapColorsIcon = $('.swap-colors-icon');
+    swapColorsIcon.click(this.swapColors.bind(this));
   };
 
   /**
@@ -18073,6 +18075,7 @@ if (typeof Function.prototype.bind !== "function") {
   ns.SavedStatusService.prototype.updateDirtyStatus = function (status) {
     var piskel = this.piskelController_.piskel;
     if (piskel.isDirty_ !== status) {
+      // Redraw piskel name only if dirty status actually changed
       piskel.isDirty_ = status;
       this.updatePiskelName();
     }

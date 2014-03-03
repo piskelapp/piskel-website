@@ -12,6 +12,14 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /robots\.txt
+  static_files: robots.txt
+  upload: robots\.txt
+
+- url: /google392c8e9117089539\.html
+  static_files: static/google392c8e9117089539.html
+  upload: static/google392c8e9117089539\.html
+
 - url: /static/resources/(.*\.svg)
   static_files: static/resources/\1
   upload: static/resources/(.*\.svg)

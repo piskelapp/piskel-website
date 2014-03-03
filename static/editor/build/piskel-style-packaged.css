@@ -852,6 +852,22 @@ body {
   cursor: url(../img/icons/dropper.png) 0 15, pointer;
 }
 
+.swap-colors-icon {
+  background-image: url(../img/tools/swap-arrow-square-small-grey.png);
+  position: relative;
+  top: 50px;
+  left: 6px;
+  height: 18px;
+  width: 18px;
+  background-size: 18px;
+  opacity : 0.3;
+  cursor : pointer;
+}
+
+.swap-colors-icon:hover {
+  opacity : 1;
+}
+
 .tool-color-picker {
   position:relative;
 }
@@ -1502,13 +1518,18 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 
 /* Remove the padding on the input container */
 .sp-replacer {
-  padding: 3px;
+  padding: 4px;
   height: 100%;
   border-width: 0;
   box-sizing: border-box;
   -moz-box-sizing:border-box;
   background-color: #444;
 }
+
+.sp-replacer:hover {
+  background-color: #888;
+}
+
 /* Hide the triangle */
 .sp-dd {
   display: none;
@@ -1707,7 +1728,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
   position: absolute;
   left: 0;
   right: 12px;
-  
+
   -webkit-transition: all 500ms ease-out;
   -moz-transition: all 500ms ease-out;
   -ms-transition: all 500ms ease-out;
@@ -1877,7 +1898,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 
 .minimap-crop-frame {
   position:absolute;
-  border:1px solid red;
+  border:1px solid rgba(255,255,255,0.5);
   z-index:9999;
   box-sizing : border-box;
   -moz-box-sizing : border-box;

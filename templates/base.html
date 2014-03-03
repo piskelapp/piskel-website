@@ -2,9 +2,13 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
+	<meta name="description" content="Piskel is a web based sprite editor. Create vibrant pixel art, game sprites and animated GIFs.">
+	<meta name="author" content="Julian Descottes, Grosbouddha">
+	<meta name="keywords" content="pixel, videogames, editor">
 	<title>{% block title %} title {% endblock %}</title>
 	<link rel="shortcut icon" type="image/png" href="/static/resources/favicon.png"/>
 	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app.css"/>
+	{% include "analytics.html" %}
 	{% block css %}{% endblock %}
 </head>
 <body>
@@ -18,6 +22,6 @@
 			{% block main %} main {% endblock %}
 		</div>
 	</div>
-	{% include "footer.html" %}
+	{% if has_footer %}{% include "footer.html" %}{% endif %}
 </body>
 </html>
