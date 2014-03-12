@@ -23,7 +23,10 @@ class PiskelHandler(BaseHandler):
     return self._authorize(piskel) or not piskel.private
 
   def _authorize_for_clone(self, piskel):
-    return self.is_logged_in and not piskel.private
+    if piskel.private:
+      return self._authorize(piskel)
+    else:
+      return self.is_logged_in
 
   def _get_logged_user_id(self):
     if self.is_logged_in:
