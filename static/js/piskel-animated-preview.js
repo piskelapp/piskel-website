@@ -64,7 +64,7 @@
   };
 
   var __id = -1;
-  window.pskl.website.createAnimatedPreview = function(piskelId, fps, event) {
+  window.pskl.website.createAnimatedPreview = function(piskelId, fps, event, animate) {
     var image = event.target || document.getElementById("image" + piskelId);
 
     var targetSize = image.width;
@@ -91,17 +91,21 @@
 
     image.parentNode.replaceChild(canvas, image);
 
-    // Targetting parentNode because the canvas is below an inset border 
-    canvas.parentNode.addEventListener('mouseover', (function(id, targetSize) {
-      return function(event) {
-        onCanvasOver(id, targetSize);
-      };
-    })("key" + __id, targetSize));
+    if (animate) {
+        onCanvasOver("key" + __id, targetSize);
+    } else {
+      // Targetting parentNode because the canvas is below an inset border
+      canvas.parentNode.addEventListener('mouseover', (function(id, targetSize) {
+        return function(event) {
+          onCanvasOver(id, targetSize);
+        };
+      })("key" + __id, targetSize));
 
-    canvas.parentNode.addEventListener('mouseout', (function(id, targetSize) {
-      return function(event) {
-        onCanvasOut(id, targetSize);
-      };
-    })("key" + __id, targetSize));
+      canvas.parentNode.addEventListener('mouseout', (function(id, targetSize) {
+        return function(event) {
+          onCanvasOut(id, targetSize);
+        };
+      })("key" + __id, targetSize));
+    }
   };
 })();

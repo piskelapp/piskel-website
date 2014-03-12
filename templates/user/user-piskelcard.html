@@ -1,29 +1,29 @@
 {% from "partial/macros.html" import render_animated_preview %}
 <div class="card-container{% if piskel.private %} card-container-private{% endif %}">
 	<div class="card-preview-container">
-		<a class="card-preview-link" href="/p/{{ piskel.key }}/view">
+		<a class="card-preview-link" href="/p/{{ piskel.key }}/edit">
 			{{ render_animated_preview(piskel.framesheet_key, 192, piskel.fps) }}
 		</a>
-		{% if is_own_profile %} 
+		{% if is_own_profile %}
 		<div class="card-preview-actions">
 			{% if piskel.deleted %}
-			<a class="card-preview-action right" href="#" onclick="if(window.confirm('This will permanently delete your piskel. Continue ?')){window.location='/p/{{ piskel.key }}/perm_delete?callback_url=/user/{{ session.user_id }}/{{category}}'}">destroy</a>
-			<a class="card-preview-action right" href="/p/{{ piskel.key }}/restore?callback_url=/user/{{ session.user_id }}/{{category}}">restore</a>
+			<a class="card-preview-action right" href="#" onclick="if(window.confirm('This will permanently delete your piskel. Continue ?')){window.location='/p/{{ piskel.key }}/perm_delete?callback_url=/user/{{ session.user_id }}/{{category}}'}">Destroy</a>
+			<a class="card-preview-action right" href="/p/{{ piskel.key }}/restore?callback_url=/user/{{ session.user_id }}/{{category}}">Restore</a>
 			{% else %}
-			<a class="card-preview-action" href="/p/{{ piskel.key }}/edit" target="_blank">edit</a>
-			<a class="card-preview-action right" href="/p/{{ piskel.key }}/delete?callback_url=/user/{{ session.user_id }}/{{category}}">delete</a>
+			<a class="card-preview-action right" href="/p/{{ piskel.key }}/delete?callback_url=/user/{{ session.user_id }}/{{category}}">Delete</a>
+			<a class="card-preview-action right" href="/p/{{ piskel.key }}/view">Show details</a>
 			{% endif %}
 		</div>
 		{% endif %}
 	</div>
 	<div class="card-info-container">
-		<h4 class="card-info-name"><a href="/p/{{ piskel.key }}/view">{{ piskel.name }}</a></h4>
+		<h4 class="card-info-name"><a href="/p/{{ piskel.key }}/edit">{{ piskel.name }}</a></h4>
 		<p class="card-info-meta">
-			{% if piskel.frames > 1%}
+			{% if piskel.frames > 1 %}
 				<span class="counter">{{ piskel.frames }}</span> frames - <span class="counter">{{ piskel.fps }}</span> fps
 			{% else %}
 				Single frame
-			{% endif%}
+			{% endif %}
 		</p>
 	</div>
 </div>

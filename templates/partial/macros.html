@@ -1,8 +1,8 @@
-{% macro render_animated_preview(framesheet_key, size, fps) -%}
-	<img 
-		id="image{{framesheet_key}}" 
+{% macro render_animated_preview(framesheet_key, size, fps, animate='false') -%}
+	<img
+		id="image{{framesheet_key}}"
 		style="display:block; width:{{size}}px; height:{{size}}px;"
 		width="{{size}}"
-		src="/img/{{framesheet_key}}/preview" 
-		onload="window.pskl.website.createAnimatedPreview('{{framesheet_key}}', {{fps}}, event)"/>
+		src="/img/{{framesheet_key}}/preview"
+		onload="window.pskl.website.createAnimatedPreview('{{framesheet_key}}', {{fps}}, event, {{animate}})"/>
 {% endmacro %}

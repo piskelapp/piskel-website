@@ -37,9 +37,9 @@
   position:absolute;
   bottom:0;
   overflow:hidden;
-  background-color:rgba(0,0,0,0.5);
+  background-color:rgba(0,0,0,0.8);
   width:100%;
-  
+
   height : 0;
   transition : height 0.3s;
 }
@@ -51,7 +51,7 @@
 .card-preview-action {
   color:white;
   text-decoration:none;
-  font-size:0.6rem;
+  font-size:0.7rem;
   margin-left:8px;
   line-height:24px;
 }
@@ -95,6 +95,10 @@
 .card-info-name a {
   text-decoration:none;
   color: inherit;
+}
+
+.card-info-name a:hover {
+  text-decoration:underline;
 }
 
 .card-info-meta {

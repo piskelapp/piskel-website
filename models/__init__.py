@@ -2,6 +2,7 @@ from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.api import users
 import logging
+import urllib
 
 def _get_all_piskels_for_user(user_id, limit=20):
   mem_key = "user_piskels_" + str(user_id)
@@ -71,7 +72,7 @@ class Piskel(db.Model):
     if current:
       current.active = False
       current.put()
-    
+
     framesheet.active =True
     framesheet.put()
 
@@ -88,14 +89,17 @@ class Piskel(db.Model):
     q = db.GqlQuery("SELECT * FROM Framesheet WHERE piskel_id = :1 ORDER BY date DESC", str(self.key()))
     return q.fetch(None)
 
-  # @return an object {key, fps, frames, preview_link, name, date} or None if the piskel has no framesheet 
+  # @return an object {key, fps, frames, preview_link, name, date} or None if the piskel has no framesheet
   def prepare_for_view(self):
     framesheet = self.get_current_framesheet()
     if framesheet:
+      url = 'http://www.piskelapp.com/img/' + framesheet.preview_link
+      resize_service_url = 'http://piskel-resizer.appspot.com/resize?size=200&url='
       return {
         'key' : self.key(),
         'fps' : framesheet.fps,
         'framesheet_key' : framesheet.key(),
+        'preview_url' : resize_service_url + urllib.quote(url, '&'),
         'frames' : framesheet.frames,
         'name' : self.name,
         'description' : self.description if self.description else None,
@@ -127,12 +131,12 @@ class Framesheet(db.Model):
   preview_link = db.StringProperty()
   framesheet_link = db.StringProperty()
 
-  def clone(self, piskel_id=None): 
+  def clone(self, piskel_id=None):
     return Framesheet(
-      piskel_id= piskel_id if piskel_id else self.piskel_id, 
-      fps=self.fps, 
-      content=self.content, 
-      frames=self.frames, 
-      preview_link=self.preview_link, 
+      piskel_id= piskel_id if piskel_id else self.piskel_id,
+      fps=self.fps,
+      content=self.content,
+      frames=self.frames,
+      preview_link=self.preview_link,
       framesheet_link=self.framesheet_link
     )
