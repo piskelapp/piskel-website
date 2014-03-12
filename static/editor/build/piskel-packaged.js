@@ -13799,8 +13799,8 @@ var Constants = {
       SAVE : 'save'
     }
   },
-  IMAGE_SERVICE_UPLOAD_URL : 'http://screenletstore.appspot.com/__/upload',
-  IMAGE_SERVICE_GET_URL : 'http://screenletstore.appspot.com/img/',
+  IMAGE_SERVICE_UPLOAD_URL : 'http://piskel-imgstore-a.appspot.com/__/upload',
+  IMAGE_SERVICE_GET_URL : 'http://piskel-imgstore-a.appspot.com/img/',
 
   GRID_STROKE_WIDTH: 1,
   ZOOMED_OUT_BACKGROUND_COLOR : '#A0A0A0',
@@ -16850,7 +16850,6 @@ if (typeof Function.prototype.bind !== "function") {
 })();;(function () {
   var ns = $.namespace("pskl.controller");
 
-
   ns.ToolController = function () {
     var toDescriptor = function (id, shortcut, instance) {
       return {id:id, shortcut:shortcut, instance:instance};
@@ -16968,15 +16967,23 @@ if (typeof Function.prototype.bind !== "function") {
    * @private
    */
   ns.ToolController.prototype.getToolMarkup_ = function(tool) {
-    var instance = tool.instance;
+    var toolId = tool.instance.toolId;
 
-    var classList = ['tool-icon', instance.toolId];
+    var classList = ['tool-icon', toolId];
     if (this.currentSelectedTool == tool) {
       classList.push('selected');
     }
 
-    return '<li rel="tooltip" data-placement="right" class="' + classList.join(' ') + '" data-tool-id="' + instance.toolId +
-              '" title="' + instance.helpText + '"></li>';
+    var tpl = pskl.utils.Template.get('drawing-tool-item-template');
+    return pskl.utils.Template.replace(tpl, {
+      cssclass : classList.join(' '),
+      toolid : toolId,
+      title : this.getTooltipText_(tool)
+    });
+  };
+
+  ns.ToolController.prototype.getTooltipText_ = function (tool) {
+    return tool.instance.helpText + ' (' + tool.shortcut + ')';
   };
 
   ns.ToolController.prototype.addKeyboardShortcuts_ = function () {
@@ -17273,6 +17280,8 @@ if (typeof Function.prototype.bind !== "function") {
 })();;(function () {
   var ns = $.namespace("pskl.controller.settings");
 
+  var URL_MAX_LENGTH = 60;
+
   ns.GifExportController = function (piskelController) {
     this.piskelController = piskelController;
   };
@@ -17297,6 +17306,8 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.GifExportController.prototype.init = function () {
     this.radioTemplate_ = pskl.utils.Template.get("gif-export-radio-template");
+
+    this.uploadStatusContainerEl = document.querySelectorAll(".gif-upload-status")[0];
 
     this.previewContainerEl = document.querySelectorAll(".gif-export-preview")[0];
     this.radioGroupEl = document.querySelectorAll(".gif-export-radio-group")[0];
@@ -17324,7 +17335,9 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.GifExportController.prototype.onImageUploadCompleted_ = function (imageUrl) {
     this.updatePreview_(imageUrl);
+    this.updateStatus_(imageUrl);
     this.previewContainerEl.classList.remove("preview-upload-ongoing");
+
   };
 
   ns.GifExportController.prototype.updatePreview_ = function (src) {
@@ -17398,6 +17411,91 @@ if (typeof Function.prototype.bind !== "function") {
     }.bind(this));
 
     gif.render();
+  };
+
+  // FIXME : HORRIBLE COPY/PASTA
+
+  ns.GifExportController.prototype.updateStatus_ = function (imageUrl, error) {
+    if (imageUrl) {
+      var linkTpl = "<a class='image-link' href='{{link}}' target='_blank'>{{shortLink}}</a>";
+      var linkHtml = pskl.utils.Template.replace(linkTpl, {
+        link : imageUrl,
+        shortLink : this.shorten_(imageUrl, URL_MAX_LENGTH, '...')
+      });
+      this.uploadStatusContainerEl.innerHTML = 'Your image is now available at : ' + linkHtml;
+    } else {
+      // FIXME : Should display error message instead
+    }
+  };
+
+  ns.GifExportController.prototype.shorten_ = function (url, maxLength, suffix) {
+    if (url.length > maxLength) {
+      url = url.substring(0, maxLength);
+      url += suffix;
+    }
+    return url;
+  };
+})();;(function () {
+  var ns = $.namespace("pskl.controller.settings");
+
+  var URL_MAX_LENGTH = 60;
+
+  ns.PngExportController = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+  ns.PngExportController.prototype.init = function () {
+    this.previewContainerEl = document.querySelectorAll(".png-export-preview")[0];
+    this.uploadStatusContainerEl = document.querySelectorAll(".png-upload-status")[0];
+
+    this.uploadForm = $("[name=png-export-upload-form]");
+    this.uploadForm.submit(this.onUploadFormSubmit_.bind(this));
+
+    this.updatePreview_(this.getFramesheetAsBase64Png());
+  };
+
+  ns.PngExportController.prototype.onUploadFormSubmit_ = function (evt) {
+    evt.originalEvent.preventDefault();
+
+    this.previewContainerEl.classList.add("preview-upload-ongoing");
+    pskl.app.imageUploadService.upload(this.getFramesheetAsBase64Png(), this.onImageUploadCompleted_.bind(this));
+  };
+
+  ns.PngExportController.prototype.getFramesheetAsBase64Png = function () {
+    var renderer = new pskl.rendering.PiskelRenderer(this.piskelController);
+    var framesheetCanvas = renderer.renderAsCanvas();
+    return framesheetCanvas.toDataURL("image/png");
+  };
+
+  ns.PngExportController.prototype.onImageUploadCompleted_ = function (imageUrl) {
+    this.updatePreview_(imageUrl);
+    this.updateStatus_(imageUrl);
+    this.previewContainerEl.classList.remove("preview-upload-ongoing");
+  };
+
+  ns.PngExportController.prototype.updateStatus_ = function (imageUrl, error) {
+    if (imageUrl) {
+      var linkTpl = "<a class='image-link' href='{{link}}' target='_blank'>{{shortLink}}</a>";
+      var linkHtml = pskl.utils.Template.replace(linkTpl, {
+        link : imageUrl,
+        shortLink : this.shorten_(imageUrl, URL_MAX_LENGTH, '...')
+      });
+      this.uploadStatusContainerEl.innerHTML = 'Your image is now available at : ' + linkHtml;
+    } else {
+      // FIXME : Should display error message instead
+    }
+  };
+
+  ns.PngExportController.prototype.updatePreview_ = function (src) {
+    this.previewContainerEl.innerHTML = "<img class='light-picker-background' style='max-width:240px;' src='"+src+"'/>";
+  };
+
+  ns.PngExportController.prototype.shorten_ = function (url, maxLength, suffix) {
+    if (url.length > maxLength) {
+      url = url.substring(0, maxLength);
+      url += suffix;
+    }
+    return url;
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller.settings");
@@ -17768,6 +17866,10 @@ if (typeof Function.prototype.bind !== "function") {
     'gif' : {
       template : 'templates/settings/export-gif.html',
       controller : ns.GifExportController
+    },
+    'png' : {
+      template : 'templates/settings/export-png.html',
+      controller : ns.PngExportController
     },
     'import' : {
       template : 'templates/settings/import.html',
@@ -18387,7 +18489,11 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.BaseTool.prototype.hideHighlightedPixel = function(overlay) {
     if (this.highlightedPixelRow !== null && this.highlightedPixelCol !== null) {
-      overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
+      try {
+        overlay.setPixel(this.highlightedPixelCol, this.highlightedPixelRow, Constants.TRANSPARENT_COLOR);
+      } catch (e) {
+        console.warn('ns.BaseTool.prototype.hideHighlightedPixel failed');
+      }
       this.highlightedPixelRow = null;
       this.highlightedPixelCol = null;
     }

@@ -337,6 +337,9 @@ body {
   color: black;
 }
 
+.image-link {
+  color : gold;
+}
 .row {
   display: block;
 }
@@ -576,7 +579,8 @@ body {
   border: gold 1px solid;
 }
 
-/* Gif Export Setting panel*/
+/* Gif/Png Export Setting panel*/
+/*******************************/
 .gif-upload-button,
 .gif-render-button {
   /*float : right;*/
@@ -588,10 +592,24 @@ body {
   margin:10px 0;
 }
 
-.gif-export-preview {
+.gif-export-preview,
+.png-export-preview {
   margin-top:20px;
   max-width:240px;
   position:relative;
+}
+
+.png-export-preview {
+  margin:10px 0;
+  overflow: hidden;
+}
+
+.png-export-preview img {
+  float: left;
+}
+
+.png-upload-status {
+  margin : 10px 0;
 }
 
 .preview-upload-ongoing:before{
@@ -758,6 +776,10 @@ body {
   background-size: 38px 27px;
 }
 
+.tool-icon.tool-vertical-mirror-pen.selected {
+  background-position: -3px 7px;
+}
+
 .tool-icon.tool-paint-bucket {
   background-image: url(../img/tools/paintbucket.png);
 }
@@ -791,7 +813,8 @@ body {
   background-size: 24px 20px;
 }
 
-.tool-icon.tool-rectangle.selected, .tool-icon.tool-rectangle-select.selected {
+.tool-icon.tool-rectangle.selected,
+.tool-icon.tool-rectangle-select.selected {
   background-position: 9px 11px;
 }
 
@@ -1728,7 +1751,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
   position: absolute;
   left: 0;
   right: 12px;
-
+  
   -webkit-transition: all 500ms ease-out;
   -moz-transition: all 500ms ease-out;
   -ms-transition: all 500ms ease-out;
