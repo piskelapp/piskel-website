@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block head_end %}
-	{% include "piskel/piskel-opengraph-card.html" %}
+	{% include "social/piskel-opengraph-card.html" %}
 {% endblock %}
 
 {% block js %}
@@ -45,12 +45,15 @@
 				<h4 class="piskel-meta-title">Visibility</h4>
 				This piskel is <span class="piskel-privacy">{% if not piskel.private %}public{% else %}private{% endif %}</span>
 			</div>
+
+			{% if is_author %}
 			<div class="piskel-meta">
 				<h4 class="piskel-meta-title">History</h4>
 				<a      class="piskel-button" href="/p/{{piskel.key}}/history">Browse</a>
 				{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}
-
 			</div>
+			{% endif %}
+
 			{% if is_logged_in %}
 				<div class="piskel-meta">
 					<h4 class="piskel-meta-title">Actions</h4>
@@ -65,7 +68,8 @@
 							<a      class="piskel-button piskel-button-dangerous" href="/p/{{ piskel.key }}/delete?callback_url=/p/{{piskel.key}}/view">Delete</a>
 						{% endif %}
 					{% else %}
-						<a class="piskel-button" href="/p/{{piskel.key}}/clone" target="_blank">Clone</a>
+						<a class="piskel-button" href="/p/{{piskel.key}}/clone/view" target="_blank">Clone</a>
+						<a class="piskel-button" href="/p/{{piskel.key}}/clone/edit" target="_blank">Clone and Edit</a>
 					{% endif %}
 				</div>
 			{% endif %}

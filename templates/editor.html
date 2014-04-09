@@ -56,6 +56,7 @@
       <div class="column right-column">
         <iframe src="../templates/preview.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
         <iframe src="../templates/layers-list.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
+        <iframe src="../templates/palettes-list.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
       </div>
     </div>
 
@@ -76,6 +77,13 @@
       </div>
     </div>
   </div>
+
+  <div id="dialog-container-wrapper">
+    <div id="dialog-container">
+      <iframe src="../templates/dialogs/manage-palettes.html" onload="iframeloader.onLoad(event)"  data-iframe-loader="store"></iframe>
+    </div>
+  </div>
+
   <iframe src="../templates/cheatsheet.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
   <script src="../piskel-boot.js" type="text/javascript"></script>
 </body>

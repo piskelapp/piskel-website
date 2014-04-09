@@ -11,8 +11,8 @@
 <div class="main-container">
 	<div class="user-card">
 		<div class="user-avatar-container inset-container">
-			<img 
-				class="user-avatar-big user-avatar" 
+			<img
+				class="user-avatar-big user-avatar"
 				src="{{ profile_user.avatar_url }}"
 			/>
 		</div>
@@ -21,7 +21,7 @@
 			<ul class="user-info-details">
 				<li>joined on {{ profile_user.created.strftime("%B %d %Y") }}</li>
 				<li>
-					<span class="user-info-counter  pskl-counter">{{ profile_stats.piskels_count }}</span> 
+					<span class="user-info-counter  pskl-counter">{{ profile_stats.piskels_count }}</span>
 					{% if profile_stats.piskels_count >= 1 %}
 						piskel{% if profile_stats.piskels_count > 1 %}s{% endif %} created
 					{% else %}
@@ -32,7 +32,7 @@
 					<span class="user-info-counter  pskl-counter">{{ profile_stats.frames_count }}</span> frames of amazing pixels
 				</li>
 				<li>
-					<span class="user-info-counter  pskl-counter">{{ profile_stats.anim_length }}</span> seconds of animation  
+					<span class="user-info-counter  pskl-counter">{{ profile_stats.anim_length }}</span> seconds of animation
 				</li>
 			</ul>
 		</div>
@@ -47,9 +47,13 @@
 			</ul>
 		</div>
 		<div class="user-piskels-grid">
-			{% for piskel in profile_piskels %}
-				{% include "user/user-piskelcard.html" %}
-			{% endfor %}
+			{% if profile_piskels %}
+				{% for piskel in profile_piskels %}
+					{% include "user/user-piskelcard.html" %}
+				{% endfor %}
+			{% else %}
+				<div class="user-piskels-empty-message font-pixel">No piskel available in '{{ category }}' category.</div>
+			{% endif %}
 		</div>
 	</div>
 </div>

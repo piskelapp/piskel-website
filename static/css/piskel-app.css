@@ -323,6 +323,12 @@ ul {
 	vertical-align: middle;
 }
 
-.pskl-important {
-	color : gold;
+.pskl-important,
+.piskel-important,
+.important {
+	color : gold !important;
+}
+
+.bold {
+	font-weight : bold;
 }

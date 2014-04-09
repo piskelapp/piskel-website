@@ -7,7 +7,7 @@
 }
 
 .piskel-name {
-	display:inline-block; 
+	display:inline-block;
 	margin-right:10px;
 	color:#FAFAFA;
 }
@@ -57,6 +57,36 @@
 	box-shadow:inset 0 0 6px 0 rgba(0,0,0,0.7);
 }
 
+@media screen and (max-width: 850px) {
+	.piskel-container {
+		position: relative;
+		left: 50%;
+		width: 512px;
+		margin-left: -256px;
+		padding-left:0;
+	}
+
+	.piskel-info-container {
+		position: relative;
+		width: 512px;
+	}
+}
+
+@media screen and (max-device-width: 480px) {
+	.piskel-container {
+		position: relative;
+		left: 50%;
+		width: 512px;
+		margin-left: -256px;
+		padding-left:0;
+	}
+
+	.piskel-info-container {
+		position: relative;
+		width: 512px;
+	}
+}
+
 .piskel-owner {
 	margin: 0 10px;
 	transition : border-color 0.3s;
@@ -67,26 +97,72 @@
 	border-color : #FAFAFA;
 }
 
-.piskel-preview-container canvas, .piskel-preview-container img{ 
+.piskel-preview-container canvas,
+.piskel-preview-container img,
+.piskel-error-image-container img {
 	z-index : 50;
 	position: relative;
+	display: block;
 }
 
+.piskel-error-container {
+	width: 512px;
+	left: 50%;
+	position: relative;
+	margin-left: -256px;
+}
+
+.piskel-error-title {
+	font-size: 7em;
+	margin-top: 30px;
+	margin-bottom: 10px;
+}
+
+.piskel-error-details {
+	color: white;
+	font-size: 3em;
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+.piskel-error-image-container {
+	position:absolute;
+	left: 50%;
+}
+
+@media (max-height: 900px) {
+	.piskel-error-container {
+		width: 512px;
+		padding: 20px;
+		box-sizing:border-box;
+		-moz-box-sizing:border-box;
+		right: 50%;
+		left :auto;
+		position: absolute;
+		margin-left: 0;
+	}
+
+	.piskel-error-image-container {
+		position:absolute;
+		left: 50%;
+		margin-left: 0 !important;
+	}
+}
 .piskel-edit {
 	-moz-box-sizing : border-box;
 	box-sizing : border-box;
-	
+
 	position: absolute;
 	overflow: hidden;
-	
+
 	left: 0;
 	top: 0;
 	width : 512px;
 	height: 512px;
 	padding : 20px;
-	
+
 	background: #2d2d2d;
-	
+
 	transition: left 0.3s;
 }
 

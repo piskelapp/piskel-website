@@ -1,8 +1,4 @@
-import webapp2
-from webapp2_extras import jinja2
-from google.appengine.ext import db
 from base import BaseHandler
-import models, logging
 
 class HomeHandler(BaseHandler):
   def get(self):

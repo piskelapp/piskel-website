@@ -75,7 +75,8 @@ class PiskelHandler(BaseHandler):
       clone.description = "(copied from original) " + piskel.description
     return clone
 
-  def clone(self, piskel_id):
+
+  def clone(self, piskel_id, action='view'):
     piskel = db.get(piskel_id)
     valid_for_clone = piskel and piskel.get_current_framesheet()
     if valid_for_clone:
@@ -93,7 +94,7 @@ class PiskelHandler(BaseHandler):
         # trigger refresh
         db.get(framesheet.key())
 
-        self.redirect('/p/' + clone_id + '/view')
+        self.redirect('/p/' + clone_id + '/' + action)
       else:
         self.abort(403)
     else:
@@ -122,6 +123,7 @@ class PiskelHandler(BaseHandler):
     else:
       self.abort(403)
 
+  # Clone a previous version/framesheet of a piskel as the current version
   def rollback_piskel_to_framesheet (self, piskel_id, framesheet_id):
     piskel = db.get(piskel_id)
     framesheet = db.get(framesheet_id)
@@ -137,7 +139,7 @@ class PiskelHandler(BaseHandler):
       values = self._get_piskel_details(piskel)
       self.render("piskel/piskel-details.html", values)
     else:
-      self.abort(403)
+      self.render("error/piskel-private.html", {})
 
   def permanently_delete(self, piskel_id):
     piskel = db.get(piskel_id)

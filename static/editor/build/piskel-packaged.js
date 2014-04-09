@@ -12461,7 +12461,7 @@ $.widget("ui.sortable", $.ui.mouse, {
 
             // Update the text entry input as it changes happen
             if (opts.showInput) {
-                textInput.val(realColor.toString(format));
+                textInput.val(realColor.toString(Constants.PREFERRED_COLOR_FORMAT || format));
             }
 
             if (opts.showPalette) {
@@ -13769,9 +13769,15 @@ var Constants = {
   MINIMUM_ZOOM : 1,
 
   PREVIEW_FILM_SIZE : 120,
+  ANIMATED_PREVIEW_WIDTH : 200,
 
   DEFAULT_PEN_COLOR : '#000000',
   TRANSPARENT_COLOR : 'rgba(0, 0, 0, 0)',
+
+  NO_PALETTE_ID : '__no-palette',
+
+  // Used for Spectrum input
+  PREFERRED_COLOR_FORMAT : 'rgb',
 
   /*
    * Fake semi-transparent color used to highlight transparent
@@ -13802,7 +13808,6 @@ var Constants = {
   IMAGE_SERVICE_UPLOAD_URL : 'http://piskel-imgstore-a.appspot.com/__/upload',
   IMAGE_SERVICE_GET_URL : 'http://piskel-imgstore-a.appspot.com/img/',
 
-  GRID_STROKE_WIDTH: 1,
   ZOOMED_OUT_BACKGROUND_COLOR : '#A0A0A0',
 
   LEFT_BUTTON : 0,
@@ -13818,6 +13823,13 @@ var Events = {
   TOOL_RELEASED : "TOOL_RELEASED",
   SELECT_PRIMARY_COLOR: "SELECT_PRIMARY_COLOR",
   SELECT_SECONDARY_COLOR: "SELECT_SECONDARY_COLOR",
+  PRIMARY_COLOR_SELECTED : 'PRIMARY_COLOR_SELECTED',
+  SECONDARY_COLOR_SELECTED : 'SECONDARY_COLOR_SELECTED',
+
+  DIALOG_DISPLAY : 'DIALOG_DISPLAY',
+  DIALOG_HIDE : 'DIALOG_HIDE',
+
+  PALETTE_LIST_UPDATED : 'PALETTE_LIST_UPDATED',
 
   /**
    *  When this event is emitted, a request is sent to the localstorage
@@ -13893,7 +13905,7 @@ if (typeof Function.prototype.bind !== "function") {
     if (r > 255 || g > 255 || b > 255) {
       throw "Invalid color component";
     }
-    
+
     return ((r << 16) | (g << 8) | b).toString(16);
   };
 
@@ -14237,9 +14249,10 @@ if (typeof Function.prototype.bind !== "function") {
      * @param  {Canvas2d} source original image to be resized, as a 2d canvas
      * @param  {Number} zoom   ratio between desired dim / source dim
      * @param  {Number} margin gap to be displayed between pixels
+     * @param  {String} color or the margin (will be transparent if not provided)
      * @return {Canvas2d} the resized canvas
      */
-    resizeNearestNeighbour : function (source, zoom, margin) {
+    resizeNearestNeighbour : function (source, zoom, margin, marginColor) {
       margin = margin || 0;
       var canvas = pskl.CanvasUtils.createCanvas(zoom*source.width, zoom*source.height);
       var context = canvas.getContext('2d');
@@ -14272,6 +14285,12 @@ if (typeof Function.prototype.bind !== "function") {
 
           context.fillStyle = "rgba(" + r + "," + g + "," + b + "," + (a / 255) + ")";
           context.fillRect(xOffset, yOffset, xRange-margin, yRange-margin);
+
+          if (margin && marginColor) {
+            context.fillStyle = marginColor;
+            context.fillRect(xOffset + xRange - margin, yOffset, margin, yRange);
+            context.fillRect(xOffset, yOffset + yRange - margin, xRange, margin);
+          }
 
           yOffset += yRange;
         }
@@ -14480,6 +14499,16 @@ if (typeof Function.prototype.bind !== "function") {
       for (var key in dict) {
         if (dict.hasOwnProperty(key)) {
           var value = dict[key];
+
+          // special boolean keys keys key:default
+          // if the value is a boolean, use default as value
+          if (key.indexOf(':') !== -1) {
+            if (value === true) {
+              value = key.split(':')[1];
+            } else if (value === false) {
+              value = '';
+            }
+          }
           template = template.replace(new RegExp('\\{\\{'+key+'\\}\\}', 'g'), value);
         }
       }
@@ -14490,13 +14519,14 @@ if (typeof Function.prototype.bind !== "function") {
   var ns = $.namespace("pskl");
 
   ns.UserSettings = {
-
-    SHOW_GRID : 'SHOW_GRID',
+    GRID_WIDTH : 'GRID_WIDTH',
     CANVAS_BACKGROUND : 'CANVAS_BACKGROUND',
+    SELECTED_PALETTE : 'SELECTED_PALETTE',
 
     KEY_TO_DEFAULT_VALUE_MAP_ : {
-      'SHOW_GRID' : false,
-      'CANVAS_BACKGROUND' : 'medium-canvas-background'
+      'GRID_WIDTH' : 0,
+      'CANVAS_BACKGROUND' : 'lowcont-dark-canvas-background',
+      'SELECTED_PALETTE' : Constants.NO_PALETTE_ID
     },
 
     /**
@@ -14861,11 +14891,17 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.Frame.prototype.setPixel = function (col, row, color) {
-    this.pixels[col][row] = color;
+    if (this.containsPixel(col, row)) {
+      this.pixels[col][row] = color;
+    }
   };
 
   ns.Frame.prototype.getPixel = function (col, row) {
-    return this.pixels[col][row];
+    if (this.containsPixel(col, row)) {
+      return this.pixels[col][row];
+    } else {
+      return null;
+    }
   };
 
   ns.Frame.prototype.forEachPixel = function (callback) {
@@ -14885,7 +14921,7 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.Frame.prototype.containsPixel = function (col, row) {
-    return col >= 0 && row >= 0 && col < this.pixels.length && row < this.pixels[0].length;
+    return col >= 0 && row >= 0 && col < this.width && row < this.height;
   };
 
   ns.Frame.prototype.saveState = function () {
@@ -15145,6 +15181,7 @@ if (typeof Function.prototype.bind !== "function") {
     pskl.app.shortcutService.addShortcut('ctrl+V', this.paste.bind(this));
     pskl.app.shortcutService.addShortcut('ctrl+X', this.cut.bind(this));
     pskl.app.shortcutService.addShortcut('ctrl+C', this.copy.bind(this));
+    pskl.app.shortcutService.addShortcut('del', this.erase.bind(this));
 
     $.subscribe(Events.TOOL_SELECTED, $.proxy(this.onToolSelected_, this));
   };
@@ -15175,20 +15212,23 @@ if (typeof Function.prototype.bind !== "function") {
     this.cleanSelection_();
   };
 
+  ns.SelectionManager.prototype.erase = function () {
+    var pixels = this.currentSelection.pixels;
+    var currentFrame = this.piskelController.getCurrentFrame();
+    for(var i=0, l=pixels.length; i<l; i++) {
+      try {
+        currentFrame.setPixel(pixels[i].col, pixels[i].row, Constants.TRANSPARENT_COLOR);
+      } catch(e) {
+        // Catching out of frame's bound pixels without testing
+      }
+    }
+  };
+
   ns.SelectionManager.prototype.cut = function() {
     if(this.currentSelection) {
       // Put cut target into the selection:
       this.currentSelection.fillSelectionFromFrame(this.piskelController.getCurrentFrame());
-
-      var pixels = this.currentSelection.pixels;
-      var currentFrame = this.piskelController.getCurrentFrame();
-      for(var i=0, l=pixels.length; i<l; i++) {
-        try {
-          currentFrame.setPixel(pixels[i].col, pixels[i].row, Constants.TRANSPARENT_COLOR);
-        } catch(e) {
-          // Catching out of frame's bound pixels without testing
-        }
-      }
+      this.erase();
     }
     else {
       throw "Bad state for CUT callback in SelectionManager";
@@ -15300,8 +15340,8 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.AbstractRenderer.prototype.getCoordinates = Constants.ABSTRACT_FUNCTION;
 
-  ns.AbstractRenderer.prototype.setGridEnabled = Constants.ABSTRACT_FUNCTION;
-  ns.AbstractRenderer.prototype.isGridEnabled =  Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.setGridWidth = Constants.ABSTRACT_FUNCTION;
+  ns.AbstractRenderer.prototype.getGridWidth =  Constants.ABSTRACT_FUNCTION;
 
   ns.AbstractRenderer.prototype.setZoom = Constants.ABSTRACT_FUNCTION;
   ns.AbstractRenderer.prototype.getZoom = Constants.ABSTRACT_FUNCTION;
@@ -15369,14 +15409,14 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
 
-  ns.CompositeRenderer.prototype.setGridEnabled = function (b) {
+  ns.CompositeRenderer.prototype.setGridWidth = function (b) {
     this.renderers.forEach(function (renderer) {
-      renderer.setGridEnabled(b);
+      renderer.setGridWidth(b);
     });
   };
 
-  ns.CompositeRenderer.prototype.isGridEnabled = function () {
-    return this.getSampleRenderer_().isGridEnabled();
+  ns.CompositeRenderer.prototype.getGridWidth = function () {
+    return this.getSampleRenderer_().getGridWidth();
   };
 
   ns.CompositeRenderer.prototype.getSampleRenderer_ = function () {
@@ -15415,7 +15455,7 @@ if (typeof Function.prototype.bind !== "function") {
 
     var serializedRendering = [
       this.getZoom(),
-      this.isGridEnabled(),
+      this.getGridWidth(),
       offset.x,
       offset.y,
       size.width,
@@ -15492,7 +15532,6 @@ if (typeof Function.prototype.bind !== "function") {
       y : 0
     };
 
-    this.isGridEnabled_ = false;
     this.supportGridRendering = renderingOptions.supportGridRendering;
 
     this.classes = classes || [];
@@ -15511,7 +15550,7 @@ if (typeof Function.prototype.bind !== "function") {
     this.displayCanvas = null;
     this.setDisplaySize(renderingOptions.width, renderingOptions.height);
 
-    this.setGridEnabled(pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID));
+    this.setGridWidth(pskl.UserSettings.get(pskl.UserSettings.GRID_WIDTH));
 
     this.updateBackgroundClass_(pskl.UserSettings.get(pskl.UserSettings.CANVAS_BACKGROUND));
     $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
@@ -15592,12 +15631,16 @@ if (typeof Function.prototype.bind !== "function") {
     this.offset.y = y;
   };
 
-  ns.FrameRenderer.prototype.setGridEnabled = function (flag) {
-    this.isGridEnabled_ = flag && this.supportGridRendering;
+  ns.FrameRenderer.prototype.setGridWidth = function (value) {
+    this.gridWidth_ = value;
   };
 
-  ns.FrameRenderer.prototype.isGridEnabled = function () {
-    return this.isGridEnabled_;
+  ns.FrameRenderer.prototype.getGridWidth = function () {
+    if (this.supportGridRendering) {
+      return this.gridWidth_;
+    } else {
+      return 0;
+    }
   };
 
   ns.FrameRenderer.prototype.updateMargins_ = function () {
@@ -15620,10 +15663,10 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.FrameRenderer.prototype.onUserSettingsChange_ = function (evt, settingName, settingValue) {
-    if(settingName == pskl.UserSettings.SHOW_GRID) {
-      this.setGridEnabled(settingValue);
-    } else if (settingName == pskl.UserSettings.CANVAS_BACKGROUND) {
+    if (settingName == pskl.UserSettings.CANVAS_BACKGROUND) {
       this.updateBackgroundClass_(settingValue);
+    } else if (settingName == pskl.UserSettings.GRID_WIDTH) {
+      this.setGridWidth(settingValue);
     }
   };
 
@@ -15702,8 +15745,10 @@ if (typeof Function.prototype.bind !== "function") {
     context.clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 
     var isIE10 = pskl.utils.UserAgent.isIE && pskl.utils.UserAgent.version === 10;
-    if (this.isGridEnabled() || isIE10) {
-      var gridWidth = this.isGridEnabled() ? Constants.GRID_STROKE_WIDTH : 0;
+
+    var gridWidth = this.getGridWidth();
+    var isGridEnabled = gridWidth > 0;
+    if (isGridEnabled || isIE10) {
       var scaled = pskl.utils.ImageResizer.resizeNearestNeighbour(this.canvas, this.zoom, gridWidth);
       context.drawImage(scaled, 0, 0);
     } else {
@@ -15728,12 +15773,26 @@ if (typeof Function.prototype.bind !== "function") {
 
   pskl.utils.inherit(pskl.rendering.frame.CachedFrameRenderer, pskl.rendering.frame.FrameRenderer);
 
+  /**
+   * Only call display size if provided values are different from current values.
+   * FrameRenderer:setDisplaySize destroys the underlying canvas
+   * If the canvas is destroyed, a rendering is mandatory.
+   * (Alternatively we could find a way to force the rendering of the CachedFrameRenderer from the outside)
+   * @param {Number} width
+   * @param {Number} height
+   */
+  ns.CachedFrameRenderer.prototype.setDisplaySize = function (width, height) {
+    if (this.displayWidth !== width || this.displayHeight !== height) {
+      pskl.rendering.frame.FrameRenderer.prototype.setDisplaySize.call(this, width, height);
+    }
+  };
+
   ns.CachedFrameRenderer.prototype.render = function (frame) {
     var offset = this.getOffset();
     var size = this.getDisplaySize();
     var serializedFrame = [
       this.getZoom(),
-      this.isGridEnabled(),
+      this.getGridWidth(),
       offset.x, offset.y,
       size.width, size.height,
       frame.serialize()
@@ -16111,6 +16170,9 @@ if (typeof Function.prototype.bind !== "function") {
     this.isClicked = false;
     this.previousMousemoveTime = 0;
     this.currentToolBehavior = null;
+
+    // State of clicked button (need to be stateful here, see comment in getCurrentColor_)
+    this.currentMouseButton_ = Constants.LEFT_BUTTON;
   };
 
   ns.DrawingController.prototype.init = function () {
@@ -16126,14 +16188,13 @@ if (typeof Function.prototype.bind !== "function") {
     $.subscribe(Events.USER_SETTINGS_CHANGED, $.proxy(this.onUserSettingsChange_, this));
     $.subscribe(Events.FRAME_SIZE_CHANGED, $.proxy(this.onFrameSizeChanged_, this));
 
-    this.centerColumnWrapperHorizontally_();
+    // this.afterWindowResize_.bind(this);
+    window.setTimeout(this.afterWindowResize_.bind(this), 100);
   };
 
   ns.DrawingController.prototype.initMouseBehavior = function() {
     var body = $('body');
     this.container.mousedown($.proxy(this.onMousedown_, this));
-    this.container.mouseenter($.proxy(this.onMouseenter_, this));
-    this.container.mouseleave($.proxy(this.onMouseleave_, this));
 
     if (pskl.utils.UserAgent.isChrome) {
       this.container.on('mousewheel', $.proxy(this.onMousewheel_, this));
@@ -16141,7 +16202,8 @@ if (typeof Function.prototype.bind !== "function") {
       this.container.on('wheel', $.proxy(this.onMousewheel_, this));
     }
 
-    body.mouseup($.proxy(this.onMouseup_, this));
+    window.addEventListener('mouseup', this.onMouseup_.bind(this));
+    window.addEventListener('mousemove', this.onMousemove_.bind(this));
 
     // Deactivate right click:
     body.contextmenu(this.onCanvasContextMenu_);
@@ -16184,21 +16246,6 @@ if (typeof Function.prototype.bind !== "function") {
   /**
    * @private
    */
-  ns.DrawingController.prototype.onMouseenter_ = function (event) {
-    this.container.bind('mousemove', $.proxy(this.onMousemove_, this));
-  };
-
-  /**
-   * @private
-   */
-  ns.DrawingController.prototype.onMouseleave_ = function (event) {
-    this.container.unbind('mousemove');
-    this.currentToolBehavior.hideHighlightedPixel(this.overlayFrame);
-  };
-
-  /**
-   * @private
-   */
   ns.DrawingController.prototype.onMousedown_ = function (event) {
     var frame = this.piskelController.getCurrentFrame();
     var coords = this.renderer.getCoordinates(event.clientX, event.clientY);
@@ -16209,12 +16256,13 @@ if (typeof Function.prototype.bind !== "function") {
       }
     } else {
       this.isClicked = true;
+      this.setCurrentButton(event);
       this.currentToolBehavior.hideHighlightedPixel(this.overlayFrame);
 
       this.currentToolBehavior.applyToolAt(
         coords.x,
         coords.y,
-        this.getCurrentColor_(event),
+        this.getCurrentColor_(),
         frame,
         this.overlayFrame,
         event
@@ -16235,7 +16283,8 @@ if (typeof Function.prototype.bind !== "function") {
       var coords = this.renderer.getCoordinates(event.clientX, event.clientY);
 
       if (this.isClicked) {
-
+        // Warning : do not call setCurrentButton here
+        // mousemove do not have the correct mouse button information on all browsers
         this.currentToolBehavior.moveToolAt(
           coords.x,
           coords.y,
@@ -16291,12 +16340,13 @@ if (typeof Function.prototype.bind !== "function") {
       // of the drawing canvas.
 
       this.isClicked = false;
+      this.setCurrentButton(event);
 
       var coords = this.renderer.getCoordinates(event.clientX, event.clientY);
       this.currentToolBehavior.releaseToolAt(
         coords.x,
         coords.y,
-        this.getCurrentColor_(event),
+        this.getCurrentColor_(),
         this.piskelController.getCurrentFrame(),
         this.overlayFrame,
         event
@@ -16313,13 +16363,23 @@ if (typeof Function.prototype.bind !== "function") {
     return this.renderer.getCoordinates(event.clientX, event.clientY);
   };
 
+  ns.DrawingController.prototype.setCurrentButton = function (event) {
+    this.currentMouseButton_ = event.button;
+  };
+
   /**
    * @private
    */
-  ns.DrawingController.prototype.getCurrentColor_ = function (event) {
-    if(event.button == Constants.RIGHT_BUTTON) {
+  ns.DrawingController.prototype.getCurrentColor_ = function () {
+    // WARNING : Do not rely on the current event to get the current color!
+    // It might seem like a good idea, and works perfectly fine on Chrome
+    // Sadly Firefox and IE found clever, for some reason, to set event.button to 0
+    // on a mouse move event
+    // This always matches a LEFT mouse button which is __really__ not helpful
+
+    if(this.currentMouseButton_ == Constants.RIGHT_BUTTON) {
       return this.paletteController.getSecondaryColor();
-    } else if(event.button == Constants.LEFT_BUTTON) {
+    } else if(this.currentMouseButton_ == Constants.LEFT_BUTTON) {
       return this.paletteController.getPrimaryColor();
     } else {
       return Constants.DEFAULT_PEN_COLOR;
@@ -16371,7 +16431,8 @@ if (typeof Function.prototype.bind !== "function") {
     settingsContainerWidth = $('#application-action-section').outerWidth(true),
     availableWidth = $('#main-wrapper').width() - leftSectionWidth - rightSectionWidth - toolsContainerWidth - settingsContainerWidth;
 
-    return availableWidth-50;
+    var comfortMargin = 10;
+    return availableWidth - comfortMargin;
   };
 
   ns.DrawingController.prototype.getContainerHeight_ = function () {
@@ -16684,6 +16745,7 @@ if (typeof Function.prototype.bind !== "function") {
   };
 })();;(function () {
   var ns = $.namespace("pskl.controller");
+
   ns.AnimatedPreviewController = function (piskelController, container) {
     this.piskelController = piskelController;
     this.container = container;
@@ -16710,6 +16772,7 @@ if (typeof Function.prototype.bind !== "function") {
     // consistent behavior across all other browsers that support the input type range
     // see https://bugzilla.mozilla.org/show_bug.cgi?id=853670
     $("#preview-fps")[0].addEventListener('change', this.onFPSSliderChange.bind(this));
+    document.querySelector(".right-column").style.width = Constants.ANIMATED_PREVIEW_WIDTH + 'px';
   };
 
   ns.AnimatedPreviewController.prototype.onFPSSliderChange = function (evt) {
@@ -17003,9 +17066,6 @@ if (typeof Function.prototype.bind !== "function") {
    * @public
    */
   ns.PaletteController.prototype.init = function() {
-    var transparentColorPalette = $(".palette-color[data-color=TRANSPARENT]");
-    transparentColorPalette.mouseup($.proxy(this.onPaletteColorClick_, this));
-
     $.subscribe(Events.SELECT_PRIMARY_COLOR, this.onColorSelected_.bind(this, {isPrimary:true}));
     $.subscribe(Events.SELECT_SECONDARY_COLOR, this.onColorSelected_.bind(this, {isPrimary:false}));
 
@@ -17015,6 +17075,7 @@ if (typeof Function.prototype.bind !== "function") {
     var spectrumCfg = {
       showPalette: true,
       showButtons: false,
+      showInput: true,
       palette: [
         ['rgba(0,0,0,0)']
       ],
@@ -17067,11 +17128,13 @@ if (typeof Function.prototype.bind !== "function") {
   ns.PaletteController.prototype.setPrimaryColor = function (color) {
     this.primaryColor = color;
     this.updateColorPicker_(color, $('#color-picker'));
+    $.publish(Events.PRIMARY_COLOR_SELECTED, [color]);
   };
 
   ns.PaletteController.prototype.setSecondaryColor = function (color) {
     this.secondaryColor = color;
     this.updateColorPicker_(color, $('#secondary-color-picker'));
+    $.publish(Events.SECONDARY_COLOR_SELECTED, [color]);
   };
 
   ns.PaletteController.prototype.getPrimaryColor = function () {
@@ -17091,20 +17154,6 @@ if (typeof Function.prototype.bind !== "function") {
   ns.PaletteController.prototype.resetColors = function () {
     this.setPrimaryColor(Constants.DEFAULT_PEN_COLOR);
     this.setSecondaryColor(Constants.TRANSPARENT_COLOR);
-  };
-
-  /**
-   * @private
-   */
-  ns.PaletteController.prototype.onPaletteColorClick_ = function (event) {
-    var selectedColor = $(event.target).data("color");
-    var isLeftClick = (event.which == 1);
-    var isRightClick = (event.which == 3);
-    if (isLeftClick) {
-      $.publish(Events.PRIMARY_COLOR_SELECTED, [selectedColor]);
-    } else if (isRightClick) {
-      $.publish(Events.SECONDARY_COLOR_SELECTED, [selectedColor]);
-    }
   };
 
   /**
@@ -17138,6 +17187,152 @@ if (typeof Function.prototype.bind !== "function") {
 
 
 ;(function () {
+  var ns = $.namespace('pskl.controller');
+
+  ns.PalettesListController = function () {
+
+  };
+
+  ns.PalettesListController.prototype.init = function () {
+    this.paletteColorTemplate_ = pskl.utils.Template.get('palette-color-template');
+    this.colorListContainer_ = document.querySelector('.palettes-list-colors');
+    this.colorPaletteSelect_ = document.querySelector('.palettes-list-select');
+    this.paletteListOptGroup_ = document.querySelector('.palettes-list-select-group');
+
+    this.colorPaletteSelect_.addEventListener('change', this.onPaletteSelected_.bind(this));
+    this.colorListContainer_.addEventListener('mouseup', this.onColorContainerMouseup.bind(this));
+    this.colorListContainer_.addEventListener('contextmenu', this.onColorContainerContextMenu.bind(this));
+
+    $.subscribe(Events.PALETTE_LIST_UPDATED, this.onPaletteListUpdated.bind(this));
+    $.subscribe(Events.PRIMARY_COLOR_SELECTED, this.onColorUpdated.bind(this, 'primary'));
+    $.subscribe(Events.SECONDARY_COLOR_SELECTED, this.onColorUpdated.bind(this, 'secondary'));
+
+    this.fillPaletteList();
+    this.selectPaletteFromUserSettings();
+    this.fillColorListContainer();
+  };
+
+  ns.PalettesListController.prototype.fillPaletteList = function () {
+    var palettes = [{
+      id : Constants.NO_PALETTE_ID,
+      name : 'No palette'
+    }];
+    palettes = palettes.concat(this.retrievePalettes());
+
+    var html = palettes.map(function (palette) {
+      return pskl.utils.Template.replace('<option value="{{id}}">{{name}}</option>', palette);
+    }).join('');
+    this.paletteListOptGroup_.innerHTML = html;
+  };
+
+  ns.PalettesListController.prototype.fillColorListContainer = function () {
+    var html = '';
+
+    var palette = this.getSelectedPalette();
+    if (palette) {
+      html = palette.colors.map(function (color) {
+        return pskl.utils.Template.replace(this.paletteColorTemplate_, {color : color});
+      }.bind(this)).join('');
+    }
+
+    this.colorListContainer_.innerHTML = html;
+  };
+
+  ns.PalettesListController.prototype.getSelectedPalette = function (evt) {
+    var paletteId = this.colorPaletteSelect_.value;
+    var palettes = this.retrievePalettes();
+    var palette = this.getPaletteById(paletteId, palettes);
+    return palette;
+  };
+
+  ns.PalettesListController.prototype.selectPalette = function (paletteId) {
+    this.colorPaletteSelect_.value = paletteId;
+  };
+
+  ns.PalettesListController.prototype.selectPaletteFromUserSettings = function () {
+    this.selectPalette(pskl.UserSettings.get(pskl.UserSettings.SELECTED_PALETTE));
+  };
+
+  ns.PalettesListController.prototype.onPaletteSelected_ = function (evt) {
+    var paletteId = this.colorPaletteSelect_.value;
+    if (paletteId === '__manage-palettes') {
+      $.publish(Events.DIALOG_DISPLAY, 'manage-palettes');
+      this.selectPaletteFromUserSettings();
+    } else {
+      pskl.UserSettings.set(pskl.UserSettings.SELECTED_PALETTE, paletteId);
+    }
+
+    this.fillColorListContainer();
+  };
+
+
+
+  ns.PalettesListController.prototype.onColorContainerContextMenu = function (event) {
+    event.preventDefault();
+  };
+
+  ns.PalettesListController.prototype.onColorContainerMouseup = function (event) {
+    var target = event.target;
+    var color = target.dataset.color;
+
+    if (color) {
+      if (event.button == Constants.LEFT_BUTTON) {
+        $.publish(Events.SELECT_PRIMARY_COLOR, [color]);
+      } else if (event.button == Constants.RIGHT_BUTTON) {
+        $.publish(Events.SELECT_SECONDARY_COLOR, [color]);
+      }
+    }
+  };
+
+  ns.PalettesListController.prototype.onColorUpdated = function (type, event, color) {
+    var colorContainer = this.colorListContainer_.querySelector('.palettes-list-color[data-color="'+color+'"]');
+
+    // Color is not in the currently selected palette
+    if (!colorContainer) {
+      return;
+    }
+
+    if (type === 'primary') {
+      this.removeClass_('primary', '.palettes-list-color');
+      colorContainer.classList.add('primary');
+      colorContainer.classList.remove('secondary');
+    } else if (type === 'secondary') {
+      this.removeClass_('secondary', '.palettes-list-color');
+      colorContainer.classList.add('secondary');
+      colorContainer.classList.remove('primary');
+    }
+  };
+
+  ns.PalettesListController.prototype.removeClass_ = function (cssClass, selector) {
+    var element = document.querySelector(selector + '.' + cssClass);
+    if (element) {
+      element.classList.remove(cssClass);
+    }
+  };
+
+  ns.PalettesListController.prototype.onPaletteListUpdated = function () {
+    this.fillPaletteList();
+    this.selectPaletteFromUserSettings();
+    this.fillColorListContainer();
+  };
+
+  ns.PalettesListController.prototype.getPaletteById = function (paletteId, palettes) {
+    var match = null;
+
+    palettes.forEach(function (palette) {
+      if (palette.id === paletteId) {
+        match = palette;
+      }
+    });
+
+    return match;
+  };
+
+  ns.PalettesListController.prototype.retrievePalettes =  function () {
+    var palettesString = window.localStorage.getItem('piskel.palettes');
+    return JSON.parse(palettesString) || [];
+  };
+})();;(function () {
   var ns = $.namespace("pskl.controller");
 
   ns.NotificationController = function () {};
@@ -17193,20 +17388,18 @@ if (typeof Function.prototype.bind !== "function") {
       .find('.background-picker[data-background-class=' + backgroundClass + ']')
       .addClass('selected');
 
-    // Initial state for grid display:
-    var show_grid = pskl.UserSettings.get(pskl.UserSettings.SHOW_GRID);
-    $('#show-grid').prop('checked', show_grid);
-
-    // Handle grid display changes:
-    $('#show-grid').change(this.onShowGridClick.bind(this));
+    // Grid display and size
+    var gridWidth = pskl.UserSettings.get(pskl.UserSettings.GRID_WIDTH);
+    $('#grid-width').val(gridWidth);
+    $('#grid-width').change(this.onGridWidthChange.bind(this));
 
     // Handle canvas background changes:
     $('#background-picker-wrapper').click(this.onBackgroundClick.bind(this));
   };
 
-  ns.ApplicationSettingsController.prototype.onShowGridClick = function (evt) {
-    var checked = $('#show-grid').prop('checked');
-    pskl.UserSettings.set(pskl.UserSettings.SHOW_GRID, checked);
+  ns.ApplicationSettingsController.prototype.onGridWidthChange = function (evt) {
+    var width = $('#grid-width').val();
+    pskl.UserSettings.set(pskl.UserSettings.GRID_WIDTH, parseInt(width, 10));
   };
 
   ns.ApplicationSettingsController.prototype.onBackgroundClick = function (evt) {
@@ -17913,6 +18106,8 @@ if (typeof Function.prototype.bind !== "function") {
     } else {
       this.closeDrawer();
     }
+    evt.originalEvent.stopPropagation();
+    evt.originalEvent.preventDefault();
   };
 
   ns.SettingsController.prototype.onBodyClick = function (evt) {
@@ -17946,6 +18141,460 @@ if (typeof Function.prototype.bind !== "function") {
 
     this.isExpanded = false;
     this.currentSetting = null;
+  };
+
+})();;(function () {
+  var ns = $.namespace('pskl.controller.dialogs');
+
+  var tinycolor = window.tinycolor;
+
+  var SELECTED_CLASSNAME = 'selected';
+  var NEW_COLOR_CLASS = 'palette-manager-new-color';
+  var CLOSE_ICON_CLASS = 'palette-manager-delete-card';
+  var EDIT_NAME_CLASS = 'palette-manager-details-head-edit-icon';
+
+  ns.PaletteManagerController = function (piskelController) {
+    this.piskelController = piskelController;
+    this.palettes = this.retrieveUserPalettes();
+    this.originalPalettes = this.retrieveUserPalettes();
+    this.selectedPaletteId = null;
+
+    // Keep track of all spectrum instances created, to dispose them when closing the popup
+    this.spectrumContainers = [];
+  };
+
+  ns.PaletteManagerController.prototype.init = function () {
+    this.palettesList = document.querySelector('.palette-manager-list');
+    this.paletteBody = document.querySelector('.palette-manager-details-body');
+    this.paletteHead = document.querySelector('.palette-manager-details-head');
+    this.createButton = document.querySelector('.palette-manager-actions-button[data-action="create"]');
+    this.saveAllButton = document.querySelector('.palette-manager-actions-button[data-action="save-all"]');
+    this.closeButton = document.querySelector('.palette-manager-close');
+
+    this.colorCardTemplate = pskl.utils.Template.get('palette-color-card-template');
+    this.newColorTemplate = pskl.utils.Template.get('palette-new-color-template');
+    this.paletteHeadTemplate = pskl.utils.Template.get('palette-details-head-template');
+
+    // Events
+    this.palettesList.addEventListener('click', this.onPaletteListClick.bind(this));
+    // Delegated event listener for events repeated on all cards
+    this.paletteBody.addEventListener('click', this.delegatedPaletteBodyClick.bind(this));
+    this.paletteHead.addEventListener('click', this.delegatedPaletteHeadClick.bind(this));
+    this.createButton.addEventListener('click', this.onCreateClick_.bind(this));
+    this.saveAllButton.addEventListener('click', this.saveAll.bind(this));
+    this.closeButton.addEventListener('click', this.closeDialog.bind(this));
+
+    // Init markup
+    this.createPaletteListMarkup();
+    if (this.palettes.length > 0) {
+      this.selectPalette(this.palettes[0].id);
+    } else {
+      this.createPalette('New palette');
+    }
+  };
+
+  ns.PaletteManagerController.prototype.destroy = function () {
+    this.destroySpectrumPickers();
+  };
+
+  ns.PaletteManagerController.prototype.closeDialog = function () {
+    $.publish(Events.DIALOG_HIDE);
+  };
+
+  ns.PaletteManagerController.prototype.onCreateClick_ = function (evt) {
+    this.createPalette();
+  };
+
+  ns.PaletteManagerController.prototype.createPalette = function (name) {
+    if (!name) {
+      name = window.prompt('Please enter a name for your palette', 'New palette');
+    }
+    if (name) {
+      var palette = this.createPaletteObject(name);
+      this.palettes.push(palette);
+      this.createPaletteListMarkup();
+      this.selectPalette(palette.id);
+    }
+  };
+
+  ns.PaletteManagerController.prototype.createPaletteObject = function (name) {
+    return {
+      id : 'palette-' + Date.now() + '-' + Math.floor(Math.random()*1000),
+      name : name,
+      colors : []
+    };
+  };
+
+  ns.PaletteManagerController.prototype.redraw = function () {
+    this.createPaletteListMarkup();
+    this.selectPalette(this.selectedPaletteId);
+  };
+
+  ns.PaletteManagerController.prototype.selectPalette = function (paletteId) {
+    this.deselectCurrentPalette();
+    var paletteListItem = this.palettesList.querySelector('[data-palette-id='+paletteId+']');
+    if (paletteListItem) {
+      this.selectedPaletteId = paletteId;
+      paletteListItem.classList.add(SELECTED_CLASSNAME);
+      this.refreshPaletteDetails();
+    }
+  };
+
+  ns.PaletteManagerController.prototype.refreshPaletteDetails = function () {
+    this.createPaletteHeadMarkup();
+    this.createPaletteBodyMarkup();
+    this.initPaletteDetailsEvents();
+    this.initPaletteCardsSpectrum();
+  };
+
+  ns.PaletteManagerController.prototype.createPaletteListMarkup = function () {
+    var html = this.palettes.map(function (palette) {
+      var paletteCopy = {
+        id : palette.id,
+        name : this.isPaletteModified(palette) ? palette.name + " *" : palette.name
+      };
+      return pskl.utils.Template.replace('<li data-palette-id="{{id}}">{{name}}</li>', paletteCopy);
+    }.bind(this)).join('');
+    this.palettesList.innerHTML = html;
+  };
+
+  /**
+   * Fill the palette body container with color cards for the selected palette
+   */
+  ns.PaletteManagerController.prototype.createPaletteHeadMarkup = function () {
+    var palette = this.getSelectedPalette();
+    var dict = {
+      'name' : palette.name,
+      'save:disabled' : !this.isPaletteModified(palette),
+      'revert:disabled' : !this.isPaletteModified(palette),
+      'delete:disabled' : this.palettes.length < 2
+    };
+    var html = pskl.utils.Template.replace(this.paletteHeadTemplate, dict);
+
+    this.paletteHead.innerHTML = html;
+  };
+
+  ns.PaletteManagerController.prototype.isPaletteModified = function (palette) {
+    var isModified = false;
+    var originalPalette = this.getPaletteById(palette.id, this.originalPalettes);
+    if (originalPalette) {
+      var differentName = originalPalette.name !== palette.name;
+      var differentColors = palette.colors.join('') !== originalPalette.colors.join('');
+      isModified = differentName || differentColors;
+    } else {
+      isModified = true;
+    }
+    return isModified;
+  };
+
+  /**
+   * Fill the palette body container with color cards for the selected palette
+   */
+  ns.PaletteManagerController.prototype.createPaletteBodyMarkup = function () {
+    var palette = this.getSelectedPalette();
+
+    var html = this.getColorCardsMarkup(palette.colors);
+    html += pskl.utils.Template.replace(this.newColorTemplate, {classname : NEW_COLOR_CLASS});
+
+    this.paletteBody.innerHTML = html;
+  };
+
+  ns.PaletteManagerController.prototype.initPaletteDetailsEvents = function () {
+    // New Card click event
+    var newCard = this.paletteBody.querySelector('.' + NEW_COLOR_CLASS);
+    newCard.addEventListener('click', this.onNewCardClick.bind(this));
+
+    if (this.palettes.length < 2) {
+      var deleteButton = this.paletteHead.querySelector('.palette-manager-palette-button[data-action="delete"]');
+      deleteButton.setAttribute("disabled", "disabled");
+    }
+  };
+
+  ns.PaletteManagerController.prototype.onNewCardClick = function () {
+    var color;
+    var palette = this.getSelectedPalette();
+    if (palette && palette.colors.length > 0) {
+      color = palette.colors[palette.colors.length-1];
+    } else {
+      color = '#FFFFFF';
+    }
+    this.addColorInSelectedPalette(color);
+  };
+
+  ns.PaletteManagerController.prototype.delegatedPaletteBodyClick = function (event) {
+    var target = event.target;
+    if (target.classList.contains(CLOSE_ICON_CLASS)) {
+      var colorId = parseInt(target.parentNode.dataset.colorId, 10);
+      this.removeColorInSelectedPalette(colorId);
+    }
+  };
+
+  ns.PaletteManagerController.prototype.delegatedPaletteHeadClick = function (event) {
+    var target = event.target;
+    if (target.classList.contains(EDIT_NAME_CLASS)) {
+      this.renameSelectedPalette();
+    } else if (target.classList.contains('palette-manager-palette-button')) {
+      var action = target.dataset.action;
+      if (action === 'save') {
+        this.savePalette(this.getSelectedPalette().id);
+        this.redraw();
+      } else if (action === 'revert') {
+        this.revertChanges();
+      } else if (action === 'delete') {
+        this.deleteSelectedPalette();
+      }
+    }
+  };
+
+  ns.PaletteManagerController.prototype.getSpectrumSelector_ = function () {
+    return ':not(.' + NEW_COLOR_CLASS + ')>.palette-manager-color-square';
+  };
+
+  ns.PaletteManagerController.prototype.initPaletteCardsSpectrum = function () {
+    var oSelf = this;
+    var container = $(this.getSpectrumSelector_());
+    container.spectrum({
+      clickoutFiresChange : true,
+      showInput: true,
+      showButtons: false,
+      change : function (color) {
+        var target = this;
+        var colorId = parseInt(target.parentNode.dataset.colorId, 10);
+        oSelf.updateColorInSelectedPalette(colorId, color);
+      },
+      beforeShow : function() {
+        var target = this;
+        var colorId = parseInt(target.parentNode.dataset.colorId, 10);
+        var palette = oSelf.getSelectedPalette();
+        var color = palette.colors[colorId];
+        container.spectrum("set", color);
+      }
+    });
+
+    this.spectrumContainers.push(container);
+  };
+
+  /**
+   * Destroy all spectrum instances generated by the palette manager
+   */
+  ns.PaletteManagerController.prototype.destroySpectrumPickers = function () {
+    this.spectrumContainers.forEach(function (container) {
+      container.spectrum("destroy");
+    });
+    this.spectrumContainers = [];
+  };
+
+  ns.PaletteManagerController.prototype.updateColorInSelectedPalette = function (colorId, color) {
+    var palette = this.getSelectedPalette();
+    var hexColor = '#' + (color.toHex().toUpperCase());
+    palette.colors.splice(colorId, 1, hexColor);
+
+    this.redraw();
+  };
+
+  ns.PaletteManagerController.prototype.addColorInSelectedPalette = function (color) {
+    var selectedPalette = this.getSelectedPalette();
+    selectedPalette.colors.push(color);
+
+    this.redraw();
+  };
+
+  ns.PaletteManagerController.prototype.removeColorInSelectedPalette = function (colorId) {
+    var palette = this.getSelectedPalette();
+    palette.colors.splice(colorId, 1);
+
+    this.redraw();
+  };
+
+  ns.PaletteManagerController.prototype.renameSelectedPalette = function () {
+    var palette = this.getSelectedPalette();
+    var name = window.prompt('Please enter a new name for palette "' + palette.name + '"', palette.name);
+    if (name) {
+      palette.name = name;
+      this.redraw();
+    }
+  };
+
+  ns.PaletteManagerController.prototype.getSelectedPalette = function () {
+    return this.getPaletteById(this.selectedPaletteId, this.palettes);
+  };
+
+  ns.PaletteManagerController.prototype.getColorCardsMarkup = function (colors) {
+    var html = colors.map(function (color, index) {
+      var dict = {
+        colorId : index,
+        hex : color,
+        rgb : tinycolor(color).toRgbString(),
+        hsl :  tinycolor(color).toHslString()
+      };
+      return pskl.utils.Template.replace(this.colorCardTemplate, dict);
+    }.bind(this)).join('');
+    return html;
+  };
+
+  ns.PaletteManagerController.prototype.getPaletteById = function (paletteId, palettes) {
+    var match = null;
+
+    palettes.forEach(function (palette) {
+      if (palette.id === paletteId) {
+        match = palette;
+      }
+    });
+
+    return match;
+  };
+
+  ns.PaletteManagerController.prototype.removePaletteById = function (paletteId, palettes) {
+    var palette = this.getPaletteById(paletteId, palettes);
+    if (palette) {
+      var index = palettes.indexOf(palette);
+      palettes.splice(index, 1);
+    }
+  };
+
+  ns.PaletteManagerController.prototype.deselectCurrentPalette = function () {
+    var selectedItem = this.palettesList.querySelector('.' + SELECTED_CLASSNAME);
+    if (selectedItem) {
+      this.selectedPaletteId = null;
+      selectedItem.classList.remove(SELECTED_CLASSNAME);
+    }
+  };
+
+  ns.PaletteManagerController.prototype.revertChanges = function () {
+    var palette = this.getSelectedPalette();
+    var originalPalette = this.getPaletteById(palette.id, this.originalPalettes);
+    palette.name = originalPalette.name;
+    palette.colors = originalPalette.colors.slice(0);
+
+    this.redraw();
+  };
+
+  ns.PaletteManagerController.prototype.deleteSelectedPalette = function () {
+    var palette = this.getSelectedPalette();
+    if (this.palettes.length > 1) {
+      if (window.confirm('Are you sure you want to delete "' + palette.name + '" ?')) {
+        this.removePaletteById(palette.id, this.palettes);
+        this.removePaletteById(palette.id, this.originalPalettes);
+
+        this.persistToLocalStorage();
+
+        this.createPaletteListMarkup();
+        this.selectPalette(this.palettes[0].id);
+      }
+    }
+  };
+
+  ns.PaletteManagerController.prototype.onPaletteListClick = function (event) {
+    var target = event.target;
+    if (target.dataset.paletteId) {
+      this.selectPalette(target.dataset.paletteId);
+    }
+  };
+
+  ns.PaletteManagerController.prototype.saveAll = function () {
+    this.palettes.forEach(function (palette) {
+      this.savePalette(palette.id);
+    }.bind(this));
+
+    this.redraw();
+  };
+
+  ns.PaletteManagerController.prototype.savePalette = function (paletteId) {
+    var palette = this.getPaletteById(paletteId, this.palettes);
+    var originalPalette = this.getPaletteById(paletteId, this.originalPalettes);
+    if (originalPalette) {
+      originalPalette.name = palette.name;
+      originalPalette.colors = palette.colors;
+    } else {
+      this.originalPalettes.push(palette);
+    }
+
+    this.persistToLocalStorage();
+
+    $.publish(Events.SHOW_NOTIFICATION, [{"content": "Palette " + palette.name + " successfully saved !"}]);
+    window.setTimeout($.publish.bind($, Events.HIDE_NOTIFICATION), 2000);
+  };
+
+  ns.PaletteManagerController.prototype.persistToLocalStorage = function () {
+    window.localStorage.setItem('piskel.palettes', JSON.stringify(this.originalPalettes));
+    this.originalPalettes = this.retrieveUserPalettes();
+    $.publish(Events.PALETTE_LIST_UPDATED);
+  };
+
+  ns.PaletteManagerController.prototype.retrieveUserPalettes = function () {
+    var palettesString = window.localStorage.getItem('piskel.palettes');
+    return JSON.parse(palettesString) || [];
+  };
+
+})();;(function () {
+  var ns = $.namespace('pskl.controller.dialogs');
+
+  var dialogs = {
+    'manage-palettes' : {
+      template : 'templates/dialogs/manage-palettes.html',
+      controller : ns.PaletteManagerController
+    }
+  };
+
+  ns.DialogsController = function (piskelController) {
+    this.piskelController = piskelController;
+    this.currentDialog_ = null;
+  };
+
+  ns.DialogsController.prototype.init = function () {
+    this.dialogContainer_ = document.getElementById('dialog-container');
+    this.dialogWrapper_ = document.getElementById('dialog-container-wrapper');
+    $.subscribe(Events.DIALOG_DISPLAY, this.onDialogDisplayEvent_.bind(this));
+    $.subscribe(Events.DIALOG_HIDE, this.onDialogHideEvent_.bind(this));
+
+    pskl.app.shortcutService.addShortcut('alt+P', this.onDialogDisplayEvent_.bind(this, null, 'manage-palettes'));
+  };
+
+  ns.DialogsController.prototype.onDialogDisplayEvent_ = function (evt, dialogId) {
+    if (!this.isDisplayed()) {
+      var config = dialogs[dialogId];
+      if (config) {
+        this.dialogContainer_.innerHTML = pskl.utils.Template.get(config.template);
+        var controller = new config.controller(this.piskelController);
+        controller.init();
+
+        this.showDialogWrapper_();
+        this.currentDialog_ = {
+          id : dialogId,
+          controller : controller
+        };
+      } else {
+        console.error('Could not find dialog configuration for dialogId : ' + dialogId);
+      }
+    }
+  };
+
+  ns.DialogsController.prototype.onDialogHideEvent_ = function () {
+    this.hideDialog();
+  };
+
+  ns.DialogsController.prototype.showDialogWrapper_ = function () {
+    pskl.app.shortcutService.addShortcut('ESC', this.hideDialog.bind(this));
+    this.dialogWrapper_.classList.add('show');
+  };
+
+  ns.DialogsController.prototype.hideDialog = function () {
+    var currentDialog = this.currentDialog_;
+    if (currentDialog) {
+      currentDialog.controller.destroy();
+    }
+
+    this.hideDialogWrapper_();
+    this.currentDialog_ = null;
+  };
+
+  ns.DialogsController.prototype.hideDialogWrapper_ = function () {
+    pskl.app.shortcutService.removeShortcut('ESC');
+    this.dialogWrapper_.classList.remove('show');
+  };
+
+  ns.DialogsController.prototype.isDisplayed = function () {
+    return this.currentDialog_ !== null;
   };
 
 })();;(function () {
@@ -18196,7 +18845,7 @@ if (typeof Function.prototype.bind !== "function") {
   ns.SavedStatusService.prototype.onBeforeUnload = function (evt) {
     var piskel = this.piskelController_.piskel;
     if (piskel.isDirty_) {
-      var confirmationMessage = "Your Piskel seem to have unsaved changes";
+      var confirmationMessage = "Your Piskel seems to have unsaved changes";
 
       (evt || window.event).returnValue = confirmationMessage;
       return confirmationMessage;
@@ -18225,7 +18874,8 @@ if (typeof Function.prototype.bind !== "function") {
     this.shortcuts_[key] = this.shortcuts_[key] || {};
 
     if (this.shortcuts_[key][meta]) {
-      throw 'Shortcut ' + meta + ' + ' + key + ' already registered';
+      var keyStr = (meta !== 'normal' ? meta + ' + ' : '') + key;
+      console.error('[ShortcutService] >>> Shortcut [' + keyStr + '] already registered');
     } else {
       this.shortcuts_[key][meta] = callback;
     }
@@ -18250,6 +18900,9 @@ if (typeof Function.prototype.bind !== "function") {
     } else if (key.indexOf('shift+') === 0) {
       meta = 'shift';
       key = key.replace('shift+', '');
+    } else if (key.indexOf('alt+') === 0) {
+      meta = 'alt';
+      key = key.replace('alt+', '');
     }
     return {meta : meta, key : key};
   };
@@ -18271,6 +18924,8 @@ if (typeof Function.prototype.bind !== "function") {
           cb = keyShortcuts.ctrl;
         } else if (this.isShiftKeyPressed_(evt)) {
           cb = keyShortcuts.shift;
+        } else if (this.isAltKeyPressed_(evt)) {
+          cb = keyShortcuts.alt;
         } else {
           cb = keyShortcuts.normal;
         }
@@ -18296,6 +18951,10 @@ if (typeof Function.prototype.bind !== "function") {
     return evt.shiftKey;
   };
 
+  ns.ShortcutService.prototype.isAltKeyPressed_ = function (evt) {
+    return evt.altKey;
+  };
+
   ns.ShortcutService.prototype.isMac_ = function () {
     return navigator.appVersion.indexOf("Mac") != -1;
   };
@@ -18304,7 +18963,8 @@ if (typeof Function.prototype.bind !== "function") {
     191 : "?",
     27 : "esc",
     38 : "up",
-    40 : "down"
+    40 : "down",
+    46 : "del"
   };
 
   var ns = $.namespace('pskl.service.keyboard');
@@ -18337,6 +18997,10 @@ if (typeof Function.prototype.bind !== "function") {
     this.initMarkup_();
     pskl.app.shortcutService.addShortcut('shift+?', this.toggleCheatsheet_.bind(this));
     pskl.app.shortcutService.addShortcut('?', this.toggleCheatsheet_.bind(this));
+
+    var link = $('.cheatsheet-link');
+    link.click(this.toggleCheatsheet_.bind(this));
+
     $.subscribe(Events.TOGGLE_HELP, this.toggleCheatsheet_.bind(this));
     $.subscribe(Events.ESCAPE, this.onEscape_.bind(this));
   };
@@ -18371,58 +19035,71 @@ if (typeof Function.prototype.bind !== "function") {
   ns.CheatsheetService.prototype.initMarkup_ = function () {
     this.initMarkupForTools_();
     this.initMarkupForMisc_();
+    this.initMarkupForSelection_();
+  };
+
+  ns.CheatsheetService.prototype.toDescriptor_ = function (shortcut, description, icon) {
+    return {
+      'shortcut' : shortcut,
+      'description' : description,
+      'icon' : icon
+    };
+  };
+
+  ns.CheatsheetService.prototype.getDomFromDescriptor_ = function (descriptor) {
+    var shortcutTemplate = pskl.utils.Template.get('cheatsheet-shortcut-template');
+    var markup = pskl.utils.Template.replace(shortcutTemplate, {
+      shortcutIcon : descriptor.icon,
+      shortcutDescription : descriptor.description,
+      shortcutKey : descriptor.shortcut
+    });
+
+    return pskl.utils.Template.createFromHTML(markup);
+  };
+
+  ns.CheatsheetService.prototype.initMarkupAbstract_ = function (descriptors, containerSelector) {
+    var container = $(containerSelector, this.cheatsheetEl_).get(0);
+    for (var i = 0 ; i < descriptors.length ; i++) {
+      var descriptor = descriptors[i];
+      var shortcutEl = this.getDomFromDescriptor_(descriptor);
+      container.appendChild(shortcutEl);
+    }
   };
 
   ns.CheatsheetService.prototype.initMarkupForTools_ = function () {
-    var shortcutTemplate = pskl.utils.Template.get('cheatsheet-shortcut-template');
+    var descriptors = pskl.app.toolController.tools.map(function (tool) {
+      return this.toDescriptor_(tool.shortcut, tool.instance.helpText, 'tool-icon ' + tool.instance.toolId);
+    }.bind(this));
 
-    var toolShortcutsContainer = $('.cheatsheet-tool-shortcuts', this.cheatsheetEl_).get(0);
-    var tools = pskl.app.toolController.tools;
-    for (var i = 0 ; i < tools.length ; i++) {
-      var tool = tools[i];
-      var shortcutEl = pskl.utils.Template.createFromHTML(
-        pskl.utils.Template.replace(shortcutTemplate, {
-          shortcutIcon : 'tool-icon ' + tool.instance.toolId,
-          shortcutDescription : tool.instance.helpText,
-          shortcutKey : tool.shortcut
-        })
-      );
-      toolShortcutsContainer.appendChild(shortcutEl);
-    }
+    this.initMarkupAbstract_(descriptors, '.cheatsheet-tool-shortcuts');
   };
 
   ns.CheatsheetService.prototype.initMarkupForMisc_ = function () {
-    var shortcutTemplate = pskl.utils.Template.get('cheatsheet-shortcut-template');
-
-    var miscShortcutsContainer = $('.cheatsheet-misc-shortcuts', this.cheatsheetEl_).get(0);
-    var toDescriptor = function (shortcut, description) {
-      return {shortcut:shortcut, description:description};
-    };
-    var miscKeys = [
-      toDescriptor('X', 'Swap primary/secondary colors'),
-      toDescriptor('D', 'Reset default colors'),
-      toDescriptor('ctrl + X', 'Cut selection'),
-      toDescriptor('ctrl + C', 'Copy selection'),
-      toDescriptor('ctrl + V', 'Paste selection'),
-      toDescriptor('ctrl + Z', 'Undo'),
-      toDescriptor('ctrl + Y', 'Redo'),
-      toDescriptor('&#65514;', 'Select previous frame'), /* ASCII for up-arrow */
-      toDescriptor('&#65516;', 'Select next frame'), /* ASCII for down-arrow */
-      toDescriptor('N', 'Create new frame'),
-      toDescriptor('shift + N', 'Duplicate selected frame'),
-      toDescriptor('shift + ?', 'Open/Close this popup')
+    var descriptors = [
+      this.toDescriptor_('X', 'Swap primary/secondary colors'),
+      this.toDescriptor_('D', 'Reset default colors'),
+      this.toDescriptor_('ctrl + Z', 'Undo'),
+      this.toDescriptor_('ctrl + Y', 'Redo'),
+      this.toDescriptor_('&#65514;', 'Select previous frame'), /* ASCII for up-arrow */
+      this.toDescriptor_('&#65516;', 'Select next frame'), /* ASCII for down-arrow */
+      this.toDescriptor_('N', 'Create new frame'),
+      this.toDescriptor_('shift + N', 'Duplicate selected frame'),
+      this.toDescriptor_('shift + ?', 'Open/Close this popup'),
+      this.toDescriptor_('alt + P', 'Open the Palette Manager')
     ];
-    for (var i = 0 ; i < miscKeys.length ; i++) {
-      var key = miscKeys[i];
-      var shortcutEl = pskl.utils.Template.createFromHTML(
-        pskl.utils.Template.replace(shortcutTemplate, {
-          shortcutIcon : '',
-          shortcutDescription : key.description,
-          shortcutKey : key.shortcut
-        })
-      );
-      miscShortcutsContainer.appendChild(shortcutEl);
-    }
+
+    this.initMarkupAbstract_(descriptors, '.cheatsheet-misc-shortcuts');
+  };
+
+  ns.CheatsheetService.prototype.initMarkupForSelection_ = function () {
+    var descriptors = [
+      this.toDescriptor_('ctrl + X', 'Cut selection'),
+      this.toDescriptor_('ctrl + C', 'Copy selection'),
+      this.toDescriptor_('ctrl + V', 'Paste selection'),
+      this.toDescriptor_('del', 'Delete selection')
+    ];
+
+    this.initMarkupAbstract_(descriptors, '.cheatsheet-selection-shortcuts');
   };
 
 })();
@@ -18484,6 +19161,8 @@ if (typeof Function.prototype.bind !== "function") {
 
       this.highlightedPixelCol = col;
       this.highlightedPixelRow = row;
+    } else {
+      this.hideHighlightedPixel(overlay);
     }
   };
 
@@ -18542,7 +19221,95 @@ if (typeof Function.prototype.bind !== "function") {
     return pixels;
   };
 })();
-;/**
+;(function () {
+  var ns = $.namespace('pskl.drawingtools');
+  /**
+   * Abstract shape tool class, parent to all shape tools (rectangle, circle).
+   * Shape tools should override only the draw_ method
+   */
+  ns.ShapeTool = function() {
+    // Shapes's first point coordinates (set in applyToolAt)
+    this.startCol = null;
+    this.startRow = null;
+  };
+
+  pskl.utils.inherit(ns.ShapeTool, ns.BaseTool);
+
+  /**
+   * @override
+   */
+  ns.ShapeTool.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
+    this.startCol = col;
+    this.startRow = row;
+
+    // Drawing the first point of the rectangle in the fake overlay canvas:
+    overlay.setPixel(col, row, color);
+  };
+
+  ns.ShapeTool.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
+    overlay.clear();
+    if(color == Constants.TRANSPARENT_COLOR) {
+      color = Constants.SELECTION_TRANSPARENT_COLOR;
+    }
+
+    var coords = this.getCoordinates_(col, row, event);
+    // draw in overlay
+    this.draw_(coords.col, coords.row, color, overlay);
+  };
+
+  /**
+   * @override
+   */
+  ns.ShapeTool.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
+    overlay.clear();
+    if (event.shiftKey) {
+      var scaled = this.getScaledCoordinates_(col, row);
+      col = scaled.col;
+      row = scaled.row;
+    }
+    var coords = this.getCoordinates_(col, row, event);
+    this.draw_(coords.col, coords.row, color, frame);
+  };
+
+  /**
+   * Transform the current coordinates based on the original event
+   * @param {Number} col current col/x coordinate in the frame
+   * @param {Number} row current row/y coordinate in the frame
+   * @param {Event} event current event (can be mousemove, mouseup ...)
+   * @return {Object} {row : Number, col : Number}
+   */
+  ns.ShapeTool.prototype.getCoordinates_ = function(col, row, event) {
+    if (event.shiftKey) {
+      return this.getScaledCoordinates_(col, row);
+    } else {
+      return {col : col, row : row};
+    }
+  };
+
+  /**
+   * Transform the coordinates to preserve a square 1:1 ratio from the origin of the shape
+   * @param {Number} col current col/x coordinate in the frame
+   * @param {Number} row current row/y coordinate in the frame
+   * @return {Object} {row : Number, col : Number}
+   */
+  ns.ShapeTool.prototype.getScaledCoordinates_ = function(col, row) {
+    var sign;
+    if (Math.abs(this.startCol - col) > Math.abs(this.startRow - row)) {
+      sign = row > this.startRow ? 1 : -1;
+      row = this.startRow + (sign * Math.abs(this.startCol - col));
+    } else {
+      sign = col > this.startCol ? 1 : -1;
+      col = this.startCol + (sign * Math.abs(this.startRow - row));
+    }
+    return {
+      col : col,
+      row : row
+    };
+  };
+
+  ns.ShapeTool.prototype.draw_ = Constants.ABSTRACT_FUNCTION;
+
+})();;/**
  * @provide pskl.drawingtools.SimplePen
  *
  * @require pskl.utils
@@ -18784,49 +19551,15 @@ if (typeof Function.prototype.bind !== "function") {
   var ns = $.namespace("pskl.drawingtools");
 
   ns.Rectangle = function() {
+    ns.ShapeTool.call(this);
+
     this.toolId = "tool-rectangle";
     this.helpText = "Rectangle tool";
-
-    // Rectangle's first point coordinates (set in applyToolAt)
-    this.startCol = null;
-    this.startRow = null;
   };
 
-  pskl.utils.inherit(ns.Rectangle, ns.BaseTool);
+  pskl.utils.inherit(ns.Rectangle, ns.ShapeTool);
 
-  /**
-   * @override
-   */
-  ns.Rectangle.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
-    this.startCol = col;
-    this.startRow = row;
-
-    // Drawing the first point of the rectangle in the fake overlay canvas:
-    overlay.setPixel(col, row, color);
-  };
-
-  ns.Rectangle.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
-    overlay.clear();
-    if(color == Constants.TRANSPARENT_COLOR) {
-      color = Constants.SELECTION_TRANSPARENT_COLOR;
-    }
-
-    // draw in overlay
-    this.drawRectangle_(col, row, color, overlay);
-  };
-
-  /**
-   * @override
-   */
-  ns.Rectangle.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
-    overlay.clear();
-    if(frame.containsPixel(col, row)) { // cancel if outside of canvas
-      // draw in frame to finalize
-      this.drawRectangle_(col, row, color, frame);
-    }
-  };
-
-  ns.Rectangle.prototype.drawRectangle_ = function (col, row, color, targetFrame) {
+  ns.Rectangle.prototype.draw_ = function (col, row, color, targetFrame) {
     var strokePoints = pskl.PixelUtils.getBoundRectanglePixels(this.startCol, this.startRow, col, row);
     for(var i = 0; i< strokePoints.length; i++) {
       // Change model:
@@ -18843,49 +19576,15 @@ if (typeof Function.prototype.bind !== "function") {
   var ns = $.namespace("pskl.drawingtools");
 
   ns.Circle = function() {
+    ns.ShapeTool.call(this);
+
     this.toolId = "tool-circle";
     this.helpText = "Circle tool";
-
-    // Circle's first point coordinates (set in applyToolAt)
-    this.startCol = null;
-    this.startRow = null;
   };
 
-  pskl.utils.inherit(ns.Circle, ns.BaseTool);
+  pskl.utils.inherit(ns.Circle, ns.ShapeTool);
 
-  /**
-   * @override
-   */
-  ns.Circle.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
-    this.startCol = col;
-    this.startRow = row;
-
-    // Drawing the first point of the rectangle in the fake overlay canvas:
-    overlay.setPixel(col, row, color);
-  };
-
-  ns.Circle.prototype.moveToolAt = function(col, row, color, frame, overlay, event) {
-    overlay.clear();
-    if(color == Constants.TRANSPARENT_COLOR) {
-      color = Constants.SELECTION_TRANSPARENT_COLOR;
-    }
-
-    // draw in overlay
-    this.drawCircle_(col, row, color, overlay);
-  };
-
-  /**
-   * @override
-   */
-  ns.Circle.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
-    overlay.clear();
-    if(frame.containsPixel(col, row)) { // cancel if outside of canvas
-      // draw in frame to finalize
-      this.drawCircle_(col, row, color, frame);
-    }
-  };
-
-  ns.Circle.prototype.drawCircle_ = function (col, row, color, targetFrame) {
+  ns.Circle.prototype.draw_ = function (col, row, color, targetFrame) {
     var circlePoints = this.getCirclePixels_(this.startCol, this.startRow, col, row);
     for(var i = 0; i< circlePoints.length; i++) {
       // Change model:
@@ -19047,25 +19746,22 @@ if (typeof Function.prototype.bind !== "function") {
     }
   };
 
-  ns.BaseSelect.prototype.hideHighlightedPixel = function () {
-    // not implemented for selection tools
-  };
-
   /**
    * If we mouseover the selection draw inside the overlay frame, show the 'move' cursor
    * instead of the 'select' one. It indicates that we can move the selection by dragndroping it.
    * @override
    */
   ns.BaseSelect.prototype.moveUnactiveToolAt = function(col, row, color, frame, overlay, event) {
-
-    if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
-      // We're hovering the selection, show the move tool:
-      this.BodyRoot.addClass(this.toolId);
-      this.BodyRoot.removeClass(this.secondaryToolId);
-    } else {
-      // We're not hovering the selection, show create selection tool:
-      this.BodyRoot.addClass(this.secondaryToolId);
-      this.BodyRoot.removeClass(this.toolId);
+    if (overlay.containsPixel(col, row)) {
+      if(overlay.getPixel(col, row) != Constants.SELECTION_TRANSPARENT_COLOR) {
+        // We're hovering the selection, show the move tool:
+        this.BodyRoot.addClass(this.toolId);
+        this.BodyRoot.removeClass(this.secondaryToolId);
+      } else {
+        // We're not hovering the selection, show create selection tool:
+        this.BodyRoot.addClass(this.secondaryToolId);
+        this.BodyRoot.removeClass(this.toolId);
+      }
     }
   };
 
@@ -19245,6 +19941,7 @@ if (typeof Function.prototype.bind !== "function") {
 
   pskl.utils.inherit(ns.ColorPicker, ns.BaseTool);
 
+
   /**
    * @override
    */
@@ -19297,6 +19994,9 @@ if (typeof Function.prototype.bind !== "function") {
       this.paletteController = new pskl.controller.PaletteController();
       this.paletteController.init();
 
+      this.palettesListController = new pskl.controller.PalettesListController();
+      this.palettesListController.init();
+
       this.drawingController = new pskl.controller.DrawingController(this.piskelController, this.paletteController, $('#drawing-canvas-container'));
       this.drawingController.init();
 
@@ -19314,6 +20014,9 @@ if (typeof Function.prototype.bind !== "function") {
 
       this.settingsController = new pskl.controller.settings.SettingsController(this.piskelController);
       this.settingsController.init();
+
+      this.dialogsController = new pskl.controller.dialogs.DialogsController(this.piskelController);
+      this.dialogsController.init();
 
       this.toolController = new pskl.controller.ToolController();
       this.toolController.init();

@@ -57,6 +57,19 @@
 	margin-left: 100px;
 }
 
+.user-piskels-empty-message {
+	text-align: center;
+	font-size: 2.5em;
+	color: #777;
+	line-height: 2em;
+}
+
+@media (max-width: 900px) {
+	.user-piskels-empty-message {
+		font-size: 1.5em;
+	}
+}
+
 .user-piskels-menu-wrapper {
 	height: 100%;
 	position: absolute;

@@ -108,3 +108,11 @@
 .main-wrapper {
   margin-top: 40px;
 }
+
+/* Override from piskel-app.css */
+.navigation .create-piskel-button {
+  width: 60px;
+  padding : 0;
+  line-height: 24px;
+  margin: 6px 0 0 8px;
+}
