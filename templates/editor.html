@@ -11,6 +11,7 @@
   <link rel="shortcut icon" type="image/png" href="../../static/resources/favicon.png"/>
   <link rel="stylesheet"    type="text/css"  href="/static/css/piskel-app.css"/>
   <link rel="stylesheet"    type="text/css"  href="/static/css/piskel-app-editor.css"/>
+  {% include "analytics.html" %}
 </head>
 <body>
   <div id="loading-mask">
@@ -57,6 +58,7 @@
         <iframe src="../templates/preview.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
         <iframe src="../templates/layers-list.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
         <iframe src="../templates/palettes-list.html" onload="iframeloader.onLoad(event)" data-iframe-loader="display"></iframe>
+        <div class="pull-bottom cursor-coordinates"></div>
       </div>
     </div>
 

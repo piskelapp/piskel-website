@@ -65,7 +65,7 @@ class PiskelHandler(BaseHandler):
 
       self.render("editor.html", values)
     else:
-      self.abort(403)
+      self._render_piskel_private()
 
   def _clone_piskel(self, piskel, user_id):
     clone = Piskel(owner=user_id)
@@ -96,7 +96,7 @@ class PiskelHandler(BaseHandler):
 
         self.redirect('/p/' + clone_id + '/' + action)
       else:
-        self.abort(403)
+        self._render_unauthorized_action()
     else:
       self.abort(404)
 
@@ -121,7 +121,7 @@ class PiskelHandler(BaseHandler):
       values = self._get_piskel_details(piskel)
       self.render("piskel/piskel-history.html", values)
     else:
-      self.abort(403)
+      self._render_piskel_private()
 
   # Clone a previous version/framesheet of a piskel as the current version
   def rollback_piskel_to_framesheet (self, piskel_id, framesheet_id):
@@ -139,7 +139,17 @@ class PiskelHandler(BaseHandler):
       values = self._get_piskel_details(piskel)
       self.render("piskel/piskel-details.html", values)
     else:
-      self.render("error/piskel-private.html", {})
+      self._render_piskel_private()
+
+  # Error page when user tries to view a private piskel
+  def _render_piskel_private(self):
+    self.render("error/piskel-private.html", {})
+
+  # Error page when user tries to perform an unauthorized action on a piskel
+  def _render_unauthorized_action(self):
+    # TODO : error page should be different
+    # as the piskel is not necessarily private
+    self._render_piskel_private()
 
   def permanently_delete(self, piskel_id):
     piskel = db.get(piskel_id)
@@ -148,7 +158,7 @@ class PiskelHandler(BaseHandler):
       db.get(piskel_id) # funny looks like this forces
       self.redirect(self.request.get('callback_url'))
     else:
-      self.abort(403)
+      self._render_unauthorized_action()
 
   def delete(self, piskel_id):
     self._update_delete_status(piskel_id, True, self.request.get('callback_url'))
@@ -167,7 +177,7 @@ class PiskelHandler(BaseHandler):
 
       self.redirect(redirect_url)
     else:
-      self.abort(403)
+      self._render_unauthorized_action()
 
   def updateinfo(self, piskel_id):
     piskel = db.get(piskel_id)
@@ -181,7 +191,7 @@ class PiskelHandler(BaseHandler):
       # consistency will be forced by get made on view(self)
       self.redirect('/p/' + piskel_id + '/view')
     else:
-      self.abort(403)
+      self._render_unauthorized_action()
 
   # Save a new framesheet on an existing piskel
   def save(self, piskel_id):
