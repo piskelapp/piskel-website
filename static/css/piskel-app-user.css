@@ -1,124 +1,235 @@
 .main-container {
-	margin : 40px 0 0 40px;
+  margin : 40px;
 }
 
 .main-container > div {
-	margin-bottom : 10px;
-}
-
-.user-card {
-	width: 300px;
-	float : left;
-}
-
-.user-avatar-container {
-	display : inline-block;
-	position : relative;
-	background-color: white;
-}
-
-.user-avatar {
-	vertical-align: middle;
+  margin-bottom : 10px;
 }
 
 .user-avatar-big {
-	width: 256px;
-	height :256px;
+  width: 15em;
+  height :15em;
 }
 
-.user-info-container {
-	margin-top : 10px;
-}
-
-.user-info-header {
-	font-size : 1.5rem;
-	font-weight : bold;
-	margin: 0;
-}
-
-.user-info-details {
-	margin-top : 10px;
-	font-size : 0.8rem;
-}
-
-.user-info-details > li{
-	margin-top : 10px;
-	margin-left: 5px;
-}
-
-.user-piskels {
-	overflow:hidden;
-	position : relative;
-	min-height: 256px;
-}
-
-.user-piskels-grid {
-	overflow:hidden;
-	margin-left: 100px;
-}
-
-.user-piskels-empty-message {
-	text-align: center;
-	font-size: 2.5em;
-	color: #777;
-	line-height: 2em;
-}
-
-@media (max-width: 900px) {
-	.user-piskels-empty-message {
-		font-size: 1.5em;
-	}
-}
-
-.user-piskels-menu-wrapper {
-	height: 100%;
-	position: absolute;
-	padding-bottom: 5px;
-	-moz-box-sizing: border-box;
-	box-sizing : border-box;
-	width: 100px;
-}
-
-.user-piskels-menu {
-	height: 100%;
-	text-align: right;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	margin-right: 10px;
-	padding-right: 10px;
-	padding-top: 10px;
-	border-right : 1px solid #888;
+.user-piskels-menu-wrapper,
+.user-piskels-menu  {
+  -moz-box-sizing: border-box;
+  box-sizing : border-box;
 }
 
 .user-piskels-menu-item {
-	margin: 0 0 20px 0;
-	font-size: 1.2em;
-	cursor : pointer;
-}
-
-.user-piskels-menu-item a {
-		color : #AAA;
-		transition : color 0.3s;
-}
-
-.user-piskels-menu-item:hover a{
-	color : white;
-	border-right: 3px solid white;
-	padding-right: 9px;
-	margin-right: -12px;
-	text-decoration: none;
+  font-size: 1.2em;
+  cursor : pointer;
 }
 
 .user-piskels-menu-item.selected a {
-	color: gold;
-	border-right: 3px solid gold;
-	padding-right: 9px;
-	margin-right: -12px;
+  color: gold;
+}
+
+.user-piskels-menu-item:hover a{
+  color : white;
+  text-decoration: none;
+}
+
+/********************************/
+/****@MEDIA-QUERY : LANDSCAPE****/
+/********************************/
+
+@media (orientation:landscape) and (max-resolution: 1.5dppx) {
+  .user-card {
+    width: 300px;
+    float : left;
+  }
+
+  .user-piskels-menu-wrapper {
+    height: 100%;
+    position: absolute;
+    padding-bottom: 5px;
+    width: 100px;
+  }
+
+  .user-piskels-menu {
+    height: 100%;
+    text-align: right;
+    margin-right: 0.6em;
+    padding-right: 0.6em;
+    padding-top: 0.6em;
+    border-right : 1px solid #888;
+  }
+
+  .user-piskels-grid {
+    overflow:hidden;
+    margin-left: 100px;
+  }
+
+  .user-piskels-menu-item.selected a,
+  .user-piskels-menu-item:hover a {
+    border-right-style: solid;
+    border-right-width: 3px;
+    padding-right: 9px;
+    margin-right: -12px;
+  }
+
+  .user-piskels-menu-item.selected a {
+    border-right-color : gold;
+  }
+
+  .user-piskels-menu-item:hover a{
+    border-right-color : white;
+  }
+
+  .user-piskels-menu-item {
+    margin-bottom: 20px;
+  }
+
+}
+
+
+/********************************/
+/*****@MEDIA-QUERY : PORTRAIT****/
+/********************************/
+@media (orientation:portrait), (min-resolution: 1.5dppx){
+  .user-card {
+    overflow: hidden;
+  }
+
+  .user-avatar-container, .user-info-container {
+    float : left;
+  }
+
+  .user-info-container {
+    margin-left : 1em;
+  }
+
+  .user-piskels-menu-wrapper,
+  .user-piskels-menu  {
+    height: 2.5em;
+    width: 100%;
+  }
+
+  .user-piskels-menu-wrapper {
+    padding-bottom: 5px;
+  }
+
+  .user-piskels-menu {
+    text-align: left;
+    margin-bottom: 0.6em;
+    padding-bottom: 0.6em;
+    padding-top: 0.6em;
+    border-bottom : 0.1em solid #888;
+  }
+
+  .user-piskels-menu-item {
+    float : left;
+    margin-right : 1.2em;
+  }
+
+  .user-piskels-grid {
+    overflow:hidden;
+    margin-top: 1em;
+  }
+  .user-piskels-menu-item.selected a,
+  .user-piskels-menu-item:hover a {
+    border-bottom-style: solid;
+    border-bottom-width: 0.15em;
+    padding-bottom: 0.4em;
+    margin-bottom: -0.8em;
+  }
+
+  .user-piskels-menu-item.selected a {
+    border-bottom-color : gold;
+  }
+
+  .user-piskels-menu-item:hover a{
+    border-bottom-color : white;
+  }
+}
+
+.user-avatar-container {
+  display : inline-block;
+  position : relative;
+  background-color: white;
+}
+
+.user-avatar {
+  vertical-align: middle;
+}
+
+.user-info-container {
+  margin-top : 1em;
+}
+
+.user-info-header {
+  font-size : 1.5em;
+  font-weight : bold;
+  margin: 0;
+}
+
+.user-info-details {
+  margin-top : 10px;
+  font-size : 0.8em;
+}
+
+.user-info-details > li{
+  margin-top : 10px;
+  margin-left: 5px;
+}
+
+.user-piskels {
+  overflow:hidden;
+  position : relative;
+  min-height: 256px;
+}
+
+.user-piskels-empty-message {
+  text-align: center;
+  font-size: 2.5em;
+  color: #777;
+  line-height: 2em;
+}
+
+.user-piskels-menu-item a {
+    color : #AAA;
+    transition : color 0.3s;
 }
 
 .user-info-counter {
-	margin-right: 3px;
+  margin-right: 3px;
 
-	line-height: 1.4rem;
-	font-size: 1.2rem;
+  line-height: 1.4em;
+  font-size: 1.2em;
+}
+
+/********************************/
+/******@MEDIA-QUERY : RETINA*****/
+/********************************/
+@media screen and (min-resolution: 1.5dppx) {
+  .user-avatar-big {
+    width: 10em;
+    height :10em;
+  }
+
+  .card-info-name a {
+    font-size: 0.6em;
+  }
+}
+
+/******************/
+/******RETINA******/
+/******************/
+
+/* Should be moved to piskel-app.css, but needs more work ... */
+
+@media screen and (min-resolution: 1.5dppx) {
+  body {
+    font-size : 2em;
+  }
+
+  .piskel-button {
+    font-size : 0.6em;
+  }
+
+  .piskel-logo {
+    font-size : 0.5em;
+  }
 }

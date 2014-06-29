@@ -66,8 +66,8 @@
 }
 
 .card-info-container {
-  padding: 5px;
-  height:58px;
+  padding: 0 0.2em;
+  height: 70px;
   cursor: default;
   color: #888;
   transition: color 0.3s;
@@ -75,7 +75,7 @@
   background-image: url('/static/resources/iconmonstr-globe-4-icon.svg');
   background-size: 4em;
   background-repeat: no-repeat;
-  background-position: 122% 14px;
+  background-position: 115% 20px;
 }
 
 .card-container-private .card-info-container {
@@ -87,9 +87,10 @@
 }
 
 .card-info-name {
-  height: 20px;
+  height: 1.6em;
+  line-height: 1.6em;
   overflow: hidden;
-  margin: 0;
+  margin: 0 3px;
 }
 
 .card-info-name a {
@@ -102,7 +103,7 @@
 }
 
 .card-info-meta {
-  font-size : 0.7rem;
+  font-size : 0.8em;
   opacity:0.8;
   margin : 10px 3px;
 }
@@ -110,4 +111,20 @@
 .card-info-meta .counter{
   font-weight : bold;
   font-size : 0.8rem;
+}
+
+@media screen and (min-resolution: 1.5dppx) {
+  .card-info-name {
+    height: 1em;
+    line-height: 1em;
+  }
+
+  .card-info-name a {
+    position:absolute;
+  }
+
+  .card-info-meta {
+    font-size : 0.4em;
+    font-weight: bold;
+  }
 }

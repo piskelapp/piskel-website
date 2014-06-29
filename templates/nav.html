@@ -2,15 +2,20 @@
   <a class="link anchor-left  piskel-logo" href="/"><img src="/static/resources/logo_transparent.png" /></a>
   {% if hide_create %}
   {% else %}
-    <a class="piskel-button  create-piskel-button  anchor-left" href="/p/create" target="_blank">Create <span class="create-piskel-icon">+</span></a>
+    <a class="piskel-button  create-piskel-button  anchor-left" href="/p/create" target="_blank">Create piskel</a>
   {% endif %}
   {% if is_logged_in %}
-    <a class="link link-login anchor-right" href="/logout">logout</a>
-    <a class="link link-login link-highlight anchor-right" href="/user/{{ session.user_id }}">
+    <div class="anchor-right user-container">
       <img
-        class="small-user-avatar small-circle-user-avatar"
+        class="small-user-avatar small-circle-user-avatar anchor-left"
         src="{{ user.avatar_url }}"
-      />{{ user.name }}</a>
+      />
+      <div class="anchor-left">
+        <div class="user-link"><a class="link link-login" href="/user/{{ session.user_id }}">{{ user.name }}</a></div>
+        <div class="logout-link"><a class="link link-login" href="/logout">logout</a></div>
+      </div>
+    </div>
+    <a class="link link-login link-highlight anchor-right" href="/user/{{ session.user_id }}">My Gallery</a>
   {% else %}
     <a class="link link-login link-highlight anchor-right" href="/auth/google">login</a>
   {% endif %}

@@ -31,8 +31,8 @@
           isLoggedIn : {% if is_logged_in %}true{% else %}false{% endif %},
           fps : {{ piskel_fps }},
           descriptor : {
-            name : "{{piskel.name}}",
-            description : {% if piskel.description %}"{{piskel.description}}"{% else %}""{% endif %},
+            name : "{{piskel_name}}",
+            description : {% if piskel_description %}"{{piskel_description}}"{% else %}""{% endif %},
             isPublic : {% if piskel.private %}false{% else %}true{% endif %}
           }
         };

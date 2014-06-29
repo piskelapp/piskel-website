@@ -12,6 +12,14 @@ def hasFramesheetChanged_(piskel, content, fps):
   else:
     return True
 
+def encode_for_view_(text):
+  encoded_text = ""
+  if text:
+    encoded_text = u''.join((text))
+    encoded_text = encoded_text.encode('unicode_escape')
+    encoded_text = encoded_text.replace("\"", "\\\"")
+  return encoded_text
+
 class PiskelHandler(BaseHandler):
   def _authorize(self, piskel):
     if self.is_logged_in:
@@ -60,7 +68,9 @@ class PiskelHandler(BaseHandler):
         'piskel_id' : piskel_id,
         'piskel_content' : content,
         'piskel_fps' : fps,
-        'piskel': piskel
+        'piskel': piskel,
+        'piskel_name' : encode_for_view_(piskel.name),
+        'piskel_description' : encode_for_view_(piskel.description)
       }
 
       self.render("editor.html", values)

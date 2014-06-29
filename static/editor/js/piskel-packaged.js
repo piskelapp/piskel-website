@@ -14453,6 +14453,10 @@ var Constants = {
   DEFAULT_PEN_COLOR : '#000000',
   TRANSPARENT_COLOR : 'rgba(0, 0, 0, 0)',
 
+  OVERLAY_ONION_SKIN : 'onion-skin',
+  OVERLAY_LAYER_PREVIEW : 'layer-preview',
+  OVERLAY_DISABLED : 'no-overlay',
+
   NO_PALETTE_ID : '__no-palette',
   CURRENT_COLORS_PALETTE_ID : '__current-colors',
   MANAGE_PALETTE_ID : '__manage-palettes',
@@ -15051,7 +15055,7 @@ if (typeof Function.prototype.bind !== "function") {
         callback(this.mozGetAsFile("canvas", type));
       } else {
         var args = Array.prototype.slice.call(arguments, 2);
-        var dataURI = this.toDataURL.apply(this, args);
+        var dataURI = canvas.toDataURL.apply(canvas, args);
         pskl.utils.ImageToBlob.imageDataToBlob(dataURI, type, callback);
       }
     }
@@ -15345,12 +15349,14 @@ if (typeof Function.prototype.bind !== "function") {
     CANVAS_BACKGROUND : 'CANVAS_BACKGROUND',
     SELECTED_PALETTE : 'SELECTED_PALETTE',
     TILED_PREVIEW : 'TILED_PREVIEW',
+    OVERLAY : 'OVERLAY',
 
     KEY_TO_DEFAULT_VALUE_MAP_ : {
       'GRID_WIDTH' : 0,
       'CANVAS_BACKGROUND' : 'lowcont-dark-canvas-background',
       'SELECTED_PALETTE' : Constants.CURRENT_COLORS_PALETTE_ID,
-      'TILED_PREVIEW' : false
+      'TILED_PREVIEW' : false,
+      'OVERLAY' : Constants.OVERLAY_ONION_SKIN
     },
 
     /**
@@ -15898,6 +15904,12 @@ if (typeof Function.prototype.bind !== "function") {
   ns.Layer.prototype.length = function () {
     return this.frames.length;
   };
+
+  ns.Layer.prototype.getHash = function () {
+    return this.frames.map(function (frame) {
+      return frame.getHash();
+    }).join('-');
+  };
 })();;(function () {
   var ns = $.namespace('pskl.model.piskel');
 
@@ -16015,6 +16027,12 @@ if (typeof Function.prototype.bind !== "function") {
   ns.Piskel.prototype.setDescriptor = function (descriptor) {
     this.descriptor = descriptor;
     var appEngineEditorHeader = $('.piskel-name').html(this.descriptor.name);
+  };
+
+  ns.Piskel.prototype.getHash = function () {
+    return this.layers.map(function (layer) {
+      return layer.getHash();
+    }).join('-');
   };
 
 })();;(function () {
@@ -16378,7 +16396,6 @@ if (typeof Function.prototype.bind !== "function") {
     }
   };
 
-
   /**
    * See @pskl.rendering.frame.CachedFrameRenderer
    * Same issue : FrameRenderer setDisplaySize destroys the canvas
@@ -16397,6 +16414,10 @@ if (typeof Function.prototype.bind !== "function") {
       return l.getFrameAt(frameIndex);
     });
     return pskl.utils.FrameUtils.merge(frames);
+  };
+
+  ns.LayersRenderer.prototype.flush = function () {
+    this.serializedRendering = '';
   };
 })();
 ;(function () {
@@ -16642,6 +16663,82 @@ if (typeof Function.prototype.bind !== "function") {
       displayContext.drawImage(this.canvas, 0, 0);
     }
     displayContext.restore();
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.rendering');
+
+  ns.OnionSkinRenderer = function (container, renderingOptions, piskelController) {
+    pskl.rendering.CompositeRenderer.call(this);
+
+    this.piskelController = piskelController;
+
+    // Do not use CachedFrameRenderers here, since the caching will be performed in the render method of LayersRenderer
+    this.renderer = new pskl.rendering.frame.FrameRenderer(container, renderingOptions, ["onion-skin-canvas"]);
+
+    this.add(this.renderer);
+
+    this.serializedRendering = '';
+  };
+
+  pskl.utils.inherit(pskl.rendering.OnionSkinRenderer, pskl.rendering.CompositeRenderer);
+
+  ns.OnionSkinRenderer.prototype.render = function () {
+    var offset = this.getOffset();
+    var size = this.getDisplaySize();
+    var layers = this.piskelController.getLayers();
+    var currentFrameIndex = this.piskelController.getCurrentFrameIndex();
+
+    var frames = [];
+    this.addFrameAtIndexToArray_(currentFrameIndex - 1, frames);
+    this.addFrameAtIndexToArray_(currentFrameIndex + 1, frames);
+
+    var serializedRendering = [
+      this.getZoom(),
+      this.getGridWidth(),
+      offset.x,
+      offset.y,
+      size.width,
+      size.height,
+      frames.map(function (f) {
+        return f.getHash();
+      }).join('-'),
+      layers.length
+    ].join("-");
+
+
+    if (this.serializedRendering != serializedRendering) {
+      this.serializedRendering = serializedRendering;
+
+      if (frames.length > 0) {
+        this.clear();
+        var mergedFrame = pskl.utils.FrameUtils.merge(frames);
+        this.renderer.render(mergedFrame);
+      }
+    }
+  };
+
+  ns.OnionSkinRenderer.prototype.addFrameAtIndexToArray_ = function (frameIndex, frames) {
+    var layer = this.piskelController.getCurrentLayer();
+    if (this.piskelController.hasFrameAt(frameIndex)) {
+      frames.push(layer.getFrameAt(frameIndex));
+    }
+  };
+
+  /**
+   * See @pskl.rendering.frame.CachedFrameRenderer
+   * Same issue : FrameRenderer setDisplaySize destroys the canvas
+   * @param {Number} width
+   * @param {Number} height
+   */
+  ns.OnionSkinRenderer.prototype.setDisplaySize = function (width, height) {
+    var size = this.getDisplaySize();
+    if (size.width !== width || size.height !== height) {
+      this.superclass.setDisplaySize.call(this, width, height);
+    }
+  };
+
+  ns.OnionSkinRenderer.prototype.flush = function () {
+    this.serializedRendering = '';
   };
 })();;(function () {
   var ns = $.namespace('pskl.rendering.frame');
@@ -17302,13 +17399,15 @@ if (typeof Function.prototype.bind !== "function") {
 
     this.overlayRenderer = new pskl.rendering.frame.CachedFrameRenderer(this.container, renderingOptions, ["canvas-overlay"]);
     this.renderer = new pskl.rendering.frame.CachedFrameRenderer(this.container, renderingOptions, ["drawing-canvas"]);
+    this.onionSkinRenderer = new pskl.rendering.OnionSkinRenderer(this.container, renderingOptions, piskelController);
     this.layersRenderer = new pskl.rendering.layer.LayersRenderer(this.container, renderingOptions, piskelController);
 
     this.compositeRenderer = new pskl.rendering.CompositeRenderer();
     this.compositeRenderer
       .add(this.overlayRenderer)
       .add(this.renderer)
-      .add(this.layersRenderer);
+      .add(this.layersRenderer)
+      .add(this.onionSkinRenderer);
 
     // State of drawing controller:
     this.isClicked = false;
@@ -17381,6 +17480,12 @@ if (typeof Function.prototype.bind !== "function") {
   ns.DrawingController.prototype.onUserSettingsChange_ = function (evt, settingsName, settingsValue) {
     if(settingsName == pskl.UserSettings.SHOW_GRID) {
       console.warn('DrawingController:onUserSettingsChange_ not implemented !');
+    } else if (settingsName == pskl.UserSettings.OVERLAY) {
+      this.onionSkinRenderer.clear();
+      this.onionSkinRenderer.flush();
+      this.layersRenderer.clear();
+      this.layersRenderer.flush();
+      this.render();
     }
   };
 
@@ -17581,7 +17686,13 @@ if (typeof Function.prototype.bind !== "function") {
       this.overlayFrame = pskl.model.Frame.createEmptyFromFrame(currentFrame);
     }
 
-    this.layersRenderer.render();
+    var overlaySetting = pskl.UserSettings.get(pskl.UserSettings.OVERLAY);
+    if (overlaySetting === Constants.OVERLAY_ONION_SKIN) {
+      this.onionSkinRenderer.render();
+    } else if (overlaySetting === Constants.OVERLAY_LAYER_PREVIEW) {
+      this.layersRenderer.render();
+    }
+
     this.renderer.render(currentFrame);
     this.overlayRenderer.render(this.overlayFrame);
   };
@@ -18683,9 +18794,9 @@ if (typeof Function.prototype.bind !== "function") {
     $('#grid-width').val(gridWidth);
     $('#grid-width').change(this.onGridWidthChange.bind(this));
 
-    var tiledPreview = pskl.UserSettings.get(pskl.UserSettings.TILED_PREVIEW);
-    $('#tiled-preview').prop('checked', tiledPreview);
-    $('#tiled-preview').change(this.onTiledPreviewChange.bind(this));
+    var overlay = pskl.UserSettings.get(pskl.UserSettings.OVERLAY);
+    $('#overlay').val(overlay);
+    $('#overlay').change(this.onOverlayChange.bind(this));
 
     // Handle canvas background changes:
     $('#background-picker-wrapper').click(this.onBackgroundClick.bind(this));
@@ -18696,9 +18807,9 @@ if (typeof Function.prototype.bind !== "function") {
     pskl.UserSettings.set(pskl.UserSettings.GRID_WIDTH, parseInt(width, 10));
   };
 
-  ns.ApplicationSettingsController.prototype.onTiledPreviewChange = function (evt) {
-    var checked = $('#tiled-preview').prop('checked');
-    pskl.UserSettings.set(pskl.UserSettings.TILED_PREVIEW, checked);
+  ns.ApplicationSettingsController.prototype.onOverlayChange = function (evt) {
+    var overlay = $('#overlay').val();
+    pskl.UserSettings.set(pskl.UserSettings.OVERLAY, overlay);
   };
 
   ns.ApplicationSettingsController.prototype.onBackgroundClick = function (evt) {
@@ -18988,7 +19099,7 @@ if (typeof Function.prototype.bind !== "function") {
 
     document.querySelector(".zip-generate-button").addEventListener('click', this.onZipButtonClick_.bind(this));
 
-    this.setPreviewSrc_(this.getFramesheetAsCanvas().toDataURL("image/png"));
+    this.updatePreview_(this.getFramesheetAsCanvas().toDataURL("image/png"));
   };
 
   ns.PngExportController.prototype.onPngDownloadButtonClick_ = function (evt) {
@@ -19053,7 +19164,7 @@ if (typeof Function.prototype.bind !== "function") {
     }
   };
 
-  ns.PngExportController.prototype.setPreviewSrc_ = function (src) {
+  ns.PngExportController.prototype.updatePreview_ = function (src) {
     this.previewContainerEl.innerHTML = "<img class='light-picker-background' style='max-width:240px;' src='"+src+"'/>";
   };
 
@@ -19074,9 +19185,13 @@ if (typeof Function.prototype.bind !== "function") {
    */
   ns.LocalStorageController.prototype.init = function() {
     this.localStorageItemTemplate_ = pskl.utils.Template.get("local-storage-item-template");
+    this.previousSessionTemplate_ = pskl.utils.Template.get("previous-session-info-template");
+
     this.service_ = pskl.app.localStorageService;
     this.piskelsList = $('.local-piskels-list');
+    this.prevSessionContainer = $('.previous-session');
 
+    this.fillRestoreSession_();
     this.fillLocalPiskelsList_();
 
     this.piskelsList.click(this.onPiskelsListClick_.bind(this));
@@ -19093,23 +19208,57 @@ if (typeof Function.prototype.bind !== "function") {
     } else if (action === 'delete') {
       if (window.confirm('This will permanently DELETE this piskel from your computer. Continue ?')) {
         this.service_.remove(name);
-        $.publish(Events.CLOSE_SETTINGS_DRAWER);
+        this.fillLocalPiskelsList_();
       }
     }
+  };
+
+  ns.LocalStorageController.prototype.fillRestoreSession_ = function () {
+    var previousInfo = pskl.app.backupService.getPreviousPiskelInfo();
+    if (previousInfo) {
+      var info = {
+        name : previousInfo.name,
+        date : this.formatDate_(previousInfo.date, "{{H}}:{{m}} - {{Y}}/{{M}}/{{D}}")
+      };
+
+      this.prevSessionContainer.html(pskl.utils.Template.replace(this.previousSessionTemplate_, info));
+      $(".restore-session-button").click(this.onRestorePreviousSessionClick_.bind(this));
+    } else {
+      this.prevSessionContainer.html("No piskel backup was found on this browser.");
+    }
+  };
+
+  ns.LocalStorageController.prototype.onRestorePreviousSessionClick_ = function () {
+    if (window.confirm('This will erase your current workspace. Continue ?')) {
+      pskl.app.backupService.load();
+      $.publish(Events.CLOSE_SETTINGS_DRAWER);
+    }
+  };
+
+  var pad = function (num) {
+    if (num < 10) {
+      return "0" + num;
+    } else {
+      return "" + num;
+    }
+  };
+
+  ns.LocalStorageController.prototype.formatDate_ = function (date, format) {
+    date = new Date(date);
+    var formattedDate = pskl.utils.Template.replace(format, {
+      Y : date.getFullYear(),
+      M : pad(date.getMonth() + 1),
+      D : pad(date.getDate()),
+      H : pad(date.getHours()),
+      m : pad(date.getMinutes())
+    });
+
+    return formattedDate;
   };
 
   ns.LocalStorageController.prototype.fillLocalPiskelsList_ = function () {
     var html = "";
     var keys = this.service_.getKeys();
-
-    var pad = function (num) {
-      if (num < 10) {
-        return "0" + num;
-      } else {
-        return "" + num;
-      }
-    };
-
 
     keys.sort(function (k1, k2) {
       if (k1.date < k2.date) {return 1;}
@@ -19118,15 +19267,8 @@ if (typeof Function.prototype.bind !== "function") {
     });
 
     keys.forEach((function (key) {
-      var date = new Date(key.date);
-      var formattedDate = pskl.utils.Template.replace("{{Y}}/{{M}}/{{D}} {{H}}:{{m}}", {
-        Y : date.getFullYear(),
-        M : pad(date.getMonth() + 1),
-        D : pad(date.getDate()),
-        H : pad(date.getHours()),
-        m : pad(date.getMinutes())
-      });
-      html += pskl.utils.Template.replace(this.localStorageItemTemplate_, {name : key.name, date : formattedDate});
+      var date = this.formatDate_(key.date, "{{Y}}/{{M}}/{{D}} {{H}}:{{m}}");
+      html += pskl.utils.Template.replace(this.localStorageItemTemplate_, {name : key.name, date : date});
     }).bind(this));
 
     var tableBody_ = this.piskelsList.get(0).tBodies[0];
@@ -20017,8 +20159,6 @@ if (typeof Function.prototype.bind !== "function") {
 
   ns.LocalStorageService.prototype.init = function() {};
 
-// localStorage.setItem('piskel_bkp', pskl.app.piskelController.serialize())
-
   ns.LocalStorageService.prototype.save = function(name, description, piskel) {
     this.removeFromKeys_(name);
     this.addToKeys_(name, description, Date.now());
@@ -20145,6 +20285,86 @@ if (typeof Function.prototype.bind !== "function") {
   };
 })();;(function () {
   var ns = $.namespace('pskl.service');
+  var BACKUP_INTERVAL = 1000 * 30;
+
+  ns.BackupService = function (piskelController) {
+    this.piskelController = piskelController;
+    this.lastHash = null;
+  };
+
+  ns.BackupService.prototype.init = function () {
+    var previousPiskel = window.localStorage.getItem('bkp.next.piskel');
+    var previousInfo = window.localStorage.getItem('bkp.next.info');
+    if (previousPiskel && previousInfo) {
+      window.localStorage.setItem('bkp.prev.piskel', previousPiskel);
+      window.localStorage.setItem('bkp.prev.info', previousInfo);
+    }
+    window.setInterval(this.backup.bind(this), BACKUP_INTERVAL);
+  };
+
+  ns.BackupService.prototype.backup = function () {
+    var piskel = this.piskelController.getPiskel();
+    var descriptor = piskel.getDescriptor();
+    var hash = piskel.getHash();
+    var info = {
+      name : descriptor.name,
+      description : descriptor.info,
+      date : Date.now(),
+      hash : hash
+    };
+
+    // Do not save an unchanged piskel
+    if (hash !== this.lastHash) {
+      this.lastHash = hash;
+      window.localStorage.setItem('bkp.next.piskel', this.piskelController.serialize());
+      window.localStorage.setItem('bkp.next.info', JSON.stringify(info));
+    }
+  };
+
+  ns.BackupService.prototype.getPreviousPiskelInfo = function () {
+    var previousInfo = window.localStorage.getItem('bkp.prev.info');
+    if (previousInfo) {
+      return JSON.parse(previousInfo);
+    }
+  };
+
+
+  ns.BackupService.prototype.load = function() {
+
+    var previousPiskel = window.localStorage.getItem('bkp.prev.piskel');
+    var previousInfo = window.localStorage.getItem('bkp.prev.info');
+    previousPiskel = JSON.parse(previousPiskel);
+    previousInfo = JSON.parse(previousInfo);
+
+    pskl.utils.serialization.Deserializer.deserialize(previousPiskel, function (piskel) {
+      piskel.setDescriptor(new pskl.model.piskel.Descriptor(previousInfo.name, previousInfo.description, true));
+      pskl.app.piskelController.setPiskel(piskel);
+    });
+  };
+})();;(function () {
+  var ns = $.namespace('pskl.service');
+
+  ns.BeforeUnloadService = function (piskelController) {
+    this.piskelController = piskelController;
+  };
+
+
+  ns.BeforeUnloadService.prototype.init = function () {
+    window.addEventListener("beforeunload", this.onBeforeUnload.bind(this));
+  };
+
+  ns.BeforeUnloadService.prototype.onBeforeUnload = function (evt) {
+    pskl.app.backupService.backup();
+    if (pskl.app.savedStatusService.isDirty()) {
+      var confirmationMessage = "Your Piskel seems to have unsaved changes";
+
+      (evt || window.event).returnValue = confirmationMessage;
+      return confirmationMessage;
+    }
+  };
+
+})();;(function () {
+  var ns = $.namespace('pskl.service');
 
   var SNAPSHOT_PERIOD = 50;
   var LOAD_STATE_INTERVAL = 50;
@@ -20208,24 +20428,39 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.HistoryService.prototype.getPreviousSnapshotIndex_ = function (index) {
+    var counter = 0;
     while (this.stateQueue[index] && !this.stateQueue[index].piskel) {
       index = index - 1;
+      if(++counter > 2*SNAPSHOT_PERIOD) {
+        break;
+      }
     }
     return index;
   };
 
   ns.HistoryService.prototype.loadState = function (index) {
-    if (this.isLoadStateAllowed_(index)) {
-      this.lastLoadState = Date.now();
+    try {
+      if (this.isLoadStateAllowed_(index)) {
+        this.lastLoadState = Date.now();
 
-      var snapshotIndex = this.getPreviousSnapshotIndex_(index);
-      if (snapshotIndex < 0) {
-        throw 'Could not find previous SNAPSHOT saved in history stateQueue';
+        var snapshotIndex = this.getPreviousSnapshotIndex_(index);
+        if (snapshotIndex < 0) {
+          throw 'Could not find previous SNAPSHOT saved in history stateQueue';
+        }
+        var serializedPiskel = this.getSnapshotFromState_(snapshotIndex);
+        var onPiskelLoadedCb = this.onPiskelLoaded_.bind(this, index, snapshotIndex);
+        pskl.utils.serialization.Deserializer.deserialize(serializedPiskel, onPiskelLoadedCb);
       }
-
-      var serializedPiskel = this.getSnapshotFromState_(snapshotIndex);
-      var onPiskelLoadedCb = this.onPiskelLoaded_.bind(this, index, snapshotIndex);
-      pskl.utils.serialization.Deserializer.deserialize(serializedPiskel, onPiskelLoadedCb);
+    } catch (e) {
+      window.console.error("[CRITICAL ERROR] : Unable to load a history state.");
+      window.console.error("Can you open an issue on http://github.com/juliandescottes/piskel or contact @piskelapp on twitter ? Thanks !");
+      window.console.error("Thanks !");
+      if (typeof e === "string") {
+        window.console.error(e);
+      } else {
+        window.console.error(e.message);
+        window.console.error(e.stack);
+      }
     }
   };
 
@@ -20295,8 +20530,6 @@ if (typeof Function.prototype.bind !== "function") {
     $.subscribe(Events.PISKEL_RESET, this.onPiskelReset.bind(this));
 
     $.subscribe(Events.PISKEL_SAVED, this.onPiskelSaved.bind(this));
-
-    window.addEventListener("beforeunload", this.onBeforeUnload.bind(this));
   };
 
   ns.SavedStatusService.prototype.onPiskelReset = function () {
@@ -20337,14 +20570,9 @@ if (typeof Function.prototype.bind !== "function") {
     }
   };
 
-  ns.SavedStatusService.prototype.onBeforeUnload = function (evt) {
+  ns.SavedStatusService.prototype.isDirty = function (evt) {
     var piskel = this.piskelController.getPiskel();
-    if (piskel.isDirty_) {
-      var confirmationMessage = "Your Piskel seems to have unsaved changes";
-
-      (evt || window.event).returnValue = confirmationMessage;
-      return confirmationMessage;
-    }
+    return piskel.isDirty_;
   };
 })();;(function () {
   var ns = $.namespace('pskl.service.keyboard');
@@ -21026,12 +21254,12 @@ if (typeof Function.prototype.bind !== "function") {
       } else {
         color = window.tinycolor.lighten(pixelColor, step);
       }
+      if (color) {
+        usedPixels[key] = true;
+        this.superclass.applyToolAt.call(this, col, row, color.toRgbString(), frame, overlay, event);
+      }
     }
 
-    if (color) {
-      usedPixels[key] = true;
-      this.superclass.applyToolAt.call(this, col, row, color.toRgbString(), frame, overlay, event);
-    }
   };
 
   ns.Lighten.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
@@ -21780,6 +22008,12 @@ if (typeof Function.prototype.bind !== "function") {
 
       this.savedStatusService = new pskl.service.SavedStatusService(this.piskelController);
       this.savedStatusService.init();
+
+      this.backupService = new pskl.service.BackupService(this.piskelController);
+      this.backupService.init();
+
+      this.beforeUnloadService = new pskl.service.BeforeUnloadService(this.piskelController);
+      this.beforeUnloadService.init();
 
 
       if (this.isAppEngineVersion) {

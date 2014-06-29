@@ -82,10 +82,6 @@
   color: gold;
 }
 
-.editor-header-wrap .link-login[href="/logout"] {
-  background-position: 52px 6px;
-}
-
 .piskel-name {
   position : absolute;
   width : 100%;
@@ -111,8 +107,16 @@
 
 /* Override from piskel-app.css */
 .navigation .create-piskel-button {
-  width: 60px;
+  width: 100px;
   padding : 0;
   line-height: 24px;
   margin: 6px 0 0 8px;
+}
+
+.navigation .logout-link {
+  font-size: 1em;
+  padding-left: 0px;
+  padding-right: 30px;
+  background-position: 50px 10px;
+  line-height: 36px;
 }
