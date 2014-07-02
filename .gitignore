@@ -17,6 +17,3 @@ npm-debug.log
 
 # secret file !
 config/secrets.py
-
-# piskel application
-static/editor

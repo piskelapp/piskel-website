@@ -14738,6 +14738,16 @@ if (typeof Function.prototype.bind !== "function") {
       }
     },
 
+    clone : function (canvas) {
+      var clone = pskl.CanvasUtils.createCanvas(canvas.width, canvas.height);
+
+      //apply the old canvas to the new one
+      clone.getContext('2d').drawImage(canvas, 0, 0);
+
+      //return the new canvas
+      return clone;
+    },
+
     getImageDataFromCanvas : function (canvas) {
       var sourceContext = canvas.getContext('2d');
       return sourceContext.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -16743,6 +16753,8 @@ if (typeof Function.prototype.bind !== "function") {
 })();;(function () {
   var ns = $.namespace('pskl.rendering.frame');
 
+  var CACHE_RESET_INTERVAL = 1000 * 60 * 10;
+
   ns.TiledFrameRenderer = function (container, zoom) {
     this.container = container;
     this.setZoom(zoom);
@@ -16750,11 +16762,31 @@ if (typeof Function.prototype.bind !== "function") {
     this.displayContainer = document.createElement('div');
     this.displayContainer.classList.add('tiled-frame-container');
     container.get(0).appendChild(this.displayContainer);
+
+    this.cache_ = {};
+    window.setInterval(function () {this.cache_ = {};}.bind(this), CACHE_RESET_INTERVAL);
   };
 
   ns.TiledFrameRenderer.prototype.render = function (frame) {
-    var canvas = new pskl.utils.FrameUtils.toImage(frame, this.zoom);
-    this.displayContainer.style.backgroundImage = 'url(' + canvas.toDataURL('image/png') + ')';
+    var frameData = null;
+
+    var hash = frame.getHash();
+    if (this.cache_[hash]) {
+      frameData = this.cache_[hash];
+    } else {
+      var frameAsString = JSON.stringify(frame.getPixels());
+      if (this.cache_[frameAsString]) {
+        frameData = this.cache_[frameAsString];
+      } else {
+        var canvas = new pskl.utils.FrameUtils.toImage(frame, this.zoom);
+        frameData = canvas.toDataURL('image/png');
+        this.cache_[frameAsString] = frameData;
+      }
+
+      this.cache_[hash] = frameData;
+    }
+
+    this.displayContainer.style.backgroundImage = 'url(' + frameData + ')';
   };
 
   ns.TiledFrameRenderer.prototype.show = function () {
@@ -16999,10 +17031,16 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.PiskelController.prototype.getFrameAt = function (index) {
+    var hash = [];
     var frames = this.getLayers().map(function (l) {
-      return l.getFrameAt(index);
+      var frame = l.getFrameAt(index);
+      hash.push(frame.getHash());
+      return frame;
     });
-    return pskl.utils.FrameUtils.merge(frames);
+    var mergedFrame = pskl.utils.FrameUtils.merge(frames);
+    mergedFrame.id = hash.join('-');
+    mergedFrame.version = 0;
+    return mergedFrame;
   };
 
   ns.PiskelController.prototype.hasFrameAt = function (index) {
@@ -17752,6 +17790,8 @@ if (typeof Function.prototype.bind !== "function") {
 })();;(function () {
   var ns = $.namespace("pskl.controller");
 
+  var CACHE_RESET_INTERVAL = 1000 * 60 * 10;
+
   var ACTION = {
     SELECT : 'select',
     CLONE : 'clone',
@@ -17766,6 +17806,9 @@ if (typeof Function.prototype.bind !== "function") {
     this.refreshZoom_();
 
     this.redrawFlag = true;
+
+    this.cache_ = {};
+    window.setInterval(function () {this.cache_ = {};}.bind(this), CACHE_RESET_INTERVAL);
   };
 
   ns.PreviewFilmController.prototype.init = function() {
@@ -17926,11 +17969,8 @@ if (typeof Function.prototype.bind !== "function") {
     cloneFrameButton.className = "tile-overlay duplicate-frame-action";
     previewTileRoot.appendChild(cloneFrameButton);
 
-    var canvasRenderer = new pskl.rendering.CanvasRenderer(currentFrame, this.zoom);
-    canvasRenderer.drawTransparentAs(Constants.TRANSPARENT_COLOR);
-    var canvas = canvasRenderer.render();
-    canvas.classList.add('tile-view', 'canvas');
-    canvasContainer.appendChild(canvas);
+
+    canvasContainer.appendChild(this.getCanvasForFrame(currentFrame));
     previewTileRoot.appendChild(canvasContainer);
 
     if(tileNumber > 0 || this.piskelController.getFrameCount() > 1) {
@@ -17955,6 +17995,27 @@ if (typeof Function.prototype.bind !== "function") {
     previewTileRoot.appendChild(tileCount);
 
     return previewTileRoot;
+  };
+
+  ns.PreviewFilmController.prototype.getCanvasForFrame = function (frame) {
+    var canvas = null;
+    var cacheKey = frame.getHash() + this.zoom;
+    if (this.cache_[cacheKey]) {
+      canvas = this.cache_[cacheKey];
+    } else {
+      var frameAsString = JSON.stringify(frame.getPixels());
+      if (this.cache_[frameAsString]) {
+        canvas = pskl.CanvasUtils.clone(this.cache_[frameAsString]);
+      } else {
+        var canvasRenderer = new pskl.rendering.CanvasRenderer(frame, this.zoom);
+        canvasRenderer.drawTransparentAs(Constants.TRANSPARENT_COLOR);
+        canvas = canvasRenderer.render();
+        this.cache_[frameAsString] = canvas;
+      }
+      canvas.classList.add('tile-view', 'canvas');
+      this.cache_[cacheKey] = canvas;
+    }
+    return canvas;
   };
 
   /**
@@ -19319,18 +19380,25 @@ if (typeof Function.prototype.bind !== "function") {
     evt.stopPropagation();
 
     var name = this.getName();
-    var description = this.getDescription();
-    var isPublic = !!this.isPublicCheckbox.prop('checked');
 
-    var descriptor = new pskl.model.piskel.Descriptor(name, description, isPublic);
-    this.piskelController.getPiskel().setDescriptor(descriptor);
+    if (!name) {
+      name = window.prompt('Please specify a name', 'New piskel');
+    }
 
-    this.beforeSaving_();
-    pskl.app.storageService.store({
-      success : this.onSaveSuccess_.bind(this),
-      error : this.onSaveError_.bind(this),
-      after : this.afterSaving_.bind(this)
-    });
+    if (name) {
+      var description = this.getDescription();
+      var isPublic = !!this.isPublicCheckbox.prop('checked');
+
+      var descriptor = new pskl.model.piskel.Descriptor(name, description, isPublic);
+      this.piskelController.getPiskel().setDescriptor(descriptor);
+
+      this.beforeSaving_();
+      pskl.app.storageService.store({
+        success : this.onSaveSuccess_.bind(this),
+        error : this.onSaveError_.bind(this),
+        after : this.afterSaving_.bind(this)
+      });
+    }
   };
 
   ns.SaveController.prototype.onSaveLocalClick_ = function (evt) {
@@ -21159,12 +21227,17 @@ if (typeof Function.prototype.bind !== "function") {
    * @override
    */
   ns.SimplePen.prototype.applyToolAt = function(col, row, color, frame, overlay, event) {
-    frame.setPixel(col, row, color);
+    overlay.setPixel(col, row, color);
+
+    if (color === Constants.TRANSPARENT_COLOR) {
+      frame.setPixel(col, row, color);
+    }
     this.previousCol = col;
     this.previousRow = row;
     this.pixels.push({
       col : col,
-      row : row
+      row : row,
+      color : color
     });
   };
 
@@ -21192,17 +21265,26 @@ if (typeof Function.prototype.bind !== "function") {
 
 
   ns.SimplePen.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
+    // apply on real frame
+    this.setPixelsToFrame_(frame, this.pixels);
+
+    // save state
     this.raiseSaveStateEvent({
       pixels : this.pixels.slice(0),
       color : color
     });
+
+    // reset
     this.pixels = [];
   };
 
   ns.SimplePen.prototype.replay = function (frame, replayData) {
-    var pixels = replayData.pixels;
+    this.setPixelsToFrame_(frame, replayData.pixels, replayData.color);
+  };
+
+  ns.SimplePen.prototype.setPixelsToFrame_ = function (frame, pixels, color) {
     pixels.forEach(function (pixel) {
-      frame.setPixel(pixel.col, pixel.row, replayData.color);
+      frame.setPixel(pixel.col, pixel.row, pixel.color);
     });
   };
 })();
@@ -21235,7 +21317,9 @@ if (typeof Function.prototype.bind !== "function") {
    * @override
    */
   ns.Lighten.prototype.applyToolAt = function(col, row, color, frame, overlay, event, mouseButton) {
-    var pixelColor = frame.getPixel(col, row);
+    var overlayColor = overlay.getPixel(col, row);
+    var frameColor = frame.getPixel(col, row);
+    var pixelColor = overlayColor === Constants.TRANSPARENT_COLOR ? frameColor : overlayColor;
 
     var isDarken = event.ctrlKey || event.cmdKey;
     var isSinglePass = event.shiftKey;
@@ -21263,7 +21347,11 @@ if (typeof Function.prototype.bind !== "function") {
   };
 
   ns.Lighten.prototype.releaseToolAt = function(col, row, color, frame, overlay, event) {
+    // apply on real frame
+    this.setPixelsToFrame_(frame, this.pixels);
+
     this.resetUsedPixels_();
+
     $.publish(Events.PISKEL_SAVE_STATE, {
       type : pskl.service.HistoryService.SNAPSHOT
     });
