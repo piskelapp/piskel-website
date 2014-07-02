@@ -3,9 +3,6 @@
 /***********************************/
 /*** NAVIGATION HEADER OVERRIDES ***/
 /***********************************/
-.piskel-logo {
-	display: none;
-}
 
 .navigation:not(.navigation-logged-in) {
 	line-height: 32px;
