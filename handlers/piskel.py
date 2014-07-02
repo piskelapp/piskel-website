@@ -23,7 +23,8 @@ def encode_for_view_(text):
 class PiskelHandler(BaseHandler):
   def _authorize(self, piskel):
     if self.is_logged_in:
-      if self.session_user['user_id'] == piskel.owner:
+      is_owner = self.session_user['user_id'] == piskel.owner
+      if is_owner:
         return True
     return False
 
@@ -206,6 +207,12 @@ class PiskelHandler(BaseHandler):
   # Save a new framesheet on an existing piskel
   def save(self, piskel_id):
     piskel = db.get(piskel_id)
+
+    # Claim anonymous piskel ownership
+    is_anonymous = _ANONYMOUS_USER == piskel.owner
+    if is_anonymous:
+      piskel.owner =  self._get_logged_user_id()
+
     if self._authorize(piskel):
       post_data = self.request.POST
 
