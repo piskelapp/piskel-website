@@ -9,8 +9,8 @@ skip_files:
 
 handlers:
 - url: /favicon\.ico
-  static_files: favicon.ico
-  upload: favicon\.ico
+  static_files: static/resources/favicon.ico
+  upload: static/resources/favicon\.ico
 
 - url: /robots\.txt
   static_files: robots.txt
@@ -25,6 +25,21 @@ handlers:
   upload: static/resources/(.*\.svg)
   mime_type: image/svg+xml
 
+- url: /static/resources/(.*\.eot)
+  static_files: static/resources/\1
+  upload: static/resources/(.*\.eot)
+  mime_type: application/vnd.ms-fontobject
+
+- url: /static/resources/(.*\.ttf)
+  static_files: static/resources/\1
+  upload: static/resources/(.*\.ttf)
+  mime_type: application/octet-stream
+
+- url: /static/resources/(.*\.woff)
+  static_files: static/resources/\1
+  upload: static/resources/(.*\.woff)
+  mime_type: application/x-woff
+
 - url: /static/resources/(.*\.png)
   static_files: static/resources/\1
   upload: static/resources/(.*\.png)
@@ -37,6 +52,21 @@ handlers:
   static_files: static/editor/\1
   upload: static/editor/(.*\.svg)
   mime_type: image/svg+xml
+
+- url: /p/(.*\.eot)
+  static_files: static/editor/\1
+  upload: static/editor/(.*\.eot)
+  mime_type: application/vnd.ms-fontobject
+
+- url: /p/(.*\.ttf)
+  static_files: static/editor/\1
+  upload: static/editor/(.*\.ttf)
+  mime_type: application/octet-stream
+
+- url: /p/(.*\.woff)
+  static_files: static/editor/\1
+  upload: static/editor/(.*\.woff)
+  mime_type: application/x-woff
 
 - url: /p/(.*\.png)
   static_files: static/editor/\1
