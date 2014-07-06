@@ -1,0 +1,20 @@
+<div class="editor-header-wrap">
+  <div class="navigation">
+    <span class="piskel-name"/>{{ piskel.name }}</span>
+    <a class="link anchor-left  piskel-logo" href="/" target="_blank"><img src="/static/resources/logo_transparent.png" /></a>
+    <a class="piskel-button  create-piskel-button  anchor-left" href="/p/create" target="_blank">Create piskel</a>
+
+    {% if is_logged_in %}
+      <a class="link link-login anchor-right logout-link" href="/logout">logout</a>
+      <a class="link link-login anchor-right" target="_blank" href="/user/{{ session.user_id }}">
+        <img
+          class="small-user-avatar small-circle-user-avatar"
+          src="{{ user.avatar_url }}"
+        />{{ user.name }}</a>
+      <a class="link link-login link-highlight anchor-right" target="_blank" href="/user/{{ session.user_id }}">My Gallery</a>
+
+    {% else %}
+      <a class="link link-login link-highlight anchor-right" target="_blank" href="/auth/google">login</a>
+    {% endif %}
+  </div>
+</div>
