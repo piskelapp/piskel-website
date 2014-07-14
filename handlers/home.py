@@ -7,7 +7,7 @@ class HomeHandler(BaseHandler):
       'session': self.session_user if self.is_logged_in else False,
       'is_logged_in': self.is_logged_in,
       'hide_create': True,
-      'has_footer' : False,
+      'has_footer' : True,
       'has_previous_page' : True,
       'has_next_page' : True
     }

@@ -1,0 +1,18 @@
+{% from "partial/macros.html" import render_animated_preview %}
+<div class="card-container">
+  <div class="card-preview-container">
+    <a class="card-preview-link" href="/p/{{ piskel.key }}/view">
+      {{ render_animated_preview(piskel.framesheet_key, 192, piskel.fps) }}
+    </a>
+  </div>
+  <div class="card-info-container">
+    <h4 class="card-info-name"><a href="/p/{{ piskel.key }}/edit">{{ piskel.name }}</a></h4>
+    <p class="card-info-meta">
+      {% if piskel.frames > 1 %}
+        <span class="counter">{{ piskel.frames }}</span> frames - <span class="counter">{{ piskel.fps }}</span> fps
+      {% else %}
+        Single frame
+      {% endif %}
+    </p>
+  </div>
+</div>

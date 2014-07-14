@@ -39,7 +39,7 @@ config = {
 
 routes = [
   routes.DomainRoute('alpha.piskel-app.appspot.com', [Route('<:.*>',handler=redirect.RedirectHandler, name='redirect')]),
-  Route('/', handler='handlers.gallery.PickedHandler', name='picked'),
+  Route('/', handler='handlers.home.HomeHandler', name='home'),
   # ################ #
   #  GALLERY ROUTES  #
   # ################ #

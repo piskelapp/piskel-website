@@ -4,14 +4,21 @@
 {% block title %}Piskel - Free online sprite editor{% endblock %}
 
 {% block css %}
-  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css"/>
   <link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=VT323' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-previewcard.css"/>
 {% endblock %}
 
 {% block main %}
 
   {% include "gallery/navigation.html" %}
+
+  <div style="overflow:hidden;margin:20px 50px;">
+  {% for piskel in page_piskels %}
+    {% include "gallery/piskelcard.html" %}
+  {% endfor %}
+  </div>
+
   {% include "gallery/pagination.html" %}
 
 {% endblock %}
