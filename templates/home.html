@@ -4,73 +4,80 @@
 {% block title %}Piskel - Free online sprite editor{% endblock %}
 
 {% block css %}
-	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css"/>
-	<link href='http://fonts.googleapis.com/css?family=Press+Start+2P' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=VT323' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css"/>
 {% endblock %}
 
 {% block main %}
-	<div class="main-container">
-		<img class="home-logo-big" src="/static/resources/logo_transparent_big.png"/>
-		<div class="medium-width-container" style="position:relative;">
-			<a href="/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICAyJ2kCQw/edit" target="_blank">
-				<img class="piskel-screenshot" src="/static/resources/home/piskel_screenshot.jpg"/>
-				<img class="piskel-screenshot-animated-preview" src="/static/resources/home/megaman_animated_2.gif"/>
-			</a>
-		</div>
-		<h1 class="font-pixel home-tagline">
-			Pixel Art and Animated Sprites
-		</h1>
-		<div class="home-teaser medium-width-container">
-			<p class="home-teaser-description">
-				Remember the good old 2D games and their beautiful sprites ? With Piskel you can create your own in a few clicks.
-			</p>
-			<!-- <a style="line-height:50px" class="piskel-button" href="/auth/google">login</a> -->
-			<a class="piskel-button home-main-button font-pixel" href="/p/create">
-				Create a Sprite
-			</a>
-		</div>
-		<div class="assets-container">
-			<div class="asset-item">
-				<div class="media-container">
-					<img class="media-image" src="/static/resources/home/2d-guy-walk.gif"/>
-					<div class="media-body">
-						<h4 class="asset-title">Live preview</h4>
-						<p class="asset-description">Piskel gives you a live preview of your work.<br/>
-						You no longer have to guess how it will look like when it's done : you see it !</p>
-					</div>
-				</div>
-			</div>
-			<div class="asset-item">
-				<div class="media-container">
-					<img class="media-image" src="/static/resources/home/preview_gif_megaman_small.jpg"/>
-					<div class="media-body">
-						<h4 class="asset-title">Export to GIF</h4>
-						<p class="asset-description">Since we're animating images, might as well share them as animated GIFs.<br/>
-						So yeah.</p>
-					</div>
-				</div>
-			</div>
-			<div class="asset-item">
-				<div class="media-container">
-					<img class="media-image" src="/static/resources/home/gallery_preview_small.jpg"/>
-					<div class="media-body">
-						<h4 class="asset-title">Your gallery</h4>
-						<p class="asset-description">Keep track of all the sprites you created.<br/>
-						Everyone can see your public gallery, but you can keep any sprite you want private.</p>
-					</div>
-				</div>
-			</div>
-			<div class="asset-item">
-				<div class="media-container">
-					<img class="media-image" src="/static/resources/github_logo.png"/>
-					<div class="media-body">
-						<h4 class="asset-title">Open Source</h4>
-						<p class="asset-description">If you want to contribute or check the code, everything is on Github.<br/>
-						See <a href="http://github.com/juliandescottes/piskel" target="_blank">http://github.com/juliandescottes/piskel</a>.</p>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div class="main-container">
+    <img class="home-logo-big" src="/static/resources/logo_transparent_big.png"/>
+    <div class="medium-width-container" style="position:relative;">
+      <a href="/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICAyJ2kCQw/edit" target="_blank">
+        <img class="piskel-screenshot" src="/static/resources/home/piskel_screenshot.jpg"/>
+        <img class="piskel-screenshot-animated-preview" src="/static/resources/home/megaman_animated_2.gif"/>
+      </a>
+    </div>
+    <h1 class="font-pixel home-tagline">
+      Pixel Art and Animated Sprites
+    </h1>
+    <div class="home-teaser medium-width-container">
+      <p class="home-teaser-description">
+        Remember the good old 2D games and their beautiful sprites ? With Piskel you can create your own in a few clicks.
+      </p>
+      <!-- <a style="line-height:50px" class="piskel-button" href="/auth/google">login</a> -->
+      <a class="piskel-button home-main-button font-pixel" href="/p/create">
+        Create a Sprite
+      </a>
+    </div>
+    <div class="assets-container">
+      <div class="asset-item">
+        <div class="media-container">
+          <img class="media-image" src="/static/resources/home/2d-guy-walk.gif"/>
+          <div class="media-body">
+            <h4 class="asset-title">Live preview</h4>
+            <p class="asset-description">Piskel gives you a live preview of your work.<br/>
+            You no longer have to guess how it will look like when it's done : you see it !</p>
+          </div>
+        </div>
+      </div>
+      <div class="asset-item">
+        <div class="media-container">
+          <img class="media-image" src="/static/resources/home/preview_gif_megaman_small.jpg"/>
+          <div class="media-body">
+            <h4 class="asset-title">Export to GIF</h4>
+            <p class="asset-description">Since we're animating images, might as well share them as animated GIFs.<br/>
+            So yeah.</p>
+          </div>
+        </div>
+      </div>
+      <div class="asset-item">
+        <div class="media-container">
+          <img class="media-image" src="/static/resources/home/gallery_preview_small.jpg"/>
+          <div class="media-body">
+            <h4 class="asset-title">Your gallery</h4>
+            <p class="asset-description">Keep track of all the sprites you created.<br/>
+            Everyone can see your public gallery, but you can keep any sprite you want private.</p>
+          </div>
+        </div>
+      </div>
+      <div class="asset-item">
+        <div class="media-container">
+          <img class="media-image" src="/static/resources/github_logo.png"/>
+          <div class="media-body">
+            <h4 class="asset-title">Open Source</h4>
+            <p class="asset-description">If you want to contribute or check the code, everything is on Github.<br/>
+            See <a href="http://github.com/juliandescottes/piskel" target="_blank">http://github.com/juliandescottes/piskel</a>.</p>
+          </div>
+        </div>
+      </div>
+      <div class="asset-item">
+        <div class="media-container">
+          <img class="media-image" src="/static/resources/home/piskel-offline-application.png"/>
+          <div class="media-body">
+            <h4 class="asset-title">Offline versions</h4>
+            <p class="asset-description">Offline builds are available for Windows and MacOS. Checkout the <a href="https://github.com/juliandescottes/piskel/wiki/Desktop-applications" target="_blank">download page</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

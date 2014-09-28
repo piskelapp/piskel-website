@@ -203,7 +203,7 @@ ul {
   text-decoration: none;
   text-shadow: 0px -1px 0 #000;
 
-  transition : box-shadow 0.2s linear;
+  transition : box-shadow 0.2s linear, color 0.2s linear;
 }
 
 .piskel-button:focus {
@@ -220,7 +220,7 @@ ul {
 
 .piskel-button:hover {
   text-decoration: none;
-  box-shadow : 0 1px 1px 0px rgba(255,215,0,0.3);
+  color : gold;
 }
 
 /* CSS hack for firefox bug                                                                                                            */
@@ -234,7 +234,6 @@ ul {
 }
 
 .navigation .create-piskel-button {
-  color: gold;
   width: 100px;
   line-height: 40px;
   position: relative;
@@ -243,7 +242,6 @@ ul {
 }
 
 .navigation .create-piskel-button:hover {
-  color: rgb(255, 229, 87);
   text-decoration: none;
 }
 

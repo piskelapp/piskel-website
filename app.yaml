@@ -73,9 +73,13 @@ handlers:
   upload: static/editor/(.*\.png)
   mime_type: image/png
 
-- url: /p/(.*\.(?:html|css|js|png|gif))
+- url: /p/(.*\.(?:css|js|gif))
   static_files: static/editor/\1
-  upload: static/editor/(.*\.(html|css|js|png|gif))
+  upload: static/editor/(.*\.(css|js|gif))
+
+- url: /p/templates(?:.*?)/(.*\.html)
+  static_files: static/editor/templates/\1
+  upload: static/editor/templates/(.*\.html)
 
 - url: /.*
   script: main.app

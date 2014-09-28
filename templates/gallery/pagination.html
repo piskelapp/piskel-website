@@ -1,0 +1,10 @@
+<div style="text-align:center">
+  <div style="width:20em; display:inline-block;">
+    {% if has_previous_page %}
+      <a class="piskel-button" style="line-height:32px" href="/picked/{{ index-1 }}">&#8666; Previous</a>
+    {% endif %}
+    {% if has_next_page %}
+      <a class="piskel-button" style="line-height:32px" href="/picked/{{ index+1 }}">Next &#8667;</a>
+    {% endif %}
+  </div>
+</div>
