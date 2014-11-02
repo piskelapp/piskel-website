@@ -1,7 +1,6 @@
 from google.appengine.ext import db
 from google.appengine.api import memcache
 import urllib
-import logging
 from time import gmtime, strftime
 
 def _get_all_piskels_for_user(user_id, limit=20):
@@ -17,19 +16,13 @@ def get_recent_piskels(index):
   mem_key = "recent_piskels_" + str(index) + "_" + strftime("%Y%m%d%H", gmtime());
   piskels = memcache.get(mem_key)
   if not piskels:
-    q = db.GqlQuery("SELECT * FROM Piskel WHERE garbage=False and private=False ORDER BY creation_date DESC")
+    q = db.GqlQuery("SELECT * FROM Piskel WHERE garbage=False and private=False and deleted=False ORDER BY creation_date DESC")
     piskels = q.fetch(offset=(index-1)*20, limit=20)
     memcache.set(mem_key, piskels)
-  return [p for p in piskels if not p.deleted]
+  return piskels
 
 def get_public_piskels_count():
-  mem_key = "public_piskels_count_" + strftime("%Y%m%d%H", gmtime());
-  piskels = memcache.get(mem_key)
-  if not piskels:
-    q = db.GqlQuery("SELECT * FROM Piskel WHERE garbage=False and private=False ORDER BY creation_date DESC")
-    piskels = q.fetch(limit=None)
-    memcache.set(mem_key, piskels)
-  return len([p for p in piskels if not p.deleted])
+  return 10000
 
 def get_piskels_for_user(user_id, limit=20):
   piskels = _get_all_piskels_for_user(user_id, limit)

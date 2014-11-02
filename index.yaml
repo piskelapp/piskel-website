@@ -35,6 +35,14 @@ indexes:
 - kind: Piskel
   properties:
   - name: deleted
+  - name: garbage
+  - name: private
+  - name: creation_date
+    direction: desc
+
+- kind: Piskel
+  properties:
+  - name: deleted
   - name: owner
   - name: creation_date
     direction: desc
