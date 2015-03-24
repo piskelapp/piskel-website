@@ -42,15 +42,17 @@
       window.clearTimeout(imageInfo.timer);
     }
 
-    imageInfo.timer = window.setTimeout(function() {
-      var w = imageInfo.width * imageInfo.zoom,
-        h = imageInfo.height * imageInfo.zoom;
-      var context = imageInfo.canvas.getContext('2d');
-      context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
-      context.drawImage(imageInfo.framesheet[imageInfo.animationIndex], 0, 0, w, h);
-      startAnimationTimer(id);
-      imageInfo.animationIndex = (imageInfo.animationIndex + 1) % imageInfo.framesheet.length;
-    }, 1000 / imageInfo.fps);
+    if (imageInfo.fps !== 0) {
+      imageInfo.timer = window.setTimeout(function() {
+        var w = imageInfo.width * imageInfo.zoom,
+          h = imageInfo.height * imageInfo.zoom;
+        var context = imageInfo.canvas.getContext('2d');
+        context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
+        context.drawImage(imageInfo.framesheet[imageInfo.animationIndex], 0, 0, w, h);
+        startAnimationTimer(id);
+        imageInfo.animationIndex = (imageInfo.animationIndex + 1) % imageInfo.framesheet.length;
+      }, 1000 / imageInfo.fps);
+    }
   };
 
   var onCanvasOut = function(id) {
