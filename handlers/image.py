@@ -1,7 +1,6 @@
 import re, logging
-
-from google.appengine.ext import db
 from google.appengine.api import memcache
+from google.appengine.ext import db
 from google.appengine.ext import webapp
 
 from models import image as image_model
@@ -89,3 +88,18 @@ class GetImageHandler(webapp.RequestHandler):
                     self.get(framesheet.preview_link)
             else:
                 self.response.out.write("Sorry, could not find image.")
+
+    def get_piskel_sprite(self, piskel_id):
+        piskel = db.get(piskel_id)
+        mem_key = "image_piskel_" + str(piskel_id)
+        if memcache.get(mem_key):
+            self.get(memcache.get(mem_key))
+        else:
+            if piskel:
+                framesheet = piskel.get_current_framesheet()
+                if framesheet and framesheet.framesheet_link:
+                    memcache.set(mem_key, framesheet.framesheet_link)
+                    self.get(framesheet.framesheet_link)
+                    return
+        self.response.out.write("Sorry, could not find image.")
+

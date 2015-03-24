@@ -75,6 +75,7 @@ routes = [
   Route('/p/<piskel_id>/edit', handler='handlers.piskel.PiskelHandler:edit', name='piskel-edit'),
   Route('/p/<piskel_id>/save', handler='handlers.piskel.PiskelHandler:save', name='piskel-save', methods=['POST']),
   Route('/p/<piskel_id>/updateinfo', handler='handlers.piskel.PiskelHandler:updateinfo', name='piskel-update', methods=['POST']),
+  Route('/p/<piskel_id>/sprite', handler='handlers.image.GetImageHandler:get_piskel_sprite', name='piskel-get-sprite'),
   # ############# #
   # IMAGE  ROUTES #
   # ############# #
