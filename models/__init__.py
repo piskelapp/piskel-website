@@ -52,7 +52,9 @@ def get_stats_for_user(user_id):
     framesheet = piskel.get_current_framesheet()
     if framesheet:
       frames_count = frames_count + long(framesheet.frames)
-      anim_length = anim_length + float(framesheet.frames) * (1/float(framesheet.fps))
+      fps = float(framesheet.fps)
+      if fps > 0:
+        anim_length = anim_length + float(framesheet.frames) * (1/float(framesheet.fps))
   return {
     'piskels_count' : len(piskels),
     'frames_count' : frames_count,
@@ -79,6 +81,8 @@ class Piskel(db.Model):
     return db.Model.delete(self)
 
   def set_current_framesheet(self, framesheet, force_consistency=False):
+    memcache.delete("image_piskel_" + str(self.key()))
+
     current = self.get_current_framesheet()
     if current:
       current.active = False
