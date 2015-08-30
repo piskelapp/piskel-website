@@ -33,6 +33,22 @@ textarea, input, button {
   margin: 0;
 }
 
+/* firefox button resets */
+button,
+input[type="reset"],
+input[type="button"],
+input[type="submit"] {
+  font-family : Helvetica;
+}
+
+button::-moz-focus-inner,
+input[type="reset"]::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner {
+    padding: 0;
+    border: 0
+}
+
 a {
   color : white;
   text-decoration: none;
@@ -215,22 +231,12 @@ ul {
 }
 
 .piskel-button-dangerous {
-  color : rgb(255, 126, 53);
+  color : rgb(255, 80, 30);
 }
 
 .piskel-button:hover {
   text-decoration: none;
   color : gold;
-}
-
-/* CSS hack for firefox bug                                                                                                            */
-/* Bug details : http://www.cssnewbie.com/input-button-line-height-bug                                                                 */
-/* About @-moz-document https://developer.mozilla.org/en-US/docs/Web/CSS/@document?redirectlocale=en-US&redirectslug=CSS%2F%40document */
-@-moz-document url-prefix() {
-    input[type="submit"].piskel-button {
-        padding-top:4px;
-        padding-bottom:4px;
-    }
 }
 
 .navigation .create-piskel-button {
@@ -310,6 +316,13 @@ ul {
   height: 36px;
   vertical-align: middle;
   margin-right: 15px;
+  border: 2px solid rgb(222, 222, 222);
+  border-radius: 2px;
+}
+
+.smaller-user-avatar {
+  width: 20px;
+  height: 20px;
   border: 2px solid rgb(222, 222, 222);
   border-radius: 2px;
 }

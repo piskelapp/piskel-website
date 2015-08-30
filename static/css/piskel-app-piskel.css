@@ -17,10 +17,10 @@
 }
 
 .piskel-meta-title {
-	font-style: italic;
-	margin : 5px 0 10px 0;
+	font-size: 1.2em;
+	margin: 5px 0 10px 0;
 	font-weight: normal;
-	color:#AAA;
+	color: #FAFAFA;
 }
 
 .piskel-meta-title::after{
@@ -76,12 +76,12 @@
 }
 
 .piskel-owner {
-	margin: 0 10px;
+	margin: -5px 5px 0 5px;
+	vertical-align: middle;
 	transition : border-color 0.3s;
 }
 
 .piskel-owner:hover {
-	margin: 0 10px;
 	border-color : #FAFAFA;
 }
 

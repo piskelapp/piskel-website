@@ -1,8 +1,7 @@
 {% from "partial/macros.html" import render_animated_preview %}
 <div class="card-container{% if piskel.private %} card-container-private{% endif %}">
 	<div class="card-preview-container">
-
-		<a class="card-preview-link" href="/p/{{ piskel.key }}/{% if is_own_profile %}edit{%else%}view{%endif%}">
+		<a class="card-preview-link" href="/p/{{ piskel.key }}/view">
 			{{ render_animated_preview(piskel.framesheet_key, 192, piskel.fps) }}
 		</a>
 		<div class="card-preview-actions">
@@ -12,6 +11,7 @@
 					<a class="card-preview-action right" href="/p/{{ piskel.key }}/restore?callback_url=/user/{{ session.user_id }}/{{category}}">Restore</a>
 				{% else %}
 					<a class="card-preview-action right" href="/p/{{ piskel.key }}/delete?callback_url=/user/{{ session.user_id }}/{{category}}">Delete</a>
+				<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/edit">Clone</a>
 					<a class="card-preview-action right" href="/p/{{ piskel.key }}/view">View</a>
 					<a class="card-preview-action right bold important" href="/p/{{ piskel.key }}/edit">Edit</a>
 				{% endif %}
@@ -22,7 +22,7 @@
 		</div>
 	</div>
 	<div class="card-info-container">
-		<h4 class="card-info-name"><a href="/p/{{ piskel.key }}/edit">{{ piskel.name }}</a></h4>
+		<h4 class="card-info-name" title="Edit this sprite"><a href="/p/{{ piskel.key }}/edit">{{ piskel.name }}</a></h4>
 		<p class="card-info-meta">
 			{% if piskel.frames > 1 %}
 				<span class="counter">{{ piskel.frames }}</span> frames - <span class="counter">{{ piskel.fps }}</span> fps

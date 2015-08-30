@@ -31,8 +31,9 @@
 			by
 			<a href="/user/{{ owner.key.id() }}"><img
 				title="{{ owner.name }}"
-				class="small-user-avatar piskel-owner"
+				class="smaller-user-avatar piskel-owner"
 				src="{{ owner.avatar_url }}"/></a>
+			<a href="/user/{{ owner.key.id() }}">{{ owner.name }}</a>
 			<div class="piskel-meta">
 				{% if piskel.description %}
 					<h4 class="piskel-meta-title">Description</h4>
@@ -43,14 +44,17 @@
 			</div>
 			<div class="piskel-meta">
 				<h4 class="piskel-meta-title">Visibility</h4>
-				This piskel is <span class="piskel-privacy">{% if not piskel.private %}public{% else %}private{% endif %}</span>
+				This sprite is <span class="piskel-privacy">{% if not piskel.private %}public{% else %}private{% endif %}.</span>
 			</div>
 
 			{% if is_author %}
 			<div class="piskel-meta">
 				<h4 class="piskel-meta-title">History</h4>
-				<a      class="piskel-button" href="/p/{{piskel.key}}/history">Browse</a>
-				{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}
+				{% if framesheets|length > 1 %}
+					<a class="piskel-button" href="/p/{{piskel.key}}/history">Browse</a>
+					{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}
+				{% endif %}
+				No history available for this sprite.
 			</div>
 			{% endif %}
 
@@ -62,9 +66,9 @@
 							<button class="piskel-button piskel-button-dangerous" onclick="pskl.website.confirmDestroy('{{piskel.key}}','{{session.user_id}}');">Destroy</button>
 							<a      class="piskel-button piskel-button-important" href="/p/{{ piskel.key }}/restore?callback_url=/p/{{piskel.key}}/view">Restore</a>
 						{% else %}
-							<button class="piskel-button piskel-button-important" style="color:gold" onclick="pskl.website.showEditForm();return false;">Update info</button>
-							<a      class="piskel-button piskel-button-important" href="/p/{{piskel.key}}/edit" target="_blank">Open in editor</a>
-							<a      class="piskel-button" href="/p/{{piskel.key}}/clone">Copy</a>
+							<button class="piskel-button piskel-button-important" style="color:gold" onclick="pskl.website.showEditForm();return false;">Edit Info</button>
+							<a      class="piskel-button piskel-button-important" href="/p/{{piskel.key}}/edit" target="_blank">Edit Sprite</a>
+							<a      class="piskel-button" href="/p/{{piskel.key}}/clone">Clone</a>
 							<a      class="piskel-button piskel-button-dangerous" href="/p/{{ piskel.key }}/delete?callback_url=/p/{{piskel.key}}/view">Delete</a>
 						{% endif %}
 					{% else %}

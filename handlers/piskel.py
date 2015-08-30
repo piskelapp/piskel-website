@@ -82,6 +82,7 @@ class PiskelHandler(BaseHandler):
     clone = Piskel(owner=user_id)
     clone.garbage = False
     clone.name = piskel.name + " clone"
+    clone.private = piskel.private
     if piskel.description:
       clone.description = "(copied from original) " + piskel.description
     return clone
