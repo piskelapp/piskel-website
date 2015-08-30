@@ -103,10 +103,13 @@ class PiskelHandler(BaseHandler):
         framesheet = active_framesheet.clone(clone_id)
         clone.set_current_framesheet(framesheet)
 
-        # trigger refresh
-        db.get(framesheet.key())
+        db.get(framesheet.key())  # force consistency
+        db.get(clone_id)  # force consistency
 
-        self.redirect('/p/' + clone_id + '/' + action)
+        if action == 'gallery':
+          self.redirect('/user/' + str(user_id))
+        else:
+          self.redirect('/p/' + clone_id + '/' + action)
       else:
         self._render_unauthorized_action()
     else:
@@ -167,7 +170,7 @@ class PiskelHandler(BaseHandler):
     piskel = db.get(piskel_id)
     if self._authorize(piskel):
       piskel.delete()
-      db.get(piskel_id) # funny looks like this forces
+      db.get(piskel_id) # force consistency
       self.redirect(self.request.get('callback_url'))
     else:
       self._render_unauthorized_action()
@@ -250,5 +253,3 @@ class PiskelHandler(BaseHandler):
       self.response.out.write(piskel.key())
     else:
       self.abort(403)
-
-

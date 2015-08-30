@@ -6,7 +6,6 @@
 
 .history-framesheets-list {
 	overflow:auto;
-	height:438px;
 }
 
 .history-framesheet {
@@ -36,12 +35,3 @@
 .piskel-history-container {
 	overflow:hidden;
 }
-
-.display-hover {
-	opacity : 0;
-	transition : opacity 0.3s;
-}
-
-*:hover > .display-hover {
-	opacity : 1;
-};

@@ -11,12 +11,12 @@
 					<a class="card-preview-action right" href="/p/{{ piskel.key }}/restore?callback_url=/user/{{ session.user_id }}/{{category}}">Restore</a>
 				{% else %}
 					<a class="card-preview-action right" href="/p/{{ piskel.key }}/delete?callback_url=/user/{{ session.user_id }}/{{category}}">Delete</a>
-				<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/edit">Clone</a>
+				<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/gallery">Clone</a>
 					<a class="card-preview-action right" href="/p/{{ piskel.key }}/view">View</a>
 					<a class="card-preview-action right bold important" href="/p/{{ piskel.key }}/edit">Edit</a>
 				{% endif %}
 			{% else %}
-				<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/edit">Clone</a>
+				<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/gallery">Clone</a>
 				<a class="card-preview-action right bold important" href="/p/{{ piskel.key }}/view">View</a>
 			{% endif %}
 		</div>
