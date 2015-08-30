@@ -16,7 +16,9 @@
 					<a class="card-preview-action right bold important" href="/p/{{ piskel.key }}/edit">Edit</a>
 				{% endif %}
 			{% else %}
-				<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/gallery">Clone</a>
+				{% if is_logged_in %}
+					<a class="card-preview-action right" href="/p/{{ piskel.key }}/clone/gallery">Clone</a>
+				{% endif %}
 				<a class="card-preview-action right bold important" href="/p/{{ piskel.key }}/view">View</a>
 			{% endif %}
 		</div>
