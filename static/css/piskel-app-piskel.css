@@ -31,7 +31,8 @@
 	margin-top: 5px;
 }
 
-.piskel-privacy {
+.piskel-privacy,
+.piskel-history {
 	color : #FAFAFA;
 	font-weight: bold;
 }

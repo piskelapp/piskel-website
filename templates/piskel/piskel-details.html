@@ -51,10 +51,11 @@
 			<div class="piskel-meta">
 				<h4 class="piskel-meta-title">History</h4>
 				{% if framesheets|length > 1 %}
-					<a class="piskel-button" href="/p/{{piskel.key}}/history">Browse</a>
-					{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}
+					<span class="piskel-history">{{framesheets|length - 1}} previous version{% if framesheets|length > 2 %}s{% endif %}</span> available for this sprite&nbsp;
+					<a class="piskel-button" href="/p/{{piskel.key}}/history">View previous versions</a>
+				{% else %}
+					No history available for this sprite.
 				{% endif %}
-				No history available for this sprite.
 			</div>
 			{% endif %}
 
