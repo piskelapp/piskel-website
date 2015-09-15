@@ -12,6 +12,7 @@ def _get_all_piskels_for_user(user_id, limit=20):
     memcache.set(mem_key, piskels)
   return [p for p in piskels if not p.garbage]
 
+
 def get_recent_piskels(index):
   mem_key = "recent_piskels_" + str(index) + "_" + strftime("%Y%m%d%H", gmtime());
   piskels = memcache.get(mem_key)
@@ -21,30 +22,42 @@ def get_recent_piskels(index):
     memcache.set(mem_key, piskels)
   return piskels
 
+
 def get_public_piskels_count():
   return 10000
+
 
 def get_piskels_for_user(user_id, limit=20):
   piskels = _get_all_piskels_for_user(user_id, limit)
   return [p for p in piskels if not p.deleted]
 
+
 def get_public_piskels_for_user(user_id, limit=20):
   piskels = get_piskels_for_user(user_id, limit)
   return [p for p in piskels if not p.private and not p.deleted]
+
 
 def get_private_piskels_for_user(user_id, limit=20):
   piskels = get_piskels_for_user(user_id, limit)
   return [p for p in piskels if p.private and not p.deleted]
 
+
 def get_deleted_piskels_for_user(user_id, limit=20):
   piskels = _get_all_piskels_for_user(user_id, limit)
   return [p for p in piskels if p.deleted]
 
+
 def invalidate_user_cache(user_id):
-  mem_key = "user_piskels_" + str(user_id)
-  memcache.delete(mem_key)
+  memcache.delete("user_piskels_" + str(user_id))
+  memcache.delete("user_stats_" + str(user_id))
+
 
 def get_stats_for_user(user_id):
+  mem_key = "user_stats_" + str(user_id)
+  stat = memcache.get(mem_key)
+  if stat:
+    return stat
+
   frames_count = 0
   anim_length = 0
   piskels = get_piskels_for_user(user_id, None)
@@ -55,11 +68,13 @@ def get_stats_for_user(user_id):
       fps = float(framesheet.fps)
       if fps > 0:
         anim_length = anim_length + float(framesheet.frames) * (1/float(framesheet.fps))
-  return {
+  stat = {
     'piskels_count' : len(piskels),
     'frames_count' : frames_count,
     'anim_length' : "{:10.2f}".format(anim_length)
   }
+  memcache.set(mem_key, stat)
+  return stat
 
 class Piskel(db.Model):
   owner = db.IntegerProperty()
@@ -73,6 +88,8 @@ class Piskel(db.Model):
   #override
   def put(self):
     invalidate_user_cache(self.owner)
+    if self.is_saved():
+      memcache.delete("current_view_piskel_" + str(self.key()))
     return db.Model.put(self)
 
   #override
@@ -82,6 +99,8 @@ class Piskel(db.Model):
 
   def set_current_framesheet(self, framesheet, force_consistency=False):
     memcache.delete("image_piskel_" + str(self.key()))
+    memcache.delete("current_view_piskel_" + str(self.key()))
+    memcache.delete("user_stats_" + str(self.owner))
 
     current = self.get_current_framesheet()
     if current:
@@ -106,11 +125,15 @@ class Piskel(db.Model):
 
   # @return an object {key, fps, frames, preview_link, name, date} or None if the piskel has no framesheet
   def prepare_for_view(self):
+    mem_key = "current_view_piskel_" + str(self.key())
+    if memcache.get(mem_key) :
+      return memcache.get(mem_key)
+
     framesheet = self.get_current_framesheet()
     if framesheet:
       url = 'http://www.piskelapp.com/img/' + framesheet.preview_link
       resize_service_url = 'http://piskel-resizer.appspot.com/resize?size=200&url='
-      return {
+      view = {
         'key' : self.key(),
         'fps' : framesheet.fps,
         'framesheet_key' : framesheet.key(),
@@ -122,6 +145,8 @@ class Piskel(db.Model):
         'deleted' : self.deleted,
         'date' : self.creation_date.strftime("%A, %d. %B %Y %I:%M%p")
       }
+      memcache.set(mem_key, view)
+      return view
     else:
       return None
 
