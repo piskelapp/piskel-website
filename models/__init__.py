@@ -52,6 +52,31 @@ def invalidate_user_cache(user_id):
   memcache.delete("user_stats_" + str(user_id))
 
 
+def get_stats_for_piskel(piskel):
+  mem_key = "piskel_stats_" + str(piskel.key())
+  stat = memcache.get(mem_key)
+  if stat:
+    return stat
+
+  framesheet = piskel.get_current_framesheet()
+  if framesheet:
+    frames_count = long(framesheet.frames)
+    fps = float(framesheet.fps)
+    if fps > 0:
+      anim_length = float(frames_count) * (1/float(fps))
+    else:
+      anim_length = 0
+
+    stat = {
+      'frames_count' : frames_count,
+      'anim_length' : anim_length
+    }
+    memcache.set(mem_key, stat)
+    return stat
+  else:
+    return None
+
+
 def get_stats_for_user(user_id):
   mem_key = "user_stats_" + str(user_id)
   stat = memcache.get(mem_key)
@@ -62,12 +87,11 @@ def get_stats_for_user(user_id):
   anim_length = 0
   piskels = get_piskels_for_user(user_id, None)
   for piskel in piskels:
-    framesheet = piskel.get_current_framesheet()
-    if framesheet:
-      frames_count = frames_count + long(framesheet.frames)
-      fps = float(framesheet.fps)
-      if fps > 0:
-        anim_length = anim_length + float(framesheet.frames) * (1/float(framesheet.fps))
+    piskel_stats = get_stats_for_piskel(piskel)
+    if piskel_stats:
+      frames_count = frames_count + long(piskel_stats['frames_count'])
+      anim_length = anim_length + float(piskel_stats['anim_length'])
+
   stat = {
     'piskels_count' : len(piskels),
     'frames_count' : frames_count,
@@ -75,6 +99,7 @@ def get_stats_for_user(user_id):
   }
   memcache.set(mem_key, stat)
   return stat
+
 
 class Piskel(db.Model):
   owner = db.IntegerProperty()
