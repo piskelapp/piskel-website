@@ -5,8 +5,11 @@
   window.pskl.website = window.pskl.website || {};
 
   var __getImageData = function(image) {
-    var w = getDim(image, "width"), h = getDim(image, "height");
-    var sourceContext = document.createElement('canvas').getContext('2d');
+    var w = getDim(image, "width");
+    var h = getDim(image, "height");
+    var canvas = pskl.website.createCanvas(w, h);
+
+    var sourceContext = canvas.getContext('2d');
     sourceContext.drawImage(image, 0, 0);
     return sourceContext.getImageData(0, 0, w, h).data;
   };
@@ -76,7 +79,7 @@
   /**
    * pskl.website.scale can accept images or canvas elements
    * Resolving dimensions differs depending on which tag is used.
-   */ 
+   */
   var getDim = function (el, dim) {
     if (el.tagName == "CANVAS") {
       return el[dim];
