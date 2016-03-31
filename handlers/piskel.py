@@ -212,44 +212,47 @@ class PiskelHandler(BaseHandler):
   def save(self, piskel_id):
     piskel = db.get(piskel_id)
 
+    if not self.is_logged_in:
+      return self.abort(401)
+
     # Claim anonymous piskel ownership
     is_anonymous = _ANONYMOUS_USER == piskel.owner
     if is_anonymous:
-      piskel.owner =  self._get_logged_user_id()
+      piskel.owner = self._get_logged_user_id()
 
-    if self._authorize(piskel):
-      post_data = self.request.POST
+    if not self._authorize(piskel):
+      return self.abort(403)
 
-      content = post_data.get('framesheet')
-      fps = post_data.get('fps')
-      frames = long(post_data.get('frames'))
+    post_data = self.request.POST
 
-      preview_link=image_handler.create_link(post_data.get('first_frame_as_png'))
-      framesheet_link=image_handler.create_link(post_data.get('framesheet_as_png'))
+    content = post_data.get('framesheet')
+    fps = post_data.get('fps')
+    frames = long(post_data.get('frames'))
 
-      if hasFramesheetChanged_(piskel, content, fps):
-        framesheet = Framesheet(
-          piskel_id=piskel_id,
-          fps=fps,
-          content=content,
-          frames=frames,
-          preview_link=preview_link,
-          framesheet_link=framesheet_link,
-          active=True
-        )
-        piskel.set_current_framesheet(framesheet)
+    preview_link=image_handler.create_link(post_data.get('first_frame_as_png'))
+    framesheet_link=image_handler.create_link(post_data.get('framesheet_as_png'))
 
-      piskel.name = post_data.get('name')
-      piskel.description = post_data.get('description')
+    if hasFramesheetChanged_(piskel, content, fps):
+      framesheet = Framesheet(
+        piskel_id=piskel_id,
+        fps=fps,
+        content=content,
+        frames=frames,
+        preview_link=preview_link,
+        framesheet_link=framesheet_link,
+        active=True
+      )
+      piskel.set_current_framesheet(framesheet)
 
-      piskel.private = not bool(post_data.get('public'))
+    piskel.name = post_data.get('name')
+    piskel.description = post_data.get('description')
 
-      piskel.garbage = False # remove garbage flag to avoid collection by CRON task + enable listing
-      piskel.put()
+    piskel.private = not bool(post_data.get('public'))
 
-      # force consistency
-      db.get(piskel_id)
+    piskel.garbage = False # remove garbage flag to avoid collection by CRON task + enable listing
+    piskel.put()
 
-      self.response.out.write(piskel.key())
-    else:
-      self.abort(403)
+    # force consistency
+    db.get(piskel_id)
+
+    self.response.out.write(piskel.key())

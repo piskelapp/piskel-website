@@ -1,5 +1,5 @@
 application: piskel-app
-version: alpha
+version: beta
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -76,10 +76,6 @@ handlers:
 - url: /p/(.*\.(?:css|js|gif))
   static_files: static/editor/\1
   upload: static/editor/(.*\.(css|js|gif))
-
-- url: /p/templates(?:.*?)/(.*\.html)
-  static_files: static/editor/templates/\1
-  upload: static/editor/templates/(.*\.html)
 
 - url: /.*
   script: main.app
