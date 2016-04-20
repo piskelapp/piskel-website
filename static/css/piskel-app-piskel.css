@@ -193,6 +193,7 @@
 	font-size: 0.8rem;
 	font-weight: bold;
 }
+
 .piskel-edit .piskel-button {
 	width:100px;
 	margin-left: 10px;
@@ -201,24 +202,4 @@
 
 .piskel-button-save {
 	color:gold;
-}
-
-/******************/
-/******RETINA******/
-/******************/
-
-/* Should be moved to piskel-app.css, but needs more work ... */
-
-@media screen and (min-resolution: 1.5dppx) {
-  body {
-    font-size : 2em;
-  }
-
-  .piskel-button {
-    font-size : 0.6em;
-  }
-
-  .piskel-logo {
-    font-size : 0.5em;
-  }
 }

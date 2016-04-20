@@ -35,7 +35,7 @@
 /****@MEDIA-QUERY : LANDSCAPE****/
 /********************************/
 
-@media (orientation:landscape) and (max-resolution: 1.5dppx) {
+@media (orientation:landscape) {
   .user-card {
     width: 300px;
     float : left;
@@ -88,7 +88,7 @@
 /********************************/
 /*****@MEDIA-QUERY : PORTRAIT****/
 /********************************/
-@media (orientation:portrait), (min-resolution: 1.5dppx){
+@media (orientation:portrait) {
   .user-card {
     overflow: hidden;
   }
@@ -198,38 +198,4 @@
 
   line-height: 1.4em;
   font-size: 1.2em;
-}
-
-/********************************/
-/******@MEDIA-QUERY : RETINA*****/
-/********************************/
-@media screen and (min-resolution: 1.5dppx) {
-  .user-avatar-big {
-    width: 10em;
-    height :10em;
-  }
-
-  .card-info-name a {
-    font-size: 0.6em;
-  }
-}
-
-/******************/
-/******RETINA******/
-/******************/
-
-/* Should be moved to piskel-app.css, but needs more work ... */
-
-@media screen and (min-resolution: 1.5dppx) {
-  body {
-    font-size : 2em;
-  }
-
-  .piskel-button {
-    font-size : 0.6em;
-  }
-
-  .piskel-logo {
-    font-size : 0.5em;
-  }
 }
