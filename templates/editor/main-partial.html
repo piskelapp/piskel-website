@@ -15,7 +15,7 @@
     <div class="palette-wrapper">
       <div
         class="tool-icon tool-color-picker"
-        title="Primary - left mouse button"
+        data-initial-title="Primary - left mouse button"
         rel="tooltip"
         data-placement="right"
       >
@@ -23,7 +23,7 @@
       </div>
       <div
         class="tool-icon tool-color-picker"
-        title="Secondary - right mouse button"
+        data-initial-title="Secondary - right mouse button"
         rel="tooltip"
         data-placement="right"
       >
@@ -123,7 +123,14 @@
 <ul class="layers-list"></ul>
 
 <script type="text/template" id="layer-item-template">
-  <li class="layer-item {{isselected:current-layer-item}}" data-layer-index="{{layerindex}}">{{layername}}</li>
+  <li class="layer-item {{isselected:current-layer-item}}"
+      data-layer-index="{{layerindex}}">
+      {{layername}}
+      <span class="layer-item-opacity"
+            title="Layer opacity" rel="tooltip" data-placement="top">
+        {{opacity}}&#945;
+      </span>
+  </li>
 </script>
 </div>
 
@@ -855,9 +862,9 @@
   (function () {
 
 /**
- * See @Gruntfile.js => after build, -2015-12-21-11-53 is replaced by the build version
+ * See @Gruntfile.js => after build, -2016-03-26-08-48 is replaced by the build version
  */
-var version = '-2015-12-21-11-53';
+var version = '-2016-03-26-08-48';
 var versionHasNotBeenReplaced = version.indexOf('@@') === 0;
 if (versionHasNotBeenReplaced)  {
   version = '';
