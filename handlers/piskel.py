@@ -155,9 +155,7 @@ class PiskelHandler(BaseHandler):
 
   # Error page when user tries to perform an unauthorized action on a piskel
   def _render_unauthorized_action(self):
-    # TODO : error page should be different
-    # as the piskel is not necessarily private
-    self._render_piskel_private()
+    self.render('error/piskel-unauthorized-action.html', {})
 
   def permanently_delete(self, piskel_id):
     piskel = db.get(piskel_id)
