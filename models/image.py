@@ -9,7 +9,7 @@ from google.appengine.ext import db
 
 class Image(db.Model):
     content = db.BlobProperty(default=None)
-    extension = db.StringProperty(default="png")
+    extension = db.StringProperty(default='png')
 
 
 class ImageInfo(db.Model):
@@ -17,7 +17,7 @@ class ImageInfo(db.Model):
 
 
 def store_image(image_data, extension):
-    file_name = str(uuid.uuid1()) + "." + extension
+    file_name = str(uuid.uuid1()) + '.' + extension
     image = Image(key_name=file_name)
     image.content = db.Blob(base64.decodestring(image_data))
     image.extension = extension

@@ -12,4 +12,4 @@ class HomeHandler(BaseHandler):
       'has_next_page' : True
     }
 
-    self.render("home.html", values)
+    self.render('home.html', values)

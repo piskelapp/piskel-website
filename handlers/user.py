@@ -43,7 +43,7 @@ class UserHandler(BaseHandler):
           'profile_piskels': view_piskels,
           'is_own_profile': is_own_profile
           }
-        self.render("user/user.html", values)
+        self.render('user/user.html', values)
       else:
         self.redirect('/user/' + user_id + '/public')
     else:

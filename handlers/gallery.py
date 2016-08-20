@@ -25,4 +25,4 @@ class PickedHandler(BaseHandler):
       'page_piskels' : self.get_page_piskels(index)
     }
 
-    self.render("gallery/list.html", values)
+    self.render('gallery/list.html', values)

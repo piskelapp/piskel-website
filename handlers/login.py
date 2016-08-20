@@ -12,4 +12,4 @@ class LoginHandler(BaseHandler):
       'is_logged_in': self.is_logged_in
     }
 
-    self.render("login.html", values)
+    self.render('login.html', values)
