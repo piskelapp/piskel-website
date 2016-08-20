@@ -14,9 +14,6 @@ class PickedHandler(BaseHandler):
     index = int(index)
     public_count = models.get_public_piskels_count()
     values = {
-      'user': self.current_user if self.is_logged_in else False,
-      'session': self.session_user if self.is_logged_in else False,
-      'is_logged_in': self.is_logged_in,
       'hide_create': False,
       'has_footer' : False,
       'has_previous_page' : index > 1,

@@ -63,9 +63,6 @@ class PiskelHandler(BaseHandler):
         fps = 12
 
       values = {
-        'user': self.current_user if self.is_logged_in else False,
-        'session': self.session_user if self.is_logged_in else False,
-        'is_logged_in': self.is_logged_in,
         'piskel_id' : piskel_id,
         'piskel_content' : content,
         'piskel_fps' : fps,
@@ -118,10 +115,6 @@ class PiskelHandler(BaseHandler):
   def _get_piskel_details(self, piskel):
     framesheets = piskel.get_framesheets()
     return {
-      # mandatory
-      'user': self.current_user if self.is_logged_in else False,
-      'session': self.session_user if self.is_logged_in else False,
-      'is_logged_in': self.is_logged_in,
       # page-specific
       'is_author': self.is_logged_in and long(piskel.owner) == self.session_user['user_id'],
       'piskel_id' : piskel.key(),
