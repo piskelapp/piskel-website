@@ -10,7 +10,7 @@
   var onCanvasOver = function(id, targetSize) {
     var imageInfo = images[id];
     imageInfo.hover = true;
-    if (!imageInfo.framesheet_canvas) {
+    if (!imageInfo.framesheet) {
       var img = new Image();
       img.onload = (function(id) {
         return function() {
