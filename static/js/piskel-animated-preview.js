@@ -29,33 +29,31 @@
 
   var onCanvasOver = function(id, targetSize) {
     var imageInfo = images[id];
-    if (imageInfo.frames > 1) {
-      imageInfo.hover = true;
-      if (!imageInfo.framesheet) {
-        drawLoading(imageInfo.canvas);
-        var img = new Image();
-        img.onload = (function(id) {
-          return function() {
-            var imageInfo = images[id];
-            var framesheet = [];
-            var frames = Math.floor(img.width / imageInfo.width);
-            for (var i = 0; i < frames; i++) {
-              var canvas = pskl.website.createCanvas(imageInfo.width, imageInfo.height);
-              var leftOffset = i * imageInfo.width;
-              canvas.getContext('2d').drawImage(img, leftOffset, 0, imageInfo.width, imageInfo.height, 0, 0, imageInfo.width, imageInfo.height);
-              framesheet.push(pskl.website.scale(canvas, imageInfo.zoom));
-            }
-            imageInfo.framesheet = framesheet;
-            resetPreview(imageInfo);
-            if (imageInfo.hover) {
-              startAnimationTimer(id);
-            }
-          };
-        })(id);
-        img.src = "/img/" + imageInfo.piskelId + "/framesheet";
-      } else {
-        startAnimationTimer(id);
-      }
+    imageInfo.hover = true;
+    if (!imageInfo.framesheet) {
+      drawLoading(imageInfo.canvas);
+      var img = new Image();
+      img.onload = (function(id) {
+        return function() {
+          var imageInfo = images[id];
+          var framesheet = [];
+          var frames = Math.floor(img.width / imageInfo.width);
+          for (var i = 0; i < frames; i++) {
+            var canvas = pskl.website.createCanvas(imageInfo.width, imageInfo.height);
+            var leftOffset = i * imageInfo.width;
+            canvas.getContext('2d').drawImage(img, leftOffset, 0, imageInfo.width, imageInfo.height, 0, 0, imageInfo.width, imageInfo.height);
+            framesheet.push(pskl.website.scale(canvas, imageInfo.zoom));
+          }
+          imageInfo.framesheet = framesheet;
+          resetPreview(imageInfo);
+          if (imageInfo.hover) {
+            startAnimationTimer(id);
+          }
+        };
+      })(id);
+      img.src = "/img/" + imageInfo.piskelId + "/framesheet";
+    } else {
+      startAnimationTimer(id);
     }
   };
 
@@ -104,8 +102,9 @@
     canvas.getContext('2d').drawImage(preview_canvas, 0, 0);
     canvas.className = "animated-preview-widget";
 
+    var imageInfo;
     __id++;
-    images["key" + __id] = {
+    images["key" + __id] = imageInfo = {
       piskelId: piskelId,
       frames: frames,
       fps: fps,
@@ -120,21 +119,23 @@
 
     image.parentNode.replaceChild(canvas, image);
 
-    if (animate) {
-        onCanvasOver("key" + __id, targetSize);
-    } else {
-      // Targetting parentNode because the canvas is below an inset border
-      canvas.parentNode.addEventListener('mouseover', (function(id, targetSize) {
-        return function(event) {
-          onCanvasOver(id, targetSize);
-        };
-      })("key" + __id, targetSize));
+    if (imageInfo.frames > 1) {
+      if (animate) {
+          onCanvasOver("key" + __id, targetSize);
+      } else {
+        // Targetting parentNode because the canvas is below an inset border
+        canvas.parentNode.addEventListener('mouseover', (function(id, targetSize) {
+          return function(event) {
+            onCanvasOver(id, targetSize);
+          };
+        })("key" + __id, targetSize));
 
-      canvas.parentNode.addEventListener('mouseout', (function(id, targetSize) {
-        return function(event) {
-          onCanvasOut(id, targetSize);
-        };
-      })("key" + __id, targetSize));
+        canvas.parentNode.addEventListener('mouseout', (function(id, targetSize) {
+          return function(event) {
+            onCanvasOut(id, targetSize);
+          };
+        })("key" + __id, targetSize));
+      }
     }
   };
 })();
