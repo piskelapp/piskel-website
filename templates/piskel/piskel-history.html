@@ -23,7 +23,7 @@
 
 	<div class="piskel-container">
 		<a href="/p/{{piskel.key}}/view" title="Go to sprite details page" class="piskel-preview-container inset-container">
-			{{ render_animated_preview(piskel.framesheet_key, 512, piskel.fps) }}
+			{{ render_animated_preview(piskel.framesheet_key, piskel.frames, 512, piskel.fps) }}
 		</a>
 		<div class="piskel-history-container">
 			<div style="width:600px">
@@ -38,7 +38,7 @@
 					{% for f in framesheets %}
 						<li class="history-framesheet">
 							<div class="history-framesheet-thumbnail  inset-container">
-							{{ render_animated_preview(f.key(), 128, f.fps) }}
+							{{ render_animated_preview(f.key(), f.frames, 128, f.fps) }}
 							</div>
 							<ul class="history-details-list">
 								<li class="history-detail"><b {% if loop.first %}class="pskl-important"{% endif %}>Version {{framesheets|length - loop.index0}}</b> - created on {{ f.date.strftime("%B %d %Y at %H:%m") }}</li>
