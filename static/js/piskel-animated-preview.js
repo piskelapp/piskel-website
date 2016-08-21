@@ -5,12 +5,33 @@
   window.pskl = window.pskl || {};
   window.pskl.website = window.pskl.website || {};
 
+  var drawLoading = function(canvas) {
+    var ctx = canvas.getContext('2d');
+    // Overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Loading text
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white'
+    ctx.font = '30px Helvetica';
+    ctx.fillText("Loading...", canvas.width / 2, canvas.height / 2);
+  };
+
+  var resetPreview = function(imageInfo) {
+    imageInfo.animationIndex = 0;
+    var context = imageInfo.canvas.getContext('2d');
+    context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
+    context.drawImage(imageInfo.preview_canvas, 0, 0);
+  };
+
   var images = {};
 
   var onCanvasOver = function(id, targetSize) {
     var imageInfo = images[id];
     imageInfo.hover = true;
     if (!imageInfo.framesheet) {
+      drawLoading(imageInfo.canvas);
       var img = new Image();
       img.onload = (function(id) {
         return function() {
@@ -24,6 +45,7 @@
             framesheet.push(pskl.website.scale(canvas, imageInfo.zoom));
           }
           imageInfo.framesheet = framesheet;
+          resetPreview(imageInfo);
           if (imageInfo.hover) {
             startAnimationTimer(id);
           }
@@ -62,10 +84,9 @@
     var imageInfo = images[id];
     imageInfo.hover = false;
     window.clearTimeout(imageInfo.timer);
-    imageInfo.animationIndex = 0;
-    var context = imageInfo.canvas.getContext('2d');
-    context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
-    context.drawImage(imageInfo.preview_canvas, 0, 0);
+    if (imageInfo.framesheet) {
+      resetPreview(imageInfo);
+    }
   };
 
   var __id = -1;
