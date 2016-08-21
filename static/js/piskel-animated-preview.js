@@ -16,7 +16,7 @@
     // Loading text
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'white'
+    ctx.fillStyle = 'white';
     ctx.font = '30px Helvetica';
     ctx.fillText("Loading...", canvas.width / 2, canvas.height / 2);
   };
