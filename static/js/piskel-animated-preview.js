@@ -75,8 +75,8 @@
       var context = imageInfo.canvas.getContext('2d');
       context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
       context.drawImage(imageInfo.framesheet[imageInfo.animationIndex], 0, 0, w, h);
-      startAnimationTimer(id);
       imageInfo.animationIndex = (imageInfo.animationIndex + 1) % imageInfo.framesheet.length;
+      startAnimationTimer(id);
     }, 1000 / imageInfo.fps);
   };
 
