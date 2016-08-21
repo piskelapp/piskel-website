@@ -90,6 +90,6 @@ def error_handler(request, response, exception):
     h = error.ErrorHandler(request, response)
     h.handle_error(exception)
 
-error_codes = [403, 404, 405]
+error_codes = [403, 404, 500]
 for error_code in error_codes:
     app.error_handlers[error_code] = error_handler
