@@ -14,5 +14,15 @@
         }
       };
     {% endif %}
+
+    if (!window.onPiskelReady) {
+      window.onPiskelReady = [];
+    }
+
+    window.onPiskelReady.push(function() {
+      $.subscribe('PISKEL_DESCRIPTOR_UPDATED', function(a) {
+        document.title = 'Piskel - ' + window.pskl.app.piskelController.getPiskel().getDescriptor().name;
+      });
+    });
   </script>
 {% endautoescape %}
