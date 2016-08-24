@@ -82,7 +82,7 @@
     imageInfo.timer = window.requestAnimationFrame(function() {
       var timePerFrame = 1000 / imageInfo.fps;
       var fullAnimationTime = imageInfo.frames * timePerFrame;
-      if (imageInfo.progresBarHover) {
+      if (imageInfo.progressBarHover) {
         imageInfo.startTime = Date.now() - (timePerFrame * (imageInfo.progressBarHoverFrame));
       }
       var timeElapsedSinceStart = Date.now() - imageInfo.startTime;
@@ -112,7 +112,7 @@
       context.shadowColor = '#01579B';
       context.shadowBlur = 20;
       context.shadowOffsetX = context.shadowOffsetY = 0;
-      if (imageInfo.progresBarHover) {
+      if (imageInfo.progressBarHover) {
         context.fillRect(0, 0, Math.ceil(imageInfo.canvas.width * (timeElapsedSinceStart / fullAnimationTime) + rectWidth / 2), rectHeight);
       } else {
         context.fillRect(0, 0, Math.ceil(imageInfo.canvas.width * (timeElapsedSinceStart / fullAnimationTime)), rectHeight);
@@ -138,7 +138,7 @@
 
   var onCanvasOut = function(id) {
     var imageInfo = images[id];
-    imageInfo.hover = imageInfo.progresBarHover = false;
+    imageInfo.hover = imageInfo.progressBarHover = false;
     window.cancelAnimationFrame(imageInfo.timer);
     if (imageInfo.framesheet) {
       resetPreview(imageInfo);
@@ -154,18 +154,18 @@
     // On progress bar
     if (imageInfo.framesheet) {
       if (y <= imageInfo.canvas.height * PROGRESS_BAR_HEIGHT) {
-        imageInfo.progresBarHover = true;
+        imageInfo.progressBarHover = true;
         var frame = Math.floor(x / (imageInfo.canvas.width / imageInfo.frames));
         imageInfo.progressBarHoverFrame = frame;
-      } else if (imageInfo.progresBarHover) {
-        imageInfo.progresBarHover = false;
+      } else if (imageInfo.progressBarHover) {
+        imageInfo.progressBarHover = false;
       }
     }
   };
 
   var onCanvasOutAnimate = function(id) {
     var imageInfo = images[id];
-    imageInfo.progresBarHover = false;
+    imageInfo.progressBarHover = false;
   };
 
   var __id = -1;
@@ -195,7 +195,7 @@
       animationIndex: 0,
       lastAnimationIndex: -1,
       hover: false,
-      progresBarHover: false,
+      progressBarHover: false,
       progressBarHoverFrame: 0
     };
 
