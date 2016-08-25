@@ -17,3 +17,6 @@ npm-debug.log
 
 # secret file !
 config/secrets.py
+
+# grunt generated files
+templates/editor/main-partial.html
