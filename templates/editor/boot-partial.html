@@ -15,12 +15,12 @@
       };
     {% endif %}
 
-    if (!window.onPiskelReady) {
-      window.onPiskelReady = [];
+    if (!window.piskelReadyCallbacks) {
+      window.piskelReadyCallbacks = [];
     }
 
-    window.onPiskelReady.push(function() {
-      $.subscribe('PISKEL_DESCRIPTOR_UPDATED', function(a) {
+    window.piskelReadyCallbacks.push(function() {
+      $.subscribe('PISKEL_DESCRIPTOR_UPDATED', function() {
         document.title = 'Piskel - ' + window.pskl.app.piskelController.getPiskel().getDescriptor().name;
       });
     });
