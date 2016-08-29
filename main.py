@@ -22,7 +22,7 @@ from config import secrets
 
 from webapp2 import WSGIApplication, Route
 from webapp2_extras import routes
-from handlers import home, user, redirect
+from handlers import home, user, redirect, error
 
 
 
@@ -85,3 +85,11 @@ routes = [
 ]
 
 app = WSGIApplication(routes, config=config, debug=True)
+
+def error_handler(request, response, exception):
+    h = error.ErrorHandler(request, response)
+    h.handle_error(exception)
+
+error_codes = [403, 404, 500]
+for error_code in error_codes:
+    app.error_handlers[error_code] = error_handler

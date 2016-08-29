@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found!{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-piskel.css"/>
+{% endblock %}
+
+{% block main %}
+  <div class="piskel-error-container">
+    <h2 class="piskel-error-title pskl-important font-pixel">Sorry!</h2>
+    <h3 class="piskel-error-details font-pixel">Page not found</h3>
+    We couldn't locate the page you were looking for.
+  </div>
+{% endblock %}

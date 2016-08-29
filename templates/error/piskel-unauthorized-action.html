@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Private Piskel!{% endblock %}
+{% block title %}Insufficient permissions!{% endblock %}
 
 {% block css %}
   <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-piskel.css"/>
 {% endblock %}
 
-{% block head_end %}
-  {% include "social/piskel-opengraph-card-private.html" %}
-{% endblock %}
-
-
 {% block main %}
   <div class="piskel-error-container">
     <h2 class="piskel-error-title pskl-important font-pixel">Sorry!</h2>
-    <h3 class="piskel-error-details font-pixel">Access forbidden</h3>
-    This piskel is <b class="pskl-important">private</b>. If you want to see this piskel, please contact the <b class="pskl-important">author</b> and ask to save it as <b class="pskl-important">public</b>.
+    <h3 class="piskel-error-details font-pixel">Insufficient permissions</h3>
+    {% if not is_logged_in %}
+        Did you forget to <a href="/auth/google">login</a>?<br>
+    {% else %}
+        Make sure the piskel on which you are trying to perform this action is owned by you.
+        If you think this is an error then please open an issue on <a href="https://github.com/juliandescottes/piskel-website/issues">github</a>.
+    {% endif %}
   </div>
   <div class="piskel-container">
     <div class="piskel-error-image-container inset-container" style="margin-left:-256px;">

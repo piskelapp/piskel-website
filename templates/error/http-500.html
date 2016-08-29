@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Unexpected error!{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-piskel.css"/>
+{% endblock %}
+
+{% block main %}
+  <div class="piskel-error-container">
+    <h2 class="piskel-error-title pskl-important font-pixel">Sorry!</h2>
+    <h3 class="piskel-error-details font-pixel">Unexpected error</h3>
+    Oops. Something bad happened on our side.<br>
+    If you can reproduce this error then file this issue on <a href="https://github.com/juliandescottes/piskel-website/issues">github</a>.
+  </div>
+{% endblock %}

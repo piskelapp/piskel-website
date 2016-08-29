@@ -13,11 +13,11 @@ def hasFramesheetChanged_(piskel, content, fps):
     return True
 
 def encode_for_view_(text):
-  encoded_text = ""
+  encoded_text = ''
   if text:
     encoded_text = u''.join((text))
     encoded_text = encoded_text.encode('unicode_escape')
-    encoded_text = encoded_text.replace("\"", "\\\"")
+    encoded_text = encoded_text.replace('\"', '\\"')
   return encoded_text
 
 class PiskelHandler(BaseHandler):
@@ -63,9 +63,6 @@ class PiskelHandler(BaseHandler):
         fps = 12
 
       values = {
-        'user': self.current_user if self.is_logged_in else False,
-        'session': self.session_user if self.is_logged_in else False,
-        'is_logged_in': self.is_logged_in,
         'piskel_id' : piskel_id,
         'piskel_content' : content,
         'piskel_fps' : fps,
@@ -74,17 +71,17 @@ class PiskelHandler(BaseHandler):
         'piskel_description' : encode_for_view_(piskel.description)
       }
 
-      self.render("editor.html", values)
+      self.render('editor.html', values)
     else:
       self._render_piskel_private()
 
   def _clone_piskel(self, piskel, user_id):
     clone = Piskel(owner=user_id)
     clone.garbage = False
-    clone.name = piskel.name + " clone"
+    clone.name = piskel.name + ' clone'
     clone.private = piskel.private
     if piskel.description:
-      clone.description = "(copied from original) " + piskel.description
+      clone.description = '(copied from original) ' + piskel.description
     return clone
 
 
@@ -118,10 +115,6 @@ class PiskelHandler(BaseHandler):
   def _get_piskel_details(self, piskel):
     framesheets = piskel.get_framesheets()
     return {
-      # mandatory
-      'user': self.current_user if self.is_logged_in else False,
-      'session': self.session_user if self.is_logged_in else False,
-      'is_logged_in': self.is_logged_in,
       # page-specific
       'is_author': self.is_logged_in and long(piskel.owner) == self.session_user['user_id'],
       'piskel_id' : piskel.key(),
@@ -134,7 +127,7 @@ class PiskelHandler(BaseHandler):
     piskel = db.get(piskel_id)
     if self._authorize(piskel):
       values = self._get_piskel_details(piskel)
-      self.render("piskel/piskel-history.html", values)
+      self.render('piskel/piskel-history.html', values)
     else:
       self._render_piskel_private()
 
@@ -152,19 +145,17 @@ class PiskelHandler(BaseHandler):
     piskel = db.get(piskel_id)
     if self._authorize_for_view(piskel):
       values = self._get_piskel_details(piskel)
-      self.render("piskel/piskel-details.html", values)
+      self.render('piskel/piskel-details.html', values)
     else:
       self._render_piskel_private()
 
   # Error page when user tries to view a private piskel
   def _render_piskel_private(self):
-    self.render("error/piskel-private.html", {})
+    self.render('error/piskel-private.html', {})
 
   # Error page when user tries to perform an unauthorized action on a piskel
   def _render_unauthorized_action(self):
-    # TODO : error page should be different
-    # as the piskel is not necessarily private
-    self._render_piskel_private()
+    self.render('error/piskel-unauthorized-action.html', {})
 
   def permanently_delete(self, piskel_id):
     piskel = db.get(piskel_id)

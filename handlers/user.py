@@ -31,11 +31,6 @@ class UserHandler(BaseHandler):
         view_piskels = Piskel.prepare_piskels_for_view(piskels)
         categories = PRIVATE_CATEGORIES if is_own_profile else PUBLIC_CATEGORIES
         values = {
-          # mandatory
-          'user': self.current_user if self.is_logged_in else False,
-          'session': self.session_user if self.is_logged_in else False,
-          'is_logged_in': self.is_logged_in,
-          # page-specific
           'profile_user': user,
           'category' : cat,
           'categories' : categories,
@@ -43,7 +38,7 @@ class UserHandler(BaseHandler):
           'profile_piskels': view_piskels,
           'is_own_profile': is_own_profile
           }
-        self.render("user/user.html", values)
+        self.render('user/user.html', values)
       else:
         self.redirect('/user/' + user_id + '/public')
     else:

@@ -48,6 +48,15 @@ class BaseHandler(webapp2.RequestHandler):
     return self.auth.store.user_model.get_by_id(user_id)
 
   def render(self, template, values):
+    # Add user (auth) specific variables
+    values.update(
+      {
+        'user': self.current_user if self.is_logged_in else False,
+        'session': self.session_user if self.is_logged_in else False,
+        'is_logged_in': self.is_logged_in
+      }
+    )
+
     try:
       self.response.write(self.jinja2.render_template(template, **values))
     except Exception, e:
