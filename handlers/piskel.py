@@ -17,7 +17,7 @@ def encode_for_view_(text):
   if text:
     encoded_text = u''.join((text))
     encoded_text = encoded_text.encode('unicode_escape')
-    encoded_text = encoded_text.replace('\"', '\\"')
+    encoded_text = encoded_text.replace('"', '\\"')
   return encoded_text
 
 class PiskelHandler(BaseHandler):
