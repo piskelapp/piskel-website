@@ -15,14 +15,20 @@
       };
     {% endif %}
 
-    if (!window.piskelReadyCallbacks) {
-      window.piskelReadyCallbacks = [];
-    }
-
-    window.piskelReadyCallbacks.push(function() {
+    function subscribePiskelDescriptorUpdatedChangeTitle() {
       $.subscribe('PISKEL_DESCRIPTOR_UPDATED', function() {
         document.title = 'Piskel - ' + window.pskl.app.piskelController.getPiskel().getDescriptor().name;
       });
-    });
+    }
+
+    if ($ && $.subscribe) {
+      subscribePiskelDescriptorUpdatedChangeTitle();
+    } else {
+      if (!window.piskelReadyCallbacks) {
+        window.piskelReadyCallbacks = [];
+      }
+
+      window.piskelReadyCallbacks.push(subscribePiskelDescriptorUpdatedChangeTitle);
+    }
   </script>
 {% endautoescape %}
