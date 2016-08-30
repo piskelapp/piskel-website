@@ -2,8 +2,12 @@
   // @require piskel-utils
   // @require piskel-image-scale
 
-  // Progres bar height in percentage
-  var PROGRESS_BAR_HEIGHT = 0.04;
+  // Progress bar height in pixels
+  var PROGRESS_BAR_HEIGHT = 3;
+  var PROGRESS_BAR_HEIGHT_HOVER = 8;
+
+  // Minimum animation time for animating the progress bar
+  var PROGRESS_BAR_TIME_THRESHOLD = 1000;
 
   window.pskl = window.pskl || {};
   window.pskl.website = window.pskl.website || {};
@@ -98,9 +102,10 @@
       context.save();
       context.translate(0.5, 0.5);
       context.lineWidth = 1;
+
       // Background
       var rectWidth = Math.round(imageInfo.canvas.width / imageInfo.frames);
-      var rectHeight = Math.ceil(imageInfo.canvas.height * PROGRESS_BAR_HEIGHT);
+      var rectHeight = (imageInfo.progressBarHover) ? PROGRESS_BAR_HEIGHT_HOVER : PROGRESS_BAR_HEIGHT;
 
       context.globalAlpha = 0.2;
       context.fillStyle = '#039BE5';
@@ -112,17 +117,19 @@
       context.shadowColor = '#01579B';
       context.shadowBlur = 20;
       context.shadowOffsetX = context.shadowOffsetY = 0;
+      var progressWidth = Math.ceil(imageInfo.canvas.width * (timeElapsedSinceStart / fullAnimationTime));
       if (imageInfo.progressBarHover) {
-        context.fillRect(0, 0, Math.ceil(imageInfo.canvas.width * (timeElapsedSinceStart / fullAnimationTime) + rectWidth / 2), rectHeight);
-      } else {
-        context.fillRect(0, 0, Math.ceil(imageInfo.canvas.width * (timeElapsedSinceStart / fullAnimationTime)), rectHeight);
+        progressWidth += rectWidth / 2;
+      } else if (fullAnimationTime < PROGRESS_BAR_TIME_THRESHOLD) {
+        progressWidth = imageInfo.canvas.width;
       }
+      context.fillRect(0, 0, progressWidth, rectHeight);
       context.restore();
 
       // Bars
       context.globalAlpha = 0.8;
-      context.strokeStyle = '#1A237E';
-      context.strokeRect(0, 0, imageInfo.canvas.width - 1, rectHeight);
+      context.strokeStyle = '#026ca0';
+      //context.strokeRect(0, 0, imageInfo.canvas.width - 1, rectHeight);
       for (var i = 1; i < imageInfo.frames; i++) {
         context.beginPath();
         context.moveTo(i * rectWidth, 0)
@@ -153,7 +160,7 @@
 
     // On progress bar
     if (imageInfo.framesheet) {
-      if (y <= imageInfo.canvas.height * PROGRESS_BAR_HEIGHT) {
+      if (y <= PROGRESS_BAR_HEIGHT_HOVER) {
         imageInfo.progressBarHover = true;
         var frame = Math.floor(x / (imageInfo.canvas.width / imageInfo.frames));
         imageInfo.progressBarHoverFrame = frame;
