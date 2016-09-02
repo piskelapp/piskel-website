@@ -23,6 +23,6 @@ class ErrorHandler(BaseHandler):
             'traceback': traceback.format_exc()
         }
 
-        logging.error('Handled error: '+ str(status_int) +', exception message: '+ str(exception) +', traceback: '+ values['traceback'])
+        logging.error('Handled error: '+ str(status_int) +', exception message: '+ repr(exception) +', traceback: '+ values['traceback'])
 
         self.render(template_name, values)
