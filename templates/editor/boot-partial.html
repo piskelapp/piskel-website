@@ -16,12 +16,12 @@
     {% endif %}
 
     function subscribePiskelDescriptorUpdatedChangeTitle() {
-      $.subscribe('PISKEL_DESCRIPTOR_UPDATED', function() {
+      window.$.subscribe('PISKEL_DESCRIPTOR_UPDATED', function() {
         document.title = 'Piskel - ' + window.pskl.app.piskelController.getPiskel().getDescriptor().name;
       });
     }
 
-    if ($ && $.subscribe) {
+    if (window.$ && window.$.subscribe) {
       subscribePiskelDescriptorUpdatedChangeTitle();
     } else {
       if (!window.piskelReadyCallbacks) {
