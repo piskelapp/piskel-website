@@ -72,9 +72,9 @@
   color: #888;
   transition: color 0.3s;
 
-  background-size: 3em;
+  background-size: 1.5em;
   background-repeat: no-repeat;
-  background-position: 100% 22px;
+  background-position: 100% 40px;
 }
 
 .card-container-private .card-info-container {
