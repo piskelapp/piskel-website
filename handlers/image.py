@@ -13,7 +13,7 @@ def respond_image(db_image, response):
 
     # Cache-Control
     # public means the cached version can be saved by proxies and other intermediate servers, where everyone can see it
-    response.headers['Cache-Control'] = 'public, max-age: 31536000' # 1 year in second (about infinity on Internet Time)
+    response.headers['Cache-Control'] = 'public, max-age= 31536000' # 1 year in second (about infinity on Internet Time)
     response.headers['X-Image-Name'] = str(file_name)
     response.out.write(db_image.content)
 
@@ -102,4 +102,3 @@ class GetImageHandler(webapp.RequestHandler):
                     self.get(framesheet.framesheet_link)
                     return
         self.response.out.write('Sorry, could not find image.')
-
