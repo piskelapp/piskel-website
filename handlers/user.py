@@ -31,10 +31,10 @@ class UserHandler(BaseHandler):
         view_piskels = Piskel.prepare_piskels_for_view(piskels)
         categories = PRIVATE_CATEGORIES if is_own_profile else PUBLIC_CATEGORIES
         values = {
-          'profile_user': user,
+          'user_id' : user_id,
+          'profile_user' : user,
           'category' : cat,
           'categories' : categories,
-          'profile_stats' : stats,
           'profile_piskels': view_piskels,
           'is_own_profile': is_own_profile
           }
