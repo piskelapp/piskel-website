@@ -23,7 +23,6 @@ class UserHandler(BaseHandler):
   def get(self, user_id, cat):
     user = self.auth.store.user_model.get_by_id(long(user_id))
     if user:
-      stats = models.get_stats_for_user(user_id)
       is_own_profile = self.is_logged_in and long(user_id) == self.session_user['user_id']
 
       if self._is_valid_category(user_id, cat):
