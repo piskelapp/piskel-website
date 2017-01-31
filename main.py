@@ -22,9 +22,7 @@ from config import secrets
 
 from webapp2 import WSGIApplication, Route
 from webapp2_extras import routes
-from handlers import home, user, redirect, error
-
-
+from handlers import home, user, user_stats, redirect, error
 
 # webapp2 config
 config = {
@@ -38,7 +36,7 @@ config = {
 }
 
 routes = [
-  routes.DomainRoute('alpha.piskel-app.appspot.com', [Route('<:.*>',handler=redirect.RedirectHandler, name='redirect')]),
+  routes.DomainRoute('alpha.piskel-app.appspot.com', [Route('<:.*>', handler=redirect.RedirectHandler, name='redirect')]),
   Route('/', handler='handlers.home.HomeHandler', name='home'),
   # ################ #
   #  GALLERY ROUTES  #
@@ -49,6 +47,7 @@ routes = [
   #  USER ROUTES  #
   # ############# #
   Route('/user/<user_id>', handler='handlers.user.UserHandler:get_default', name='user-page'),
+  Route('/user/<user_id>/stats', handler=user_stats.UserStatsHandler, name='user-stats'),
   Route('/user/<user_id>/<cat>', handler=user.UserHandler, name='user-page-cat'),
   # ############# #
   #  AUTH ROUTES  #
