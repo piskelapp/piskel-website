@@ -48,6 +48,7 @@ routes = [
   # ############# #
   Route('/user/<user_id>', handler='handlers.user.UserHandler:get_default', name='user-page'),
   Route('/user/<user_id>/stats', handler=user_stats.UserStatsHandler, name='user-stats'),
+  Route('/user/<user_id>/<cat>/piskels/<offset>/<limit>', handler='handlers.user.UserHandler:get_piskels', name='user-piskels'),
   Route('/user/<user_id>/<cat>', handler=user.UserHandler, name='user-page-cat'),
   # ############# #
   #  AUTH ROUTES  #
