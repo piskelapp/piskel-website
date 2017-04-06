@@ -45,14 +45,18 @@
       </ul>
     </div>
     <div class="user-piskels-grid">
-      {% if profile_piskels %}
-        {% for piskel in profile_piskels %}
-          {% include "user/user-piskelcard.html" %}
-        {% endfor %}
-      {% else %}
-        <div class="user-piskels-empty-message font-pixel">No piskel available in '{{ category }}' category.</div>
-      {% endif %}
+      <div class="user-piskels-empty-message font-pixel">
+            Loading user sprites...
+        </div>
     </div>
   </div>
+
+  <script type="text/javascript">
+    window.__pageInfo = {
+      userid: "{{ profile_user.key.id() }}",
+      category: "{{ category }}",
+      isOwnProfile: {% if is_own_profile %}true{% else %}false{% endif %}
+    }
+  </script>
 </div>
 {% endblock %}

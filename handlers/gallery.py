@@ -12,12 +12,11 @@ class PickedHandler(BaseHandler):
 
   def getPage(self, index):
     index = int(index)
-    public_count = models.get_public_piskels_count()
     values = {
       'hide_create': False,
       'has_footer' : False,
       'has_previous_page' : index > 1,
-      'has_next_page' : (index-1) < (public_count/20) ,
+      'has_next_page' : True,
       'index' : index,
       'page_piskels' : self.get_page_piskels(index)
     }
