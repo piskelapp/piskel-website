@@ -37,12 +37,16 @@ config = {
 
 routes = [
   routes.DomainRoute('alpha.piskel-app.appspot.com', [Route('<:.*>', handler=redirect.RedirectHandler, name='redirect')]),
-  Route('/', handler='handlers.home.HomeHandler', name='home'),
+  Route('/', handler='handlers.simple.HomeHandler', name='home'),
+  Route('/privacy', handler='handlers.simple.PrivacyHandler', name='privacy'),
+  Route('/terms', handler='handlers.simple.TermsHandler', name='terms'),
   # ################ #
   #  GALLERY ROUTES  #
   # ################ #
-  Route('/picked', handler='handlers.gallery.PickedHandler', name='picked'),
-  Route('/picked/<index>', handler='handlers.gallery.PickedHandler:getPage', name='picked-page'),
+  Route('/admin/browse', handler='handlers.gallery.BrowseHandler', name='admin-browse'),
+  Route('/admin/browse/<index>', handler='handlers.gallery.BrowseHandler:getPage', name='admin-browse-page'),
+  Route('/featured', handler='handlers.gallery.FeaturedHandler', name='featured'),
+  Route('/featured/<index>', handler='handlers.gallery.FeaturedHandler:getPage', name='featured-page'),
   # ############# #
   #  USER ROUTES  #
   # ############# #

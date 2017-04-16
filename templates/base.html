@@ -1,13 +1,16 @@
 <!doctype html>
 <html lang="en">
 <head>
+	{% include "adsense.html" %}
 	<meta charset="UTF-8">
 	<meta name="description" content="Piskel, free online sprite editor. A simple web-based tool for Spriting and Pixel art. Create pixel art, game sprites and animated GIFs. Free and open-source.">
 	<meta name="author" content="Julian Descottes, Grosbouddha">
-	<meta name="keywords" content="pixel, videogames, editor, online, free, sprite">
+	<meta name="keywords" content="pixel, pixel art, videogames, editor, online, free, sprite">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 	<title>{% block title %} title {% endblock %}</title>
 	<link rel="shortcut icon" type="image/png" href="/static/resources/favicon.png"/>
-	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app.css"/>
+	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app.css?f"/>
 	{% include "analytics.html" %}
 	{% block css %}{% endblock %}
 	{% block head_end %}{% endblock %}
@@ -16,6 +19,7 @@
 	<script type="text/javascript" src="/static/js/piskel-utils.js"></script>
 	<script type="text/javascript" src="/static/js/piskel-image-scale.js"></script>
 	<script type="text/javascript" src="/static/js/piskel-animated-preview.js"></script>
+	<script type="text/javascript" src="/static/js/piskel-nav.js"></script>
 	{% block js %}{% endblock %}
 	<div class="wrap">
 		{% include "nav.html" %}

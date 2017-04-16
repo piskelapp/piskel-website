@@ -62,20 +62,22 @@
 			{% if is_logged_in %}
 				<div class="piskel-meta">
 					<h4 class="piskel-meta-title">Actions</h4>
-					{% if is_author %}
-						{% if piskel.deleted %}
-							<button class="piskel-button piskel-button-dangerous" onclick="pskl.website.confirmDestroy('{{piskel.key}}','{{session.user_id}}');">Destroy</button>
-							<a      class="piskel-button piskel-button-important" href="/p/{{ piskel.key }}/restore?callback_url=/p/{{piskel.key}}/view">Restore</a>
+					<div class="piskel-details-actions">
+						{% if is_author %}
+							{% if piskel.deleted %}
+								<a      class="piskel-button" href="/p/{{ piskel.key }}/restore?callback_url=/p/{{piskel.key}}/view">Restore</a>
+								<button class="piskel-button piskel-button-dangerous" onclick="pskl.website.confirmDestroy('{{piskel.key}}','{{session.user_id}}');">Destroy</button>
+							{% else %}
+								<button class="piskel-button" onclick="pskl.website.showEditForm();return false;">Edit Info</button>
+								<a      class="piskel-button" href="/p/{{piskel.key}}/edit" target="_blank">Edit Sprite</a>
+								<a      class="piskel-button" href="/p/{{piskel.key}}/clone">Clone</a>
+								<a      class="piskel-button piskel-button-dangerous" href="/p/{{ piskel.key }}/delete?callback_url=/p/{{piskel.key}}/view">Delete</a>
+							{% endif %}
 						{% else %}
-							<button class="piskel-button piskel-button-important" style="color:gold" onclick="pskl.website.showEditForm();return false;">Edit Info</button>
-							<a      class="piskel-button piskel-button-important" href="/p/{{piskel.key}}/edit" target="_blank">Edit Sprite</a>
-							<a      class="piskel-button" href="/p/{{piskel.key}}/clone">Clone</a>
-							<a      class="piskel-button piskel-button-dangerous" href="/p/{{ piskel.key }}/delete?callback_url=/p/{{piskel.key}}/view">Delete</a>
+							<a class="piskel-button" href="/p/{{piskel.key}}/clone/view" target="_blank">Clone</a>
+							<a class="piskel-button" href="/p/{{piskel.key}}/clone/edit" target="_blank">Clone and Edit</a>
 						{% endif %}
-					{% else %}
-						<a class="piskel-button" href="/p/{{piskel.key}}/clone/view" target="_blank">Clone</a>
-						<a class="piskel-button" href="/p/{{piskel.key}}/clone/edit" target="_blank">Clone and Edit</a>
-					{% endif %}
+					</div>
 				</div>
 			{% endif %}
 		</div>

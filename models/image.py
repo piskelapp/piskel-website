@@ -28,10 +28,11 @@ def store_image(image_data, extension):
 
     return image
 
+
 def get_image(file_name):
     image = memcache.get(file_name)
     if not image:
         image = Image.get_by_key_name(file_name)
         memcache.set(file_name, image)
-    
+
     return image

@@ -27,6 +27,17 @@
   font-size: 12pt;
 }
 
+.editor-header-wrap .piskel-button {
+  color: black;
+}
+
+.editor-header-wrap .user-menu-popup-link {
+  color: white;
+}
+.editor-header-wrap .user-menu-popup-link:hover {
+  color: gold;
+}
+
 .editor-header-wrap .navigation {
   height : 36px;
   line-height : 36px;
@@ -37,19 +48,10 @@
   z-index : 2;
 }
 
-
 .editor-header-wrap .small-user-avatar {
   width: 36px;
   height: 36px;
   border: none;
-}
-
-.editor-header-wrap .piskel-logo {
-  margin: 2px 10px;
-}
-
-.editor-header-wrap .piskel-logo img {
-  height: 20px;
 }
 
 .editor-header-wrap .flat-button {
@@ -61,20 +63,6 @@
   height: 36px;
 
   transition : border 0.2s, color 0.2s;
-}
-
-.editor-header-wrap .save-button {
-  background-image: url('http://localhost:10080/p/img/save.png');
-  background-repeat: no-repeat;
-  background-size: 24px;
-  background-position: 5px;
-}
-
-.editor-header-wrap .info-button {
-  background-image: url('http://localhost:10080/p/img/info.png');
-  background-repeat: no-repeat;
-  background-size: 25px;
-  background-position: 5px;
 }
 
 .editor-header-wrap .flat-button:hover {
@@ -104,14 +92,6 @@
 
 .main-wrapper {
   margin-top: 40px;
-}
-
-/* Override from piskel-app.css */
-.navigation .create-piskel-button {
-  width: 100px;
-  padding : 0;
-  line-height: 24px;
-  margin: 6px 0 0 8px;
 }
 
 .navigation .logout-link {

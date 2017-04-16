@@ -1,167 +1,303 @@
-
-
-/***********************************/
-/*** NAVIGATION HEADER OVERRIDES ***/
-/***********************************/
-
-.navigation:not(.navigation-logged-in) {
-	line-height: 32px;
-	height: 32px;
-}
-
-.piskel-logo {
-	display : none;
-}
-
 .home-tagline {
-	font-size: 2em;
-	color: gold;
-	margin: 0;
-	text-shadow:
-		0 -1px 0 rgb(49, 49, 45),
-		0 1px 0 rgb(255, 234, 152);
+  color: gold;
+  font-size: 1.3em;
+  margin: 0 0 10px 0;
+  text-align:center;
 }
 
-.home-teaser {
-	margin-top: 15px;
-}
-
-.home-teaser-description {
-	width: 300px;
-	display: inline-block;
-	text-align: justify;
-	margin-bottom: 10px;
-	padding-right: 15px;
+.wrap {
+  min-width: 500px;
 }
 
 .main {
-	overflow-x : hidden;
+  overflow-x : hidden;
+}
+
+.home-teaser {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  padding: 20px 0;
+  background: #2D2D2D;
+  color: white;
+}
+
+.home-teaser-description {
+  width: 50%;
+  position: relative;
+  padding-right: 30px;
+  text-align: right;
+  font-size: 16px;
+}
+
+.home-teaser-action {
+  width: 50%;
+  position: relative;
+  padding-left: 30px;
 }
 
 .home-main-button {
-	line-height: 50px;
-	color: #333;
-	background: gold;
-	font-size: 1.3em;
-	text-shadow: 0 1px 0 #aaa;
+  height: 50px;
+  line-height: 50px;
+  color: #333;
+  background: gold;
+  font-size: 1.3em;
+  text-shadow: none;
+  white-space: nowrap;
+  transition: 0.3s background;
 }
 
 .home-main-button:hover {
-	color:#333!important;
+  background: white;
+  color: #333 !important;
 }
 
-.home-teaser .home-main-button {
-	margin: 20px 20px 20px 0;
-	float: right;
-}
+@media (max-width: 870px) {
+  .home-teaser {
+    justify-content: center;
+  }
+  .home-teaser-description {
+    width: auto;
+    padding-right: 0;
+    white-space: nowrap;
+  }
 
-.medium-width-container {
-	display: inline-block;
-	width: 600px;
+  .home-teaser-action {
+    width: auto;
+    padding-left: 20px;
+  }
 }
 
 .piskel-preview-container {
-	vertical-align: middle;
-	display: inline-block;
+  vertical-align: middle;
+  display: inline-block;
 }
 
 .piskel-screenshot {
-	box-shadow: 0 0 5px 2px rgba(0,0,0,0.3);
-	width: 100%;
-	margin-bottom: 20px;
+  box-shadow: 0 0 5px 2px rgba(0,0,0,0.3);
+  width: 100%;
 }
 
 .home-logo-big {
-	margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .piskel-screenshot-animated-preview {
-	position: absolute;
-	right: 37px;
-	width: 95px;
-	top: 23px;
+  position: absolute;
+  right: 24px;
+  width: 64px;
+  top: 14px;
 }
 
 .preview-separator {
-	width: 994px;
-	border: 1px solid grey;
-	border-bottom-width: 0;
+  width: 994px;
+  border: 1px solid grey;
+  border-bottom-width: 0;
 }
 
 .main-container {
-	width: 1000px;
-	position: relative;
-	left: 50%;
-	text-align: center;
-	margin-left: -500px;
-	padding-top: 30px
+  width: 1000px;
+  position: relative;
+  left: 50%;
+  margin-left: -500px;
+  padding-top: 30px
 }
 
 .media-container {
-	overflow: hidden;
+  overflow: hidden;
+  width: 500px;
+  float: right;
 }
 
 .media-container .media-image {
-	float: left;
+  float: left;
 }
 
 .media-container .media-body {
-	overflow: hidden;
+  overflow: hidden;
 }
 
 .assets-container {
-	padding: 30px 0;
-	text-align: left;
+  padding: 30px 0;
+  text-align: left;
+  overflow: hidden;
 }
 
 .asset-item {
-	margin-bottom: 20px;
-	width: 500px;
-	height: 110px;
-	float: left;
-	padding-right: 10px;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
+  margin-bottom: 20px;
+  width: 50%;
+  height: 110px;
+  float: left;
+  padding-right: 10px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 
 .asset-item:nth-child(even) {
-	padding-left: 10px;
+  padding-left: 10px;
+}
+
+.asset-item:nth-child(even) .media-container{
+  float: left;
 }
 
 .asset-item .media-image {
-	width: 100px;
-	border: 3px solid gold;
-	border-radius: 2px;
-	margin-top: 10px;
+  width: 100px;
+  border: 3px solid gold;
+  border-radius: 2px;
+  margin-top: 10px;
 }
 
 .asset-item:nth-child(odd) .media-image {
-	float: right;
+  float: right;
 }
 
 .asset-item .media-body {
-	padding: 0 20px;
+  padding: 0 20px;
 }
 
 .asset-item:nth-child(odd) .media-body {
-	text-align: right;
+  text-align: right;
 }
 
 .asset-title {
-	color: white;
-	font-family: 'MiniSet2', cursive;
-	font-size: 1.3em;
-	margin: 10px 0;
+  color: white;
+  font-family: 'MiniSet2', Arial;
+  font-size: 1.3em;
+  margin: 10px 0;
 }
 
 .asset-description {
-	margin: 10px 0;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+@media (max-width: 870px) {
+  .asset-item:nth-child(odd) {
+    padding-left: 10px;
+  }
+  .asset-item:nth-child(odd) .media-container{
+    float: left;
+  }
+  .asset-item:nth-child(odd) .media-image {
+    float: left;
+  }
+  .asset-item:nth-child(odd) .media-body {
+    text-align: left;
+  }
+
+  .asset-item {
+    width: 100%;
+  }
+
+  .media-container {
+    left: 50%;
+    margin-left: -250px;
+    position: relative;
+  }
 }
 
 .piskel-preview {
-	height: 300px;
-	width: 300px;
-	border: 1px solid grey;
-	margin: 0 20px;
-	display: inline-block;
+  height: 300px;
+  width: 300px;
+  border: 1px solid grey;
+  margin: 0 20px;
+  display: inline-block;
+}
+
+/* Top container */
+
+.home-top {
+  overflow: hidden;
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Top left panel */
+
+.home-top-left {
+  width: 400px;
+  padding-right: 30px;
+}
+
+/* Top right panel */
+
+.home-top-right {
+  width: 400px;
+  padding-left: 30px;
+}
+
+@media (max-width: 870px) {
+  .home-top {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .home-top-left {
+    padding-right: 0;
+  }
+  .home-top-right {
+    text-align: center;
+    padding-left: 0;
+    padding-top: 30px;
+  }
+}
+
+.home-subheader {
+  font-size: 1.3em;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: white;
+  text-shadow: none;
+}
+
+/* Featured piskels */
+.piskels-container {
+  overflow: hidden;
+}
+
+.piskel-container {
+  overflow: hidden;
+  cursor: pointer;
+  width: 116px;
+  height: 140px;
+  border: 3px solid #2D2D2D;
+  float: left;
+  margin: 0 10px 10px 0;
+  border-radius: 2px;
+  overflow: hidden;
+
+  transition: 0.3s border-color;
+}
+
+.piskel-container:hover {
+  border-color: white;
+}
+
+.piskel-container .piskel-image {
+  width: 116px;
+  height: 116px;
+  display: block;
+}
+
+.piskel-meta {
+  height: 24px;
+  font-size: 12px;
+  text-align: center;
+  background-color: #2D2D2D;
+  color: white;
+  padding: 0 2px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  transition: 0.3s background-color,  0.3s color;
+}
+
+.piskel-container:hover .piskel-meta {
+  background-color: white;
+  color: black;
 }

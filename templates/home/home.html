@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "partial/macros.html" import render_animated_preview %}
+
+{% block title %}Piskel - Free online sprite editor{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css?beta"/>
+{% endblock %}
+
+{% block main %}
+  <div class="home-top">
+    <div class="home-top-left">
+      <img class="home-logo-big"
+           style="width: 100%"
+           src="/static/resources/logo_transparent_big_compact.png"/>
+      <h1 class="font-pixel home-tagline">
+        Animated Sprites &amp; Pixel Art
+      </h1>
+      <a
+        style="width: 100%; display:block; position: relative;"
+        href="/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICAyJ2kCQw/edit"
+        target="_blank">
+        <img class="piskel-screenshot" src="/static/resources/home/piskel_screenshot.jpg"/>
+        <img class="piskel-screenshot-animated-preview" src="/static/resources/home/megaman_animated_2.gif"/>
+      </a>
+    </div>
+    <div class="home-top-right">
+      <div class="picked-piskels-container">
+        <h1 class="font-pixel home-subheader">Featured animations</h1>
+        {% include "home/picked.html" %}
+      </div>
+    </div>
+  </div>
+  <div class="home-teaser">
+    <div class="home-teaser-description">
+      Piskel is a sprite &amp; pixel art editor.<br/>It runs in your browser and is packed with features.<br/>100% free and open-source, try it now!
+    </div>
+    <div class="home-teaser-action">
+      <a class="piskel-button home-main-button font-pixel" href="/p/create">
+        Create Sprite
+      </a>
+    </div>
+  </div>
+
+  {% include "ads/piskel_home_footer.html" %}
+  {% include "home/features.html" %}
+{% endblock %}

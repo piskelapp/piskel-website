@@ -8,7 +8,7 @@ body {
   */
   background-color: #525252;
   background-image:url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHhtbG5zOnhsaW5rPSdodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rJyB3aWR0aD0nNzY4JyBoZWlnaHQ9JzQ4MCcgdmlld0JveD0nMCAwIDM4NCAyNDAnPgoJPGRlZnM+CgkJPHJlY3QgaWQ9J3MnIGZpbGw9JyMxYzFjMWMnIHdpZHRoPScyMy41MicgaGVpZ2h0PScyMy41MicvPgoJPC9kZWZzPgoJPGcgaWQ9J2InPgoJPHVzZSB4PScwLjI0JyB5PScwLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDQnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScyNC4yNCcgeT0nMC4yNCcgZmlsbC1vcGFjaXR5PScwLjAyJyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nNDguMjQnIHk9JzAuMjQnIGZpbGwtb3BhY2l0eT0nMC4wNicgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzcyLjI0JyB5PScwLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDUnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PSc5Ni4yNCcgeT0nMC4yNCcgZmlsbC1vcGFjaXR5PScwLjAyJyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nMTIwLjI0JyB5PScwLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDQnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScxNDQuMjQnIHk9JzAuMjQnIGZpbGwtb3BhY2l0eT0nMC4wNycgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzAuMjQnIHk9JzI0LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDMnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScyNC4yNCcgeT0nMjQuMjQnIGZpbGwtb3BhY2l0eT0nMC4wNCcgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzQ4LjI0JyB5PScyNC4yNCcgZmlsbC1vcGFjaXR5PScwLjAyJyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nNzIuMjQnIHk9JzI0LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDYnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PSc5Ni4yNCcgeT0nMjQuMjQnIGZpbGwtb3BhY2l0eT0nMC4wNCcgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzEyMC4yNCcgeT0nMjQuMjQnIGZpbGwtb3BhY2l0eT0nMC4wMycgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzE0NC4yNCcgeT0nMjQuMjQnIGZpbGwtb3BhY2l0eT0nMC4wMScgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzE2OC4yNCcgeT0nMjQuMjQnIGZpbGwtb3BhY2l0eT0nMC4wNCcgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzAuMjQnIHk9JzQ4LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDMnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScyNC4yNCcgeT0nNDguMjQnIGZpbGwtb3BhY2l0eT0nMC4wMicgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzQ4LjI0JyB5PSc0OC4yNCcgZmlsbC1vcGFjaXR5PScwLjA2JyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nNzIuMjQnIHk9JzQ4LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDInIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PSc5Ni4yNCcgeT0nNDguMjQnIGZpbGwtb3BhY2l0eT0nMC4wNicgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzEyMC4yNCcgeT0nNDguMjQnIGZpbGwtb3BhY2l0eT0nMC4wNCcgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzE0NC4yNCcgeT0nNDguMjQnIGZpbGwtb3BhY2l0eT0nMC4wMycgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzE2OC4yNCcgeT0nNDguMjQnIGZpbGwtb3BhY2l0eT0nMC4wNycgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzAuMjQnIHk9JzcyLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDQnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScyNC4yNCcgeT0nNzIuMjQnIGZpbGwtb3BhY2l0eT0nMC4wMycgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzQ4LjI0JyB5PSc3Mi4yNCcgZmlsbC1vcGFjaXR5PScwLjA1JyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nNzIuMjQnIHk9JzcyLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDMnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScxMjAuMjQnIHk9JzcyLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDYnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScxNDQuMjQnIHk9JzcyLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDEnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScxNjguMjQnIHk9JzcyLjI0JyBmaWxsLW9wYWNpdHk9JzAuMDMnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScwLjI0JyB5PSc5Ni4yNCcgZmlsbC1vcGFjaXR5PScwLjAxJyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nMjQuMjQnIHk9Jzk2LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDYnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PSc0OC4yNCcgeT0nOTYuMjQnIGZpbGwtb3BhY2l0eT0nMC4wMycgeGxpbms6aHJlZj0nI3MnIC8+Cgk8dXNlIHg9JzcyLjI0JyB5PSc5Ni4yNCcgZmlsbC1vcGFjaXR5PScwLjA1JyB4bGluazpocmVmPScjcycgLz4KCTx1c2UgeD0nOTYuMjQnIHk9Jzk2LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDInIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScxNDQuMjQnIHk9Jzk2LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDUnIHhsaW5rOmhyZWY9JyNzJyAvPgoJPHVzZSB4PScxNjguMjQnIHk9Jzk2LjI0JyBmaWxsLW9wYWNpdHk9JzAuMDInIHhsaW5rOmhyZWY9JyNzJyAvPgoJPC9nPgoJPHVzZSB4PSctMTkyJyB5PScxMjAnIHRyYW5zZm9ybT0nbWF0cml4KC0xIDAgMCAxIDAgMCknIHhsaW5rOmhyZWY9JyNiJyAvPgoJPHVzZSB4PSctMzg0JyB5PSctMTY4JyB0cmFuc2Zvcm09J21hdHJpeCgtMSAwIDAgLTEgMCAwKScgeGxpbms6aHJlZj0nI2InIC8+Cgk8dXNlIHg9JzE5MicgeT0nLTI4OCcgdHJhbnNmb3JtPSdtYXRyaXgoMSAwIDAgLTEgMCAwKScgeGxpbms6aHJlZj0nI2InIC8+Cgk8dXNlIHg9JzE5MicgeT0nLTQ4JyB0cmFuc2Zvcm09J21hdHJpeCgxIDAgMCAtMSAwIDApJyB4bGluazpocmVmPScjYicgLz4KPC9zdmc+');
-  color : #AAA;
+  color : #CCC;
 }
 
 html, body {
@@ -99,7 +99,7 @@ ul {
 }
 
 .font-pixel {
-  font-family: "MiniSet2", cursive;
+  font-family: "MiniSet2", Arial;
 }
 
 /*************************/
@@ -136,24 +136,69 @@ ul {
 /*************************/
 
 .navigation {
-  height : 64px;
-  line-height: 64px;
-  background : #2D2D2D;
-  overflow: hidden;
-  border-bottom:1px solid #1a1a1a;
-}
-
-.navigation a {
-  margin-right : 10px;
+  height: 36px;
+  line-height: 36px;
+  background: #2D2D2D;
+  border-bottom: 1px solid #1a1a1a;
 }
 
 .navigation > .link {
-  color : white;
-  margin-right :20px;
+  color: white;
+  margin-right: 20px;
 }
 
-.navigation a:hover {
-  text-decoration: underline;
+.navigation > .piskel-logo {
+  height: 24px;
+}
+
+.nav-buttons {
+  display: flex;
+}
+
+.nav-links {
+  display: inline-block;
+}
+
+.nav-links > * {
+  padding: 0 10px;
+}
+
+.nav-link {
+  display: inline-block;
+  transition: 0.3s color;
+}
+
+.nav-link:hover {
+  text-decoration: none;
+  color: gold;
+}
+
+.navigation .piskel-button,
+.navigation .user-link {
+  margin: 6px 6px 6px 0;
+}
+
+.navigation .user-link {
+  display: flex;
+  height: 20px;
+  line-height: 20px;
+  padding: 2px;
+  border-radius: 2px;
+
+  color: black;
+  background: rgb(222, 222, 222);
+  font-size: 13px;
+  font-weight: bold;
+  transition: 0.3s background-color;
+}
+
+.navigation .user-link:hover {
+  text-decoration: none;
+  background: white;
+}
+
+.navigation .user-link-name {
+  padding: 0 5px;
 }
 
 /*************************/
@@ -178,7 +223,7 @@ ul {
   color : grey;
   font-size : 0.8rem;
   text-decoration: none;
-  transition : color 0.2s;
+  transition: color 0.2s;
 }
 
 .footer > .link:hover {
@@ -190,55 +235,38 @@ ul {
 /*************************/
 
 .piskel-button {
+  display: inline-block;
+  height: 24px;
   line-height: 24px;
   padding: 0 10px;
-  display: inline-block;
 
-  border : none;
-  border-top: 1px solid #666;
-  border-bottom: 1px solid #222;
-  border-radius: 3px;
-
-  background: #3f3f3f;
+  border-style: none;
+  border-radius: 2px;
   cursor: pointer;
-
-  color: white;
-  font-size: 0.8em;
+  font-size: 13px;
   font-weight: bold;
   text-align: center;
   text-decoration: none;
-  text-shadow: 0px -1px 0 #000;
-
-  transition : box-shadow 0.2s linear, color 0.2s linear;
+  color: black;
+  background-color: gold;
+  transition: 0.3s background-color;
 }
 
 .piskel-button:focus {
   outline: none;
 }
 
-.piskel-button-important {
-  color : gold;
-}
-
 .piskel-button-dangerous {
-  color : rgb(255, 80, 30);
+  background-color: #ff470f;
 }
 
 .piskel-button:hover {
   text-decoration: none;
-  color : gold;
+  background-color: white;
 }
 
 .navigation .create-piskel-button {
-  width: 100px;
-  line-height: 40px;
   position: relative;
-  margin: 13px 0 0 20px;
-
-}
-
-.navigation .create-piskel-button:hover {
-  text-decoration: none;
 }
 
 .navigation .create-piskel-icon {
@@ -246,19 +274,6 @@ ul {
   font-size: 2.5rem;
   left: 13px;
   top: 0;
-}
-
-.navigation .user-container {
-  padding-top:0.7em;
-}
-
-.navigation .user-link,
-.navigation .logout-link {
-  line-height:20px;
-}
-
-.navigation .logout-link {
-  font-size:0.8em;
 }
 
 .anchor-left {
@@ -270,7 +285,11 @@ ul {
 }
 
 .piskel-logo {
-  margin : 10px 40px;
+  margin : 6px 15px;
+}
+
+.piskel-logo > img {
+  height: 24px;
 }
 
 .animated-preview-widget {
@@ -313,7 +332,6 @@ ul {
 .smaller-user-avatar {
   width: 20px;
   height: 20px;
-  border: 2px solid rgb(222, 222, 222);
   border-radius: 2px;
 }
 
@@ -341,4 +359,88 @@ ul {
 
 .bold {
   font-weight : bold;
+}
+
+/******************/
+/******POPUPS******/
+/******************/
+
+#user-menu-popup,
+#nav-about-popup {
+  display: none;
+  position: absolute;
+  font-size: 13px;
+
+  background: #2D2D2D;
+
+  border-radius: 2px;
+  font-weight: bold;
+  z-index: 1000;
+  overflow: hidden;
+  border: 1px solid #1a1a1a;
+}
+
+#user-menu-popup {
+  right: 6px;
+  top: 40px;
+}
+
+#nav-about-popup {
+  left: 10px;
+  top: 40px;
+}
+
+#user-menu-popup.visible {
+  display: block;
+}
+
+.user-menu-popup-link,
+.nav-about-popup-link {
+  color: white;
+  display: block;
+  padding: 0 10px 0 30px;
+  transition: 0.3s color;
+  white-space: nowrap;
+}
+
+.nav-about-popup-link {
+  padding: 0 10px;
+}
+
+.user-menu-popup-link:hover,
+.nav-about-popup-link:hover {
+  color: gold;
+  text-decoration: none;
+}
+
+.nav-about-container {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.nav-about-container:hover .nav-link{
+  color: gold;
+}
+
+.nav-about-drop-arrow {
+  width: 0;
+  height: 0;
+
+  margin: 5px 0 0 5px;
+
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px;
+  border-top-color: white;
+  transition: 0.3s border-top-color;
+}
+
+.nav-about-container:hover .nav-about-drop-arrow {
+  border-top-color: gold;
+}
+
+#nav-about-popup.visible {
+  display: block;
 }
