@@ -1,5 +1,8 @@
 .legal-container {
+  max-width: 800px;
   padding: 10px 50px;
+  font-size: 0.8em;
+
 }
 
 .legal-container h1 {
@@ -12,8 +15,4 @@
 
 .legal-container li {
   margin-bottom: 10px;
-}
-
-.legal-container {
-  font-size: 0.8em;
 }

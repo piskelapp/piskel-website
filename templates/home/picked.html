@@ -1,50 +1,71 @@
-<div class="piskels-container">
-  <div class="piskel-container">
-    <img class="piskel-image" src="http://piskel-imgstore-b.appspot.com/img/d16a5073-221c-11e7-a094-c71a36a87bf0.gif">
-    <div class="piskel-meta">
-      <b>Genji</b>
-      <img class="piskel-author smaller-user-avatar" src="https://lh5.googleusercontent.com/-L6XalTDqfIY/AAAAAAAAAAI/AAAAAAAABXk/pFKVMwxKoa4/photo.jpg">
-    </div>
+{% from "partial/macros.html" import render_spritesheet %}
+
+<div class="picked-piskels-wrapper">
+  <h1 class="font-pixel picked-piskels-title">Example sprites</h1>
+  <span class="picked-piskels-promo">
+    Here are some examples of user submitted sprites. Click on a preview to open the sprite in the editor.
+  </span>
+  <div class="piskels-container">
+    <a href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICAyJ2kCQw/edit" class="piskel-container">
+      <div class="picked-preview-container">
+        {{ render_spritesheet("megaman", "/static/resources/home/featured/megaman_preview.png", "/static/resources/home/featured/megaman.png", 256, 3) }}
+      </div>
+      <div class="piskel-meta">
+        <b>Megaman</b>
+        <img class="piskel-author smaller-user-avatar" title="made by Julian" src="/static/resources/home/featured/julian.jpg">
+      </div>
+    </a>
+    <a class="piskel-container" href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICf1u3kCAw/edit">
+      <div class="picked-preview-container">
+        {{ render_spritesheet("panda", "/static/resources/home/featured/panda_preview.png", "/static/resources/home/featured/panda.png", 256, 12) }}
+      </div>
+      <div class="piskel-meta">
+        <b>Panda</b>
+        <img class="piskel-author smaller-user-avatar" title="made by Joakim" src="/static/resources/home/featured/joakim.jpg">
+      </div>
+    </a>
+    <a class="piskel-container" href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICA_eOjCgw/edit">
+      <div class="picked-preview-container">
+        {{ render_spritesheet("pattern", "/static/resources/home/featured/pattern_preview.png", "/static/resources/home/featured/pattern.png", 256, 12) }}
+      </div>
+      <div class="piskel-meta">
+        <b>Pattern</b>
+        <img class="piskel-author smaller-user-avatar" title="made by Vincent" src="/static/resources/home/featured/vincent.jpg">
+      </div>
+    </a>
+    <a href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICwuvn-Cgw/edit" class="piskel-container">
+      <div class="picked-preview-container">
+        {{ render_spritesheet("stormtrooper", "/static/resources/home/featured/stormtrooper.png", "/static/resources/home/featured/stormtrooper.png", 256, 1) }}
+      </div>
+      <div class="piskel-meta">
+        <b>Stormtrooper</b>
+        <img class="piskel-author smaller-user-avatar" title="made by Julian" src="/static/resources/home/featured/julian.jpg">
+      </div>
+    </a>
+    <a class="piskel-container" href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgIDfmPWVCww/edit">
+      <div class="picked-preview-container">
+        {{ render_spritesheet("snakes", "/static/resources/home/featured/snakes_preview.png", "/static/resources/home/featured/snakes.png", 156, 18) }}
+      </div>
+      <div class="piskel-meta">
+        <b>Snakes</b>
+        <img class="piskel-author smaller-user-avatar" title="made by Patrick" src="/static/resources/home/featured/patrick.jpg">
+      </div>
+    </a>
+    <a class="piskel-container" href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgICfx5ygCQw/edit">
+      <div class="picked-preview-container">
+        {{ render_spritesheet("llama", "/static/resources/home/featured/llama_preview.png", "/static/resources/home/featured/llama.png", 156, 12) }}
+      </div>
+      <div class="piskel-meta">
+        <b>Llama</b>
+        <img class="piskel-author smaller-user-avatar" title="made by Patrick" src="/static/resources/home/featured/patrick.jpg">
+      </div>
+    </a>
   </div>
-  <div class="piskel-container">
-    <img class="piskel-image" src="http://piskel-imgstore-b.appspot.com/img/eed73a9e-221c-11e7-bc23-c71a36a87bf0.gif">
-    <div class="piskel-meta">
-      <b>Hanjo</b>
-      <img class="piskel-author smaller-user-avatar" src="https://lh5.googleusercontent.com/-L6XalTDqfIY/AAAAAAAAAAI/AAAAAAAABXk/pFKVMwxKoa4/photo.jpg">
-    </div>
-  </div>
-  <div class="piskel-container">
-    <img class="piskel-image" src="http://piskel-imgstore-b.appspot.com/img/11575b9e-221d-11e7-87a1-c71a36a87bf0.gif">
-    <div class="piskel-meta">
-      <b>Foo</b>
-      <img class="piskel-author smaller-user-avatar" src="https://lh5.googleusercontent.com/-L6XalTDqfIY/AAAAAAAAAAI/AAAAAAAABXk/pFKVMwxKoa4/photo.jpg">
-    </div>
-  </div>
-  <div class="piskel-container">
-    <img class="piskel-image" src="http://piskel-imgstore-b.appspot.com/img/1e4b7ceb-221d-11e7-82e2-c71a36a87bf0.gif">
-    <div class="piskel-meta">
-      <b>Bar</b>
-      <img class="piskel-author smaller-user-avatar" src="https://lh5.googleusercontent.com/-L6XalTDqfIY/AAAAAAAAAAI/AAAAAAAABXk/pFKVMwxKoa4/photo.jpg">
-    </div>
-  </div>
-  <div class="piskel-container">
-    <img class="piskel-image" src="http://piskel-imgstore-b.appspot.com/img/2c356ad4-221d-11e7-96ed-c71a36a87bf0.gif">
-    <div class="piskel-meta">
-      <b>Baz</b>
-      <img class="piskel-author smaller-user-avatar" src="https://lh5.googleusercontent.com/-L6XalTDqfIY/AAAAAAAAAAI/AAAAAAAABXk/pFKVMwxKoa4/photo.jpg">
-    </div>
-  </div>
-  <div class="piskel-container">
-    <img class="piskel-image" src="http://piskel-imgstore-b.appspot.com/img/391d17d7-221d-11e7-8077-c71a36a87bf0.gif">
-    <div class="piskel-meta">
-      <b>Toto</b>
-      <img class="piskel-author smaller-user-avatar" src="https://lh5.googleusercontent.com/-L6XalTDqfIY/AAAAAAAAAAI/AAAAAAAABXk/pFKVMwxKoa4/photo.jpg">
-    </div>
-  </div>
-</div>
-<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
-  <span style="font-size: 14px;">Browse more featured sprites in the gallery</span>
-  <a class="piskel-button" style="margin-right: 15px;" href="/featured">
-    Browse
-  </a>
+
+<!--   <div class="picked-piskels-actions">
+    <span style="font-size: 14px;">Browse more featured sprites in the gallery</span>
+    <a class="piskel-button" style="margin-right: 5px;" href="/featured">
+      Browse
+    </a>
+  </div> -->
 </div>

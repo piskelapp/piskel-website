@@ -101,3 +101,13 @@
   background-position: 50px 10px;
   line-height: 36px;
 }
+
+@media (max-width: 870px) {
+  .editor-nav-longdesc {
+    display: none;
+  }
+
+  .nav-user-drop-arrow {
+    margin-left: 3px;
+  }
+}

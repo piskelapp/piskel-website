@@ -25,7 +25,7 @@ class BrowseHandler(BaseHandler):
     def getPage(self, index):
         index = int(index)
         values = {
-            'hide_create': False,
+            'is_home': False,
             'has_footer' : False,
             'title': 'Browse all',
             'path': '/admin/browse',
@@ -49,7 +49,7 @@ class FeaturedHandler(BaseHandler):
     def getPage(self, index):
         index = int(index)
         values = {
-            'hide_create': False,
+            'is_home': False,
             'has_footer' : False,
             'title': 'Featured pixel art',
             'path': '/featured',

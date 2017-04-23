@@ -18,8 +18,9 @@
         e.preventDefault();
       }
     });
-  }
+  };
 
   addPopupEventListeners("#user-menu-popup", ".user-link");
   addPopupEventListeners("#nav-about-popup", ".nav-about-container");
+  addPopupEventListeners("#tiny-menu-popup", ".tiny-button");
 })();

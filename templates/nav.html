@@ -1,16 +1,19 @@
 <div class="navigation {% if is_logged_in %}navigation-logged-in{%endif%}">
+
   <a class="link anchor-left  piskel-logo" href="/">
     <img src="/static/resources/logo_transparent_small_compact.png" />
   </a>
+
   <div class="nav-links">
-    <a class="nav-link" href="/featured">Featured</a>
-    <a class="nav-link" href="/tutorials">Tutorials</a>
-    <span class="nav-about-container">
+    <a class="nav-link" href="/download">Downloads</a>
+    <a class="nav-link" href="/faq">FAQ</a>
+    <!--a class="nav-link" href="/tutorials">Tutorials</a-->
+    <!-- <span class="nav-about-container">
       <a class="nav-link" href="#">
         About
       </a>
       <div class="nav-about-drop-arrow"></div>
-      <div id="nav-about-popup">
+      <div class="nav-popup" id="nav-about-popup">
         <ul>
           <li>
             <a class="nav-about-popup-link" href="/terms">Terms &amp; Conditions</a>
@@ -23,28 +26,9 @@
           </li>
         </ul>
       </div>
-    </span>
+    </span> -->
   </div>
-  <div class="nav-buttons  anchor-right">
-    {% if not hide_create %}
-      <a class="piskel-button  create-piskel-button" href="/p/create" target="_blank">Create sprite</a>
-    {% endif %}
-    {% if is_logged_in %}
-      <a class="user-link" href="#">
-        <img class="smaller-user-avatar" src="{{ user.avatar_url }}"/>
-        <span class="user-link-name">{{ user.name }}</span>
-      </a>
-    {% else %}
-      <a class="piskel-button  login-button" href="/auth/google">Login</a>
-    {% endif %}
-  </div>
-  {% if is_logged_in %}
-  <div id="user-menu-popup">
-    <ul>
-      <li><a class="user-menu-popup-link" href="/user/{{ user.key.id() }}">My gallery</a></li>
-      <li><a class="user-menu-popup-link" href="/user/{{ user.key.id() }}/settings">Settings</a></li>
-      <li><a class="user-menu-popup-link" href="/logout">Logout</a></li>
-    </ul>
-  </div>
-  {% endif %}
+
+  {% include "partial/nav-actions-partial.html" %}
+
 </div>

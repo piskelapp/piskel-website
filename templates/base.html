@@ -15,7 +15,7 @@
 	{% block css %}{% endblock %}
 	{% block head_end %}{% endblock %}
 </head>
-<body>
+<body class="checkered-bg  {% block bodyclass %}{% endblock %}">
 	<script type="text/javascript" src="/static/js/piskel-utils.js"></script>
 	<script type="text/javascript" src="/static/js/piskel-image-scale.js"></script>
 	<script type="text/javascript" src="/static/js/piskel-animated-preview.js"></script>
@@ -23,10 +23,8 @@
 	{% block js %}{% endblock %}
 	<div class="wrap">
 		{% include "nav.html" %}
-		<div class="main">
-			{% block main %} main {% endblock %}
-		</div>
+		{% block main %} main {% endblock %}
+		{% if has_footer %}{% include "footer.html" %}{% endif %}
 	</div>
-	{% if has_footer %}{% include "footer.html" %}{% endif %}
 </body>
 </html>
