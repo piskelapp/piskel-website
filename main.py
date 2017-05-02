@@ -47,8 +47,8 @@ routes = [
   # ################ #
   Route('/admin/browse', handler='handlers.gallery.BrowseHandler', name='admin-browse'),
   Route('/admin/browse/<index>', handler='handlers.gallery.BrowseHandler:getPage', name='admin-browse-page'),
-  Route('/featured', handler='handlers.gallery.FeaturedHandler', name='featured'),
-  Route('/featured/<index>', handler='handlers.gallery.FeaturedHandler:getPage', name='featured-page'),
+  # Route('/featured', handler='handlers.gallery.FeaturedHandler', name='featured'),
+  # Route('/featured/<index>', handler='handlers.gallery.FeaturedHandler:getPage', name='featured-page'),
   # ############# #
   #  USER ROUTES  #
   # ############# #
