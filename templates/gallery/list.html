@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "partial/macros.html" import render_animated_preview %}
 
-{% block title %}Piskel - Free online sprite editor{% endblock %}
+{% block title %}Piskel - {{ title }}{% endblock %}
 
 {% block css %}
   <link href="http://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet" type="text/css">
@@ -13,7 +13,7 @@
 
   {% include "gallery/navigation.html" %}
 
-  <div style="overflow:hidden;margin:20px 50px;">
+  <div style="overflow:hidden; margin:20px 50px;">
   {% for piskel in page_piskels %}
     {% include "gallery/piskelcard.html" %}
   {% endfor %}

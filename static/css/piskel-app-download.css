@@ -1,0 +1,84 @@
+.download-section {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+}
+
+.download-section-inner {
+  width: 800px;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 30px;
+}
+
+.download-section-title {
+  color: white;
+  margin: 0;
+  margin-bottom: 30px;
+  font-size: 24px;
+}
+
+.download-intro-content {
+  display: flex;
+  align-items: center;
+}
+
+.download-intro-image {
+  width: 50px;
+  height: 50px;
+  border: 3px solid white;
+  border-radius: 3px;
+  background-color: #333;
+  flex-shrink: 0;
+}
+
+.download-intro-desc {
+  margin-left: 20px;
+  font-size: 16px;
+  color: white;
+}
+
+.download-main-actions {
+  display: flex;
+  justify-content: space-around;
+}
+
+.download-button {
+  height: 60px;
+  width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.download-button-image {
+  height: 30px;
+  width: 30px;
+}
+
+.download-button-text {
+  font-size: 16px;
+}
+
+@media (max-width: 500px) {
+  .download-button-text {
+    font-size: 12px;
+  }
+
+  .download-button {
+    height: 40px;
+    width: 80px;
+  }
+}
+
+.download-sub-section:not(:last-child) {
+  margin-bottom: 30px;
+}
+
+.download-about-items {
+  list-style-type: initial;
+}
+
+.download-about-item {
+  margin-left: 20px;
+}

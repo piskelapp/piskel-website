@@ -1,5 +1,6 @@
 from base import BaseHandler
 from models import Piskel
+from models import user_details as user_details_model
 import models
 import json
 
@@ -33,7 +34,7 @@ class UserHandler(BaseHandler):
                     'category': cat,
                     'categories': categories,
                     'is_own_profile': is_own_profile
-                    }
+                }
                 self.render('user/user.html', values)
             else:
                 self.redirect('/user/' + user_id + '/public')

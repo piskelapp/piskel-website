@@ -1,0 +1,47 @@
+<div class="nav-buttons nav-buttons-default">
+  <a class="piskel-button create-piskel-button" href="/p/create" target="_blank">
+    Create<span class="editor-nav-longdesc"> Sprite</span>
+  </a>
+  {% if is_logged_in %}
+    <a class="piskel-button" href="/user/{{ user.key.id() }}" target="_blank">
+      <span class="editor-nav-longdesc">My </span>Gallery
+    </a>
+    <a class="user-link" href="#">
+      <img class="smaller-user-avatar" src="{{ user.avatar_url }}"/>
+      <span class="user-link-name editor-nav-longdesc">{{ user.name }}</span>
+      <div class="nav-user-drop-arrow"></div>
+    </a>
+  {% else %}
+    <a class="piskel-button  login-button" href="/auth/google">Sign in</a>
+  {% endif %}
+</div>
+<div class="nav-buttons nav-buttons-tiny">
+  <a class="piskel-button  tiny-button" href="#">
+    <span style="margin-right: 5px;">&hellip;</span>
+    <div class="nav-user-drop-arrow"></div>
+  </a>
+</div>
+
+<div class="nav-popup" id="tiny-menu-popup">
+  <ul>
+    {% if is_logged_in %}
+    <li><a class="user-menu-popup-link user-menu-sprite" href="/p/create">Create Sprite</a></li>
+    <li><a class="user-menu-popup-link user-menu-gallery" href="/user/{{ user.key.id() }}">My gallery</a></li>
+    <li><a class="user-menu-popup-link user-menu-logout" href="/logout">Sign out</a></li>
+    {% else %}
+    <li><a class="user-menu-popup-link user-menu-sprite" href="/p/create">Create Sprite</a></li>
+    <li><a class="user-menu-popup-link user-menu-login" href="/auth/google">Sign in</a></li>
+    {% endif %}
+  </ul>
+</div>
+
+
+{% if is_logged_in %}
+<div class="nav-popup" id="user-menu-popup">
+  <ul>
+    <li><a class="user-menu-popup-link user-menu-gallery" href="/user/{{ user.key.id() }}">My gallery</a></li>
+    <!-- <li><a class="user-menu-popup-link" href="/user/{{ user.key.id() }}/settings">Settings</a></li> -->
+    <li><a class="user-menu-popup-link user-menu-logout" href="/logout">Sign out</a></li>
+  </ul>
+</div>
+{% endif %}

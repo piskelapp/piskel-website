@@ -11,8 +11,8 @@
 		<label for="name">Public</label>
 		<input type="checkbox" name="public" {% if not piskel.private %}checked{% endif %}/>
 	</div>
-	<div>
+	<div class="piskel-edit-actions">
+		<input class="piskel-button" type="Submit" value="Save"/>
 		<button class="piskel-button" onclick="pskl.website.hideEditForm();return false;">Cancel</button>
-		<input class="piskel-button piskel-button-save" type="Submit" value="Save"/>
 	</div>
 </form>

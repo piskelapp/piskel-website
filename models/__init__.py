@@ -7,6 +7,11 @@ BUCKET_SIZE = 100
 MAX_BUCKETS = 100
 CATEGORIES = ['all', 'public', 'private', 'deleted']
 
+BROWSE_PAGE_SIZE = 20
+
+FEATURED_PAGE_SIZE = 8
+MAX_FEATURED_PAGES = 100
+
 
 def _clear_get_piskels_cache(user_id):
     keys = []
@@ -55,8 +60,29 @@ def get_recent_piskels(index):
     piskels = memcache.get(mem_key)
     if not piskels:
         q = db.GqlQuery('SELECT * FROM Piskel WHERE garbage=False and private=False and deleted=False ORDER BY creation_date DESC')
-        piskels = q.fetch(offset=(index-1)*20, limit=20)
+        piskels = q.fetch(offset=(index-1) * BROWSE_PAGE_SIZE, limit=BROWSE_PAGE_SIZE)
         memcache.set(mem_key, piskels)
+    return piskels
+
+
+def clear_featured_piskel_cache():
+    keys = []
+    for index in range(0, MAX_FEATURED_PAGES):
+        keys.append(str(index))
+
+    memcache.delete_multi(keys, key_prefix='featured_piskels_')
+
+
+def get_featured_piskels(index):
+    mem_key = 'featured_piskels_' + str(index)
+    piskels = memcache.get(mem_key)
+    if not piskels:
+        q = db.GqlQuery('SELECT * FROM Piskel WHERE featured=True and garbage=False and private=False and deleted=False ORDER BY creation_date DESC')
+        piskels = q.fetch(offset=(index-1)*FEATURED_PAGE_SIZE, limit=FEATURED_PAGE_SIZE)
+
+        # Memcache the result if the index is in the allowed range
+        if index < MAX_FEATURED_PAGES:
+            memcache.set(mem_key, piskels)
     return piskels
 
 
@@ -135,6 +161,7 @@ class Piskel(db.Model):
     private = db.BooleanProperty(default=False)
     deleted = db.BooleanProperty(default=False)
     garbage = db.BooleanProperty(default=False)
+    featured = db.BooleanProperty(default=False)
     name = db.StringProperty(required=True, default='New piskel')
     description = db.TextProperty()
 
