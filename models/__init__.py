@@ -1,6 +1,7 @@
 from google.appengine.ext import db
 from google.appengine.api import memcache
 import urllib
+import logging
 from time import gmtime, strftime
 
 BUCKET_SIZE = 100
@@ -89,11 +90,17 @@ def get_stats_for_piskel(piskel):
     framesheet = piskel.get_current_framesheet()
     if framesheet:
         frames_count = long(framesheet.frames)
-        fps = float(framesheet.fps)
+
+        try:
+            fps = float(framesheet.fps)
+        except:
+            fps = 0
+
         if fps > 0:
             anim_length = float(frames_count) * (1/float(fps))
         else:
             anim_length = 0
+
 
         stat = {
             'frames_count': frames_count,
