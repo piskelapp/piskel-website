@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   height="200"
+   width="200"
+   id="svg4546"
+   sodipodi:docname="download-windows-logo.svg"
+   inkscape:version="0.92.1 r15371"
+   inkscape:export-filename="C:\Development\git\piskel-website\static\resources\download\download-windows-logo.png"
+   inkscape:export-xdpi="28.799999"
+   inkscape:export-ydpi="28.799999">
+  <metadata
+     id="metadata4552">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs4550" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1148"
+     id="namedview4548"
+     showgrid="false"
+     inkscape:zoom="2.6818182"
+     inkscape:cx="44"
+     inkscape:cy="44"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4546" />
+  <path
+     style="fill:#000000;fill-opacity:1;stroke-width:1"
+     d="m 25,46.237513 61.300246,-8.322735 0.0268,58.946852 -61.271044,0.34785 z m 61.271045,57.415947 0.04757,58.99822 -61.271041,-8.39791 -0.0034,-50.99605 z M 93.70207,36.826017 174.98111,25 V 96.11193 L 93.70207,96.75521 Z M 175,104.20828 174.98094,175 93.701898,163.56372 93.588013,104.07574 Z"
+     id="path4544"
+     inkscape:connector-curvature="0"
+     inkscape:export-xdpi="32"
+     inkscape:export-ydpi="32" />
+</svg>

@@ -1,22 +1,34 @@
 <div class="navigation {% if is_logged_in %}navigation-logged-in{%endif%}">
-  <a class="link anchor-left  piskel-logo" href="/"><img src="/static/resources/logo_transparent.png" /></a>
-  {% if hide_create %}
-  {% else %}
-    <a class="piskel-button  create-piskel-button  anchor-left" href="/p/create" target="_blank">Create piskel</a>
-  {% endif %}
-  {% if is_logged_in %}
-    <div class="anchor-right user-container">
-      <img
-        class="small-user-avatar small-circle-user-avatar anchor-left"
-        src="{{ user.avatar_url }}"
-      />
-      <div class="anchor-left">
-        <div class="user-link"><a class="link link-login" href="/user/{{ session.user_id }}">{{ user.name }}</a></div>
-        <div class="logout-link"><a class="link link-login" href="/logout">logout</a></div>
+
+  <a class="link anchor-left  piskel-logo" href="/">
+    <img src="/static/resources/logo_transparent_small_compact.png" />
+  </a>
+
+  <div class="nav-links">
+    <a class="nav-link" href="/download">Downloads</a>
+    <a class="nav-link" href="/faq">FAQ</a>
+    <!--a class="nav-link" href="/tutorials">Tutorials</a-->
+    <!-- <span class="nav-about-container">
+      <a class="nav-link" href="#">
+        About
+      </a>
+      <div class="nav-about-drop-arrow"></div>
+      <div class="nav-popup" id="nav-about-popup">
+        <ul>
+          <li>
+            <a class="nav-about-popup-link" href="/terms">Terms &amp; Conditions</a>
+          </li>
+          <li>
+            <a class="nav-about-popup-link" href="/privacy">Privacy policy</a>
+          </li>
+          <li>
+            <a class="nav-about-popup-link" href="/faq">FAQ</a>
+          </li>
+        </ul>
       </div>
-    </div>
-    <a class="link link-login link-highlight anchor-right" href="/user/{{ session.user_id }}">My Gallery</a>
-  {% else %}
-    <a class="link link-login link-highlight anchor-right" href="/auth/google">login</a>
-  {% endif %}
+    </span> -->
+  </div>
+
+  {% include "partial/nav-actions-partial.html" %}
+
 </div>

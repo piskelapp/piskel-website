@@ -6,3 +6,12 @@
 		src="/img/{{framesheet_key}}/preview"
 		onload="window.pskl.website.createAnimatedPreview('{{framesheet_key}}', {{fps}}, event, {{animate}})"/>
 {% endmacro %}
+
+{% macro render_spritesheet(id, preview_url, spritesheet_url, size, fps) -%}
+  <img
+    id="image{{id}}"
+    style="display:block; width:{{size}}px; height:{{size}}px;"
+    width="{{size}}"
+    src="{{preview_url}}"
+    onload="window.pskl.website.createSpritesheetPreview('{{id}}', '{{spritesheet_url}}', {{fps}}, event, true)"/>
+{% endmacro %}

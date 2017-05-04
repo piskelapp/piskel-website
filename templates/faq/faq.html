@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block bodyclass %}{% endblock %}
+{% block title %}Piskel - FAQ{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-faq.css"/>
+{% endblock %}
+
+{% block main %}
+<div class="faq-section  faq-intro  bg0  checkered-bg">
+  <div class="faq-section-inner">
+    <h4 class="faq-section-title">Frequently Asked Questions</h4>
+    <div class="faq-intro-content">
+      <img class="faq-intro-image" src="/static/resources/faq/faq-support-icon.png">
+      <span class="faq-intro-desc">
+        This FAQ aims to regroup most of the questions we often get on Twitter &amp; GitHub, as well as a few tips for using the editor.
+        If you cannot find the answer you are looking for here, <a href="#contact-question">contact us</a>!
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="faq-section  faq-main  bg1  checkered-bg">
+  <div class="faq-section-inner">
+    <h4 class="faq-section-title">General Questions</h4>
+    <div class="faq-sub-section">
+      <div class="faq-item">
+        <div class="faq-question">Is there a mobile application?</div>
+        <div class="faq-answer">
+          For smartphones, not at the moment, nor in the foreseeable future.
+          Reworking the user interface of Piskel to be usable on a small screen feels
+          like a new dedicated project on its own. Since Piskel is open source, anybody
+          is welcome to fork the project and try to port it to mobile however!
+          <br/>
+          <br/>
+          Piskel can be used on tablets however, so a mobile application dedicated to tablets
+          could be an option. Some user interface adjustments are still needed to improve the
+          experience, but that seems feasible.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Can I use a sprite made with Piskel in a commercial project?</div>
+        <div class="faq-answer">
+          Yes! Whatever you create with Piskel is yours. We do not hold any rights
+          on user creations made on piskelapp.com or with the offline Piskel editors.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Why do you have ads?</div>
+        <div class="faq-answer">
+          We are not big fans of ads either, but running piskelapp.com has a cost and if we want to keep
+          the service alive, it needs to be sustainable. The ads are here to cover the server costs,
+          performing costly backups and maybe buy some testing hardware. In the long run, we hope
+          ads will allow us to spend more time and resources on Piskel than we do at the moment.
+          <br/>
+          <br/>
+          With that said, we don't plan to add banners on the editor's interface. We believe the editor
+          should remain a safe zone where you can focus on your creation.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Do you have a privacy policy?</div>
+        <div class="faq-answer">
+          We are working on both a Privacy Policy and a Terms and Conditions page.
+          <br>
+          <br>
+          The short version is:
+          <br>
+          We are not keeping any user information other than the one displayed on the user pages,
+          we don't share this information with 3rd parties, we don't hold any copyright on the user creations.
+          We offer private and public settings for all user creations, to be used at the user's discretion.
+          <br>
+          <br>
+          We use cookies, we collect anonymous usage data for analytics. We are not responsible for the content
+          created by users but encourage our users to keep their public content safe for all ages. We are not
+          responsible for the content of any of the external websites linked on piskelapp.com.
+          <br>
+          <br>
+          If you need more details before our T&amp;C and Privacy statements are finalized, please contact us.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">How can I customize or delete my account?</div>
+        <div class="faq-answer">
+          We are working on adding user settings to customize the name &amp; avatar of a profile.
+          Deleting an account is not possible at the moment, but if you really need your account
+          to be disabled, then contact us!
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" id="contact-question">How can I contact you?</div>
+        <div class="faq-answer">
+          If it is a general question, a question about your account, or a support request you can:
+          <ul>
+            <li><b>Twitter</b>: send a <a href="https://twitter.com/piskelapp" target="_blank">direct message to @piskelapp</a></li>
+            <li><b>Email</b>: send an <a href="mailto:julian@piskelapp.com" target="_blank">email to julian@piskelapp.com</a></li>
+          </ul>
+          If you have a bug to report, a feature to propose, the best is to open an issue on GitHub:
+          <ul>
+            <li><a href="https://github.com/juliandescottes/piskel/issues" target="_blank">piskel issues</a> for the editor</li>
+            <li><a href="https://github.com/juliandescottes/piskel-website/issues" target="_blank">piskel-website issues</a> for anything else (user pages, piskel pages etc...)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Do you accept donations?</div>
+        <div class="faq-answer">
+          Thanks for asking! Not at the moment, We are experimenting with using
+          ads to cover the costs of running Piskel.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg2">
+  {% include "ads/piskel_home_footer.html" %}
+</div>
+
+<div class="faq-section  faq-main  bg3 grow checkered-bg">
+  <div class="faq-section-inner">
+    <h4 class="faq-section-title">Tips &amp; troubleshooting</h4>
+    <div class="faq-sub-section">
+      <div class="faq-item">
+        <div class="faq-question">How do you copy-paste in Piskel?</div>
+        <div class="faq-answer">
+          Copy/paste is not really intuitive. It should be improved(!), but in the meantime here are the steps:
+          <ol>
+            <li>choose a selection tool</li>
+            <li>select an area on the screen</li>
+            <li>copy (ctrl+c) or cut (ctrl+x) (or cmd+c and cmd+x if on Mac)</li>
+            <li>move your selection (don't switch tools, just click and drag the selected area, you should see the cursor change)</li>
+            <li>paste (ctrl+v or cmd+v)</li>
+          </ol>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">The editor crashed, how can I recover my content?</div>
+        <div class="faq-answer">
+          The first thing to try if Piskel crashed is to restore the last session.
+          Piskel periodically saves your work and allows you to restore the last saved version:
+          <ol>
+            <li>open the Piskel editor</li>
+            <li>open the Import panel</li>
+            <li>click on the <b>Restore</b> button of the <b>Recover Recent Sessions</b> section.</li>
+          </ol>
+          <img class="faq-answer-image" src="http://screenletstore.appspot.com/img/51bed9d4-2dc6-11e7-926e-f97f62b8e256.png">
+          If this didn't work, you need to go back to your previously saved version. Piskel was made
+          to create small sprites (initially the only size allowed was 32x32). If you see the performance
+          warning while working on your sprite, remember to save your work often.
+          <br/>
+          <br/>
+          Whenever you experience a crash, if you can file an issue on the
+          <a href="https://github.com/juliandescottes/piskel/issues" target="_blank">GitHub repository</a>
+          , it would be great!
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">How can I import an image without erasing the current sprite</div>
+        <div class="faq-answer">
+          At the moment, importing a sprite or an image will always erase the current animation.
+          The next Piskel update (v0.11.0) will come with a new Import flow, that will allow to merge new content
+          with your current sprite.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "partial/macros.html" import render_spritesheet %}
+
+{% block title %}Piskel - Free online sprite editor{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-home.css?20170502"/>
+{% endblock %}
+
+{% block bodyclass %}bg3{% endblock %}
+{% block main %}
+  <div class="home-main bg0 checkered-bg">
+    <div class="home-tagline">
+      <div class="home-tagline-title">
+        Piskel is a <b>free online editor</b> for <b>animated sprites</b> &amp; <b style="white-space:nowrap;">pixel art</b>
+      </div>
+      <div class="home-tagline-desc">
+        {% if is_logged_in %}
+          Welcome {{ user.name }}!<br/>
+          Go to <a href="/user/{{ user.key.id() }}">your gallery</a> or simply <a href="/p/create">create a new sprite</a>!
+        {% else %}
+          Create animations in your browser.<br/>
+          <a href="http://www.piskelapp.com/p/agxzfnBpc2tlbC1hcHByEwsSBlBpc2tlbBiAgIDvjNGKCAw/edit">Try an example</a>, use <a href="/auth/google">Google sign in</a> to access your gallery or simply <a href="/p/create">create a new sprite</a>.
+        {% endif %}
+      </div>
+      <div class="home-actions">
+        {% if not is_logged_in %}
+        <a class="piskel-button home-main-button login-button" href="/auth/google" title="Sign in with Google">
+          Sign in
+        </a>
+        {% else %}
+        <a class="piskel-button home-main-button" href="/user/{{ user.key.id() }}">
+          My Gallery
+        </a>
+        {% endif %}
+        <a class="piskel-button home-main-button" href="/p/create">
+          Create Sprite
+        </a>
+      </div>
+    </div>
+    <div class="home-screenshot">
+      <div class="home-screenshot-wrapper">
+        <div class="home-screenshot-main"></div>
+        <div class="home-screenshot-preview">
+          {{ render_spritesheet("megamanx", "/static/resources/home/megamanx_preview.jpg", "/static/resources/home/megamanx_spritesheet.png", 264, 16) }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="picked-piskels-container checkered-bg bg1">
+    {% include "home/picked.html" %}
+  </div>
+
+  <div class="bg2">
+    {% include "ads/piskel_home_footer.html" %}
+  </div>
+
+  {% include "home/features.html" %}
+
+{% endblock %}

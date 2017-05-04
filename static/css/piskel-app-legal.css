@@ -1,0 +1,18 @@
+.legal-container {
+  max-width: 800px;
+  padding: 10px 50px;
+  font-size: 0.8em;
+
+}
+
+.legal-container h1 {
+  color: gold;
+}
+
+.legal-container h2 {
+  color: white;
+}
+
+.legal-container li {
+  margin-bottom: 10px;
+}

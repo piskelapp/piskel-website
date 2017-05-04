@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block bodyclass %}{% endblock %}
+{% block title %}Piskel - Download{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-download.css"/>
+{% endblock %}
+
+{% block main %}
+<div class="download-section  download-intro  bg0  checkered-bg">
+  <div class="download-section-inner">
+    <h4 class="download-section-title">Offline Applications</h4>
+    <div class="download-intro-content">
+      <img class="download-intro-image" src="/static/resources/download/download-offline.png">
+      <span class="download-intro-desc">
+        If you want to use Piskel without having an internet connection, you can download an offline version of Piskel below.
+        We provide applications for Windows, Mac OS X and Linux.
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="download-section  download-main  bg1  checkered-bg">
+  <div class="download-section-inner">
+    <h4 class="download-section-title">Download</h4>
+    <div class="download-sub-section">
+      The current version is <b>v0.10.0</b>
+    </div>
+    <div class="download-sub-section download-main-actions">
+      <a class="download-button  piskel-button" target="_blank" href="https://drive.google.com/uc?export=download&id=0BwPjxqZA0YlRZmR4amdjajI0Q3c">
+        <img class="download-button-image" src="static/resources/download/download-windows-logo.png">
+        <span class="download-button-text">Windows</span>
+      </a>
+      <a class="download-button  piskel-button" target="_blank" href="https://drive.google.com/uc?export=download&id=0BwPjxqZA0YlRM1pqODV2bXg4ZmM">
+        <img class="download-button-image" src="static/resources/download/download-osx-logo.png">
+        <span class="download-button-text">Mac OS</span>
+      </a>
+      <a class="download-button  piskel-button" target="_blank" href="https://drive.google.com/uc?export=download&id=0BwPjxqZA0YlRSThZOURTRWNOd1k">
+        <img class="download-button-image" src="static/resources/download/download-linux-logo.png">
+        <span class="download-button-text">Linux</span></a>
+    </div>
+    <div class="download-sub-section">
+      Looking for older versions? Check the
+      <a href="https://github.com/juliandescottes/piskel/wiki/Desktop-applications" target="_blank">download page</a>
+      on GitHub.
+    </div>
+  </div>
+</div>
+
+<div class="bg2">
+  {% include "ads/piskel_home_footer.html" %}
+</div>
+
+<div class="download-section  download-about  bg3  checkered-bg  grow">
+  <div class="download-section-inner">
+    <h4 class="download-section-title">About the offline applications</h4>
+    <div class="download-sub-section">
+      Piskel is built as a browser-based editor first. The offline applications are based on the Piskel editor,
+      with a few differences worth highlighting.
+    </div>
+
+    <div class="download-sub-section">
+      <div>Pros</div>
+      <ul class="download-about-items">
+        <li class="download-about-item">no internet connection needed</li>
+        <li class="download-about-item">save to a file without downloading a copy</li>
+      </ul>
+    </div>
+
+    <div class="download-sub-section">
+      <div>Cons</div>
+      <ul class="download-about-items">
+        <li class="download-about-item">not connected to your piskelapp.com account</li>
+        <li class="download-about-item">performance is usually better with the online version</li>
+        <li class="download-about-item">limited testing and quality assurance</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

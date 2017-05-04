@@ -29,7 +29,7 @@
           }
         };
       })(id);
-      img.src = "/img/" + imageInfo.piskelId + "/framesheet";
+      img.src = imageInfo.url;
     } else {
       startAnimationTimer(id);
     }
@@ -70,7 +70,12 @@
 
   var __id = -1;
   window.pskl.website.createAnimatedPreview = function(piskelId, fps, event, animate) {
-    var image = event.target || document.getElementById("image" + piskelId);
+    var spritesheet_url = "/img/" + piskelId + "/framesheet";
+    window.pskl.website.createSpritesheetPreview(piskelId, spritesheet_url, fps, event, animate);
+  };
+
+  window.pskl.website.createSpritesheetPreview = function(id, spritesheet_url, fps, event, animate) {
+    var image = event.target || document.getElementById("image" + id);
 
     var targetSize = image.width;
 
@@ -83,7 +88,7 @@
 
     __id++;
     images["key" + __id] = {
-      piskelId: piskelId,
+      url: spritesheet_url,
       fps: fps,
       width: image.naturalWidth,
       height: image.naturalHeight,
