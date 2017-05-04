@@ -81,6 +81,16 @@ def invalidate_user_cache(user_id):
     _clear_get_piskels_cache(user_id)
 
 
+def get_framesheet_fps(framesheet):
+    try:
+        return float(framesheet.fps)
+    except:
+        # FPS might be undefined. In this case return 0 and fixup the model
+        framesheet.fps = "0"
+        framesheet.put()
+        return 0
+
+
 def get_stats_for_piskel(piskel):
     mem_key = 'piskel_stats_' + str(piskel.key())
     stat = memcache.get(mem_key)
@@ -90,17 +100,12 @@ def get_stats_for_piskel(piskel):
     framesheet = piskel.get_current_framesheet()
     if framesheet:
         frames_count = long(framesheet.frames)
-
-        try:
-            fps = float(framesheet.fps)
-        except:
-            fps = 0
+        fps = get_framesheet_fps(framesheet)
 
         if fps > 0:
             anim_length = float(frames_count) * (1/float(fps))
         else:
             anim_length = 0
-
 
         stat = {
             'frames_count': frames_count,
