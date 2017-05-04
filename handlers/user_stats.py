@@ -11,7 +11,7 @@ class UserStatsHandler(BaseHandler):
             stats = models.get_stats_for_user(user_id)
             self.response.headers['Content-Type'] = 'application/json'
             # Set cache control to 10 minutes
-            self.response.headers['Cache-Control'] = 'public, max-age= 600'
+            self.response.headers['Cache-Control'] = 'public, max-age=600'
             obj = {
                 'piskelsCount': int(stats['piskels_count']),
                 'framesCount': int(stats['frames_count']),

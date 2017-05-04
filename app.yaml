@@ -45,6 +45,20 @@ handlers:
   upload: static/resources/(.*\.png)
   mime_type: image/png
 
+- url: /static/js/(.*\.js)
+  static_files: static/js/\1
+  upload: static/js/(.*\.js)
+  mime_type: application/javascript
+  http_headers:
+    Cache-Control: public, max-age=31536000
+
+- url: /static/css/(.*\.css)
+  static_files: static/css/\1
+  upload: static/css/(.*\.css)
+  mime_type: text/css
+  http_headers:
+    Cache-Control: public, max-age=31536000
+
 - url: /static
   static_dir: static
 
@@ -73,9 +87,11 @@ handlers:
   upload: static/editor/(.*\.png)
   mime_type: image/png
 
-- url: /p/(.*\.(?:css|js|gif))
+- url: /p/(.*\.(?:css|js))
   static_files: static/editor/\1
-  upload: static/editor/(.*\.(css|js|gif))
+  upload: static/editor/(.*\.(css|js))
+  http_headers:
+    Cache-Control: public, max-age=31536000
 
 - url: /.*
   script: main.app
