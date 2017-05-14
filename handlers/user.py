@@ -1,7 +1,5 @@
 from base import BaseHandler
-from models import Piskel
-from models import user_details as user_details_model
-import models
+from models import Piskel, get_piskels
 import json
 
 PUBLIC_CATEGORIES = ['public']
@@ -45,7 +43,7 @@ class UserHandler(BaseHandler):
         user = self.auth.store.user_model.get_by_id(long(user_id))
         if user:
             if self._is_valid_category(user_id, cat):
-                piskels = models.get_piskels(user_id, cat, long(offset), long(limit))
+                piskels = get_piskels(user_id, cat, long(offset), long(limit))
                 if piskels:
                     view_piskels = Piskel.prepare_piskels_for_view(piskels)
                     obj = {

@@ -1,0 +1,85 @@
+.user-settings-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto 30px auto;
+  padding: 0 30px;
+  box-sizing: border-box;
+}
+
+.user-settings-main {
+  overflow: hidden;
+  display: flex;
+}
+
+.user-settings-sections {
+  display: flex;
+  flex-direction: column;
+  width: 80%;
+}
+
+.user-settings-header {
+  padding: 30px;
+  background: #333;
+  margin: 30px 0;
+  overflow: hidden;
+}
+
+.user-settings-header .piskel-button {
+  font-size: 16px;
+  height: 50px;
+  width: 150px;
+  padding: 0 15px;
+  float: right;
+}
+
+.user-settings-avatar {
+  padding: 30px;
+  background: #333;
+  width: 20%;
+}
+
+.user-settings-avatar-preview {
+  width: 100%;
+  background: white;
+}
+
+.user-settings-avatar-preview:after {
+    content: "";
+    padding-top: 100%;
+    display: block;
+}
+
+.user-settings-avatar-actions {
+  text-align: center;
+  margin-top: 30px;
+  line-height: 30px;
+}
+
+.user-settings-avatar-actions .piskel-button {
+  font-size: 16px;
+  height: 50px;
+  width: 150px;
+  padding: 0 15px;
+}
+
+.user-settings-section {
+  padding: 30px;
+  background: #333;
+  margin-bottom:30px;
+  margin-left: 30px;
+}
+
+.user-settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.user-settings-section-title {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.user-settings-input {
+  text-align: right;
+}
