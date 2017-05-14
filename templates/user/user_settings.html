@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Piskel - {{ profile_user.name }}{% endblock %}
+
+{% block js %}
+  <!-- Scripts go here -->
+{% endblock %}
+
+{% block css %}
+  <!-- CSS links go here -->
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-user-settings.css"/>
+{% endblock %}
+
+{% block main %}
+  <div class="user-settings-container grow">
+    <div class="user-settings-header">
+      Edit your profile settings
+      <button class="piskel-button">Save settings</save>
+    </div>
+    <div class="user-settings-main">
+      <div class="user-settings-avatar">
+        <div class="user-settings-avatar-preview"></div>
+        <div class="user-settings-avatar-actions">
+          Update your avatar
+          <div class="user-settings-avatar-action">
+            <button class="piskel-button">Choose a file</button>
+          </div>
+          or
+          <div class="user-settings-avatar-action">
+            <button class="piskel-button">Use your Google picture</button>
+          </div>
+        </div>
+      </div>
+      <div class="user-settings-sections">
+        <div class="user-settings-section user-settings-name">
+          <div class="user-settings-section-title">Your name and your location</div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Name</span>
+            <input type="text" placeholder="Your name">
+          </div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Location</span>
+            <input type="text" placeholder="Your name">
+          </div>
+        </div>
+        <div class="user-settings-section user-settings-bio">
+          <div class="user-settings-section-title">About you</div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Your bio</span>
+            <textarea></textarea>
+          </div>
+        </div>
+        <div class="user-settings-section user-settings-visibility">
+          <div class="user-settings-section-title">Public activity</div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Your bio</span>
+            <textarea></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      window.__pageInfo = {
+        userid: "{{ profile_user.key.id() }}"
+      }
+    </script>
+  </div>
+{% endblock %}
