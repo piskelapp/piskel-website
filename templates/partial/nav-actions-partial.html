@@ -27,6 +27,7 @@
     {% if is_logged_in %}
     <li><a class="user-menu-popup-link user-menu-sprite" href="/p/create">Create Sprite</a></li>
     <li><a class="user-menu-popup-link user-menu-gallery" href="/user/{{ user.key.id() }}">My gallery</a></li>
+    <li><a class="user-menu-popup-link user-menu-settings" href="/user/{{ user.key.id() }}/settings">Settings</a></li>
     <li><a class="user-menu-popup-link user-menu-logout" href="/logout">Sign out</a></li>
     {% else %}
     <li><a class="user-menu-popup-link user-menu-sprite" href="/p/create">Create Sprite</a></li>
@@ -40,7 +41,7 @@
 <div class="nav-popup" id="user-menu-popup">
   <ul>
     <li><a class="user-menu-popup-link user-menu-gallery" href="/user/{{ user.key.id() }}">My gallery</a></li>
-    <!-- <li><a class="user-menu-popup-link" href="/user/{{ user.key.id() }}/settings">Settings</a></li> -->
+    <li><a class="user-menu-popup-link user-menu-settings" href="/user/{{ user.key.id() }}/settings">Settings</a></li>
     <li><a class="user-menu-popup-link user-menu-logout" href="/logout">Sign out</a></li>
   </ul>
 </div>

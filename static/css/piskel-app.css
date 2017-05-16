@@ -450,22 +450,33 @@ ul {
   padding: 0 10px;
 }
 
-.user-menu-gallery {
-  background-image:url('/static/resources/gallery-icon.png');
+.user-menu-gallery,
+.user-menu-settings,
+.user-menu-logout {
   background-repeat: no-repeat;
   background-position: 7px center;
 }
 
+.user-menu-gallery {
+  background-image:url('/static/resources/gallery-icon.png');
+}
+
+.user-menu-settings {
+  background-image:url('/static/resources/settings-icon.png');
+}
+
 .user-menu-logout {
   background-image:url('/static/resources/logout-icon.png');
-  background-repeat: no-repeat;
-  background-position: 7px center;
 }
 
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .user-menu-gallery {
     background-size: 16px;
     background-image: url('/static/resources/gallery-icon@2x.png');
+  }
+
+  .user-menu-settings {
+    background-image:url('/static/resources/settings-icon@2x.png');
   }
 
   .user-menu-logout {
