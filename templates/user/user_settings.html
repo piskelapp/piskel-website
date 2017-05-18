@@ -19,7 +19,10 @@
     </div>
     <div class="user-settings-main">
       <div class="user-settings-avatar">
-        <div class="user-settings-avatar-preview"></div>
+        <div
+          style="background-image: url('{{ profile_user.avatar_url }}');"
+          class="user-settings-avatar-preview">
+        </div>
         <div class="user-settings-avatar-actions">
           Update your avatar
           <div class="user-settings-avatar-action">
@@ -36,11 +39,11 @@
           <div class="user-settings-section-title">Your name and your location</div>
           <div class="user-settings-input">
             <span class="user-settings-label">Name</span>
-            <input type="text" placeholder="Your name">
+            <input type="text" placeholder="Your name" value="{{ view_user.name }}">
           </div>
           <div class="user-settings-input">
             <span class="user-settings-label">Location</span>
-            <input type="text" placeholder="Your name">
+            <input type="text" placeholder="Your location" value="{{ profile_user.location }}">
           </div>
         </div>
         <div class="user-settings-section user-settings-bio">
