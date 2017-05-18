@@ -10,11 +10,13 @@ class UserSettingsHandler(BaseHandler):
     def get(self, user_id):
         user = self.auth.store.user_model.get_by_id(long(user_id))
         if user:
+            view_user = user_details_model.get_user_for_view(user)
             is_own_profile = self.is_logged_in and long(user_id) == self.session_user['user_id']
             if is_own_profile:
                 values = {
                     'user_id': user_id,
                     'profile_user': user,
+                    'view_user': view_user,
                     'has_footer' : True,
                 }
                 self.render('user/user_settings.html', values)
