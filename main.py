@@ -22,7 +22,7 @@ from config import secrets
 
 from webapp2 import WSGIApplication, Route
 from webapp2_extras import routes
-from handlers import home, user, user_stats, redirect, error
+from handlers import user, user_stats, redirect, error
 
 # webapp2 config
 config = {
