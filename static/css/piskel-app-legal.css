@@ -1,18 +1,16 @@
-.legal-container {
-  max-width: 800px;
-  padding: 10px 50px;
-  font-size: 0.8em;
-
+.legal-section {
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
 }
 
-.legal-container h1 {
-  color: gold;
+.legal-section-inner {
+  width: 800px;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 30px;
 }
 
-.legal-container h2 {
-  color: white;
-}
-
-.legal-container li {
+.legal-section li {
   margin-bottom: 10px;
 }
