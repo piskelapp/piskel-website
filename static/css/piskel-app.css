@@ -483,11 +483,13 @@ ul {
 
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .user-menu-gallery {
-    background-image:url('/static/resources/gallery-icon@2x.png');
+    background-size: 16px;
+    background-image: url('/static/resources/gallery-icon@2x.png');
   }
 
   .user-menu-logout {
-    background-image:url('/static/resources/logout-icon@2x.png');
+    background-size: 16px;
+    background-image: url('/static/resources/logout-icon@2x.png');
   }
 }
 
