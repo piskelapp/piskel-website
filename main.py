@@ -23,6 +23,7 @@ from config import secrets
 from webapp2 import WSGIApplication, Route
 from webapp2_extras import routes
 from handlers import user, user_stats, redirect, error
+from models import piskel_user
 
 # webapp2 config
 config = {
@@ -31,7 +32,10 @@ config = {
         'secret_key': secrets.SESSION_KEY
     },
     'webapp2_extras.auth': {
-        'user_attributes': []
+        # Use the custom Piskel User extending webapp2_extras.appengine.auth.models.User
+        'user_model': piskel_user.User,
+        # List of User model properties available in the session object
+        'user_attributes': ['is_admin', 'is_searchable']
     }
 }
 
@@ -54,6 +58,7 @@ routes = [
   # ############# #
   Route('/user/<user_id>', handler='handlers.user.UserHandler:get_default', name='user-page'),
   Route('/user/<user_id>/settings', handler='handlers.user_settings.UserSettingsHandler', name='user-settings'),
+  Route('/user/<user_id>/update', handler='handlers.user_settings.UserSettingsHandler:update', name='user-update'),
   Route('/user/<user_id>/stats', handler=user_stats.UserStatsHandler, name='user-stats'),
   Route('/user/<user_id>/<cat>/piskels/<offset>/<limit>', handler='handlers.user.UserHandler:get_piskels', name='user-piskels'),
   Route('/user/<user_id>/<cat>', handler=user.UserHandler, name='user-page-cat'),

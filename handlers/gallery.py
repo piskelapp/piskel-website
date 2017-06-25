@@ -9,20 +9,20 @@ class BrowseHandler(BaseHandler):
             return False
 
         user_id = self.session_user['user_id']
-        userdetails = user_details_model.get_by_userid(user_id)
-        return userdetails.admin
+        user = self.auth.store.user_model.get_by_id(long(user_id))
+        return user.is_admin
 
     def get(self):
         self.getPage(1)
 
     def get_page_piskels(self, index=1):
-        if not self.is_admin():
-            self.render('error/piskel-unauthorized-action.html', {})
-
         piskels = models.get_recent_piskels(index)
         return Piskel.prepare_piskels_for_view(piskels)
 
     def getPage(self, index):
+        if not self.is_admin():
+            return self.render('error/piskel-unauthorized-action.html', {})
+
         index = int(index)
         values = {
             'is_home': False,
