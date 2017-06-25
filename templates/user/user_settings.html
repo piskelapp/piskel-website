@@ -12,10 +12,12 @@
 {% endblock %}
 
 {% block main %}
+<form action="/user/{{profile_user.key.id()}}/update" method="POST">
   <div class="user-settings-container grow">
     <div class="user-settings-header">
       Edit your profile settings
-      <button class="piskel-button">Save settings</save>
+      <button class="piskel-button" id="save-button">Save settings</button>
+      <input type="submit">
     </div>
     <div class="user-settings-main">
       <div class="user-settings-avatar">
@@ -39,7 +41,7 @@
           <div class="user-settings-section-title">Your name and your location</div>
           <div class="user-settings-input">
             <span class="user-settings-label">Name</span>
-            <input type="text" placeholder="Your name" value="{{ view_user.name }}">
+            <input type="text" placeholder="Your name" value="{{ profile_user.name }}">
           </div>
           <div class="user-settings-input">
             <span class="user-settings-label">Location</span>
@@ -56,8 +58,9 @@
         <div class="user-settings-section user-settings-visibility">
           <div class="user-settings-section-title">Public activity</div>
           <div class="user-settings-input">
-            <span class="user-settings-label">Your bio</span>
-            <textarea></textarea>
+            <label>Is searchable
+              <input name="is_searchable" type="checkbox" {% if profile_user.is_searchable %}checked="checked"{% endif %}>
+            </label>
           </div>
         </div>
       </div>
@@ -68,4 +71,5 @@
       }
     </script>
   </div>
+</form>
 {% endblock %}
