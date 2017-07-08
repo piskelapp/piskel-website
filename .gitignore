@@ -1,5 +1,6 @@
 # mac artefacts
 *.DS_Store
+.vscode
 
 # nodejs local installs
 node_modules
