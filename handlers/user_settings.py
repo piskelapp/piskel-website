@@ -1,6 +1,4 @@
 from base import BaseHandler
-from models import user_details as user_details_model
-import models
 import logging
 
 PUBLIC_CATEGORIES = ['public']
@@ -12,12 +10,6 @@ class UserSettingsHandler(BaseHandler):
         user = self.auth.store.user_model.get_by_id(long(user_id))
         if user:
             is_own_profile = self.is_logged_in and long(user_id) == self.session_user['user_id']
-            logging.info("current_user: session")
-            logging.info(self.current_user)
-            logging.info("current_user: is_admin")
-            logging.info(self.current_user.is_admin)
-            logging.info("current_user: is_searchable")
-            logging.info(self.current_user.is_searchable)
             if is_own_profile:
                 values = {
                     'user_id': user_id,
@@ -34,5 +26,8 @@ class UserSettingsHandler(BaseHandler):
         user = self.auth.store.user_model.get_by_id(long(user_id))
         post_data = self.request.POST
         user.is_searchable = bool(post_data.get('is_searchable'))
+        user.name = str(post_data.get('name'))
+        user.location = str(post_data.get('location'))
+        user.avatar_url = str(post_data.get('avatar'))
         user.put()
         self.redirect('/user/' + user_id + '/settings')

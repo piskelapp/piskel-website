@@ -4,3 +4,4 @@ from google.appengine.ext import ndb
 class User(Webapp2User):
     is_admin = ndb.BooleanProperty(default=False)
     is_searchable = ndb.BooleanProperty(default=False)
+    location = ndb.StringProperty(default='')
