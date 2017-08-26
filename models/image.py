@@ -16,8 +16,12 @@ class ImageInfo(db.Model):
     pass
 
 
-def store_image(image_data, extension):
-    file_name = str(uuid.uuid1()) + '.' + extension
+def store_image(image_data, extension, name=''):
+    if name:
+        file_name = name + '.' + extension
+    else:
+        file_name = str(uuid.uuid1()) + '.' + extension
+
     image = Image(key_name=file_name)
     image.content = db.Blob(base64.decodestring(image_data))
     image.extension = extension
