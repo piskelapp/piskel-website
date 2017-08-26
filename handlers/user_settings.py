@@ -1,5 +1,7 @@
 from base import BaseHandler
+from handlers import image as image_handler
 import logging
+import uuid
 
 PUBLIC_CATEGORIES = ['public']
 PRIVATE_CATEGORIES = ['all', 'public', 'private', 'deleted']
@@ -28,6 +30,11 @@ class UserSettingsHandler(BaseHandler):
         user.is_searchable = bool(post_data.get('is_searchable'))
         user.name = str(post_data.get('name'))
         user.location = str(post_data.get('location'))
-        user.avatar_url = str(post_data.get('avatar'))
+
+        avatar_url = str(post_data.get('avatar'))
+        if avatar_url.startswith('data:image/'):
+            avatar_url = '/img/' + image_handler.create_link(avatar_url, user_id) + '?' + str(uuid.uuid1())
+        user.avatar_url = avatar_url
+
         user.put()
         self.redirect('/user/' + user_id + '/settings')

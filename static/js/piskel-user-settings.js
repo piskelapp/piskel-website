@@ -27,10 +27,9 @@
   var onHiddenFileInputChange = function (evt) {
     var files = getHiddenFileInput().files;
     if (files.length == 1) {
-      console.log("Eh got one image !");
+      // Check mime type and size and prompt for error if needed.
       var reader = new FileReader();
       reader.addEventListener('loadend', function() {
-        console.log(reader.result);
         updateAvatar(reader.result);
       });
       reader.readAsDataURL(files[0]);

@@ -26,15 +26,15 @@ def validate_data(data):
 def get_extension(data):
     return match_extension(data).group(1)
 
-def create_link(data):
-    image = store_image_from_data(data)
+def create_link(data, name=''):
+    image = store_image_from_data(data, name)
     return image.key().name()
 
-def store_image_from_data(data):
+def store_image_from_data(data, name=''):
     # prepare extension and image data
     extension = get_extension(data)
     image_data = str.replace(str(data), 'data:image/'+extension+';base64', '')
-    return image_model.store_image(image_data, extension)
+    return image_model.store_image(image_data, extension, name)
 
 class UploadSingleImage(webapp.RequestHandler):
     def post(self):
