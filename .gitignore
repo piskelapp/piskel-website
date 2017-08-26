@@ -20,7 +20,8 @@ npm-debug.log
 config/secrets.py
 
 # grunt generated files
-templates/editor/main-partial.html
+# DO NOT IGNORE ON RELEASE BRANCH
+# templates/editor/main-partial.html
 
 # vscode
 settings.json

@@ -1,4 +1,5 @@
-*
+# DO NOT IGNORE EDITOR STATICS ON RELEASE BRANCH
+# *
 
-!.gitignore
-!VERSION
+# !.gitignore
+# !VERSION
