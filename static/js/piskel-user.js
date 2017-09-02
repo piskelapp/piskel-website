@@ -181,7 +181,7 @@ function loadUserPiskels(offset, limit) {
         loadUserPiskels(offset + limit, limit);
       } else if (offset === 0) {
         container.innerHTML =
-          '<div class="user-piskels-empty-message font-pixel">' +
+          '<div class="user-piskels-empty-message">' +
             'No piskel available in \'' + getCategory() +'\' category.' +
           '</div>';
       }
