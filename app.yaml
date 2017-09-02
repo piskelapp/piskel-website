@@ -25,21 +25,6 @@ handlers:
   upload: static/resources/(.*\.svg)
   mime_type: image/svg+xml
 
-- url: /static/resources/(.*\.eot)
-  static_files: static/resources/\1
-  upload: static/resources/(.*\.eot)
-  mime_type: application/vnd.ms-fontobject
-
-- url: /static/resources/(.*\.ttf)
-  static_files: static/resources/\1
-  upload: static/resources/(.*\.ttf)
-  mime_type: application/octet-stream
-
-- url: /static/resources/(.*\.woff)
-  static_files: static/resources/\1
-  upload: static/resources/(.*\.woff)
-  mime_type: application/x-woff
-
 - url: /static/resources/(.*\.png)
   static_files: static/resources/\1
   upload: static/resources/(.*\.png)

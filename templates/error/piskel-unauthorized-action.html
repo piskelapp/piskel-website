@@ -8,8 +8,8 @@
 
 {% block main %}
   <div class="piskel-error-container">
-    <h2 class="piskel-error-title pskl-important font-pixel">Sorry!</h2>
-    <h3 class="piskel-error-details font-pixel">Insufficient permissions</h3>
+    <h2 class="piskel-error-title pskl-important">Sorry!</h2>
+    <h3 class="piskel-error-details">Insufficient permissions</h3>
     {% if not is_logged_in %}
         Did you forget to <a href="/auth/google">login</a>?<br>
     {% else %}
