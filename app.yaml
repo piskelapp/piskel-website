@@ -29,6 +29,13 @@ handlers:
   http_headers:
     Cache-Control: public, max-age=31536000
 
+- url: /static/resources/(.*\.gif)
+  static_files: static/resources/\1
+  upload: static/resources/(.*\.gif)
+  mime_type: image/gif
+  http_headers:
+    Cache-Control: public, max-age=31536000
+
 - url: /static/resources/(.*\.png)
   static_files: static/resources/\1
   upload: static/resources/(.*\.png)
