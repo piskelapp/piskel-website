@@ -15,7 +15,7 @@
 <div class="user-settings-container grow">
   <form action="/user/{{profile_user.key.id()}}/update" method="POST">
     <div class="user-settings-header">
-      Edit your profile settings
+      <span class="user-settings-title">Edit your profile settings</span>
       <button class="piskel-button" id="save-button">Save</button> or
       <button class="piskel-button" id="reset-button">Reset</button>
     </div>
@@ -32,37 +32,30 @@
           </div>
           or
           <div class="user-settings-avatar-action">
-            <button id="no-avatar-button" class="piskel-button">Do not show any avatar</button>
+            <button id="no-avatar-button" class="piskel-button">Use default avatar</button>
           </div>
         </div>
         <input type="hidden" class="user-settings-input" name="avatar" value="{{ profile_user.avatar_url }}">
-        <input type="file" class="user-settings-input" name="file" value="file" accept="*" style="display:none" >
+        <input type="file" class="user-settings-input" name="file" value="file" accept="image/*" style="display:none" >
       </div>
       <div class="user-settings-sections">
         <div class="user-settings-section user-settings-name">
-          <div class="user-settings-section-title">Your name and your location</div>
+          <div class="user-settings-section-title">Your display name</div>
           <div class="user-settings-input">
             <span class="user-settings-label">Name</span>
             <input type="text" class="user-settings-input"  name="name" placeholder="Your name" value="{{ profile_user.name }}">
           </div>
+        </div>
+        <div class="user-settings-section user-settings-bio">
+          <div class="user-settings-section-title">About you</div>
+          <div class="user-settings-section-description">Optional. Will be displayed on your user page.</div>
           <div class="user-settings-input">
             <span class="user-settings-label">Location</span>
             <input type="text" class="user-settings-input" name="location" placeholder="Your location" value="{{ profile_user.location }}">
           </div>
-        </div>
-        <div class="user-settings-section user-settings-bio">
-          <div class="user-settings-section-title">About you</div>
           <div class="user-settings-input">
             <span class="user-settings-label">Your bio</span>
-            <textarea></textarea>
-          </div>
-        </div>
-        <div class="user-settings-section user-settings-visibility">
-          <div class="user-settings-section-title">Your gallery</div>
-          <div class="user-settings-input">
-            <label>Make my gallery discoverable
-              <input type="checkbox" class="user-settings-input" name="is_searchable" {% if profile_user.is_searchable %}checked="checked"{% endif %}>
-            </label>
+            <textarea rows="5" maxlength="300"></textarea>
           </div>
         </div>
       </div>
@@ -72,9 +65,8 @@
         userid: "{{ profile_user.key.id() }}",
         avatar: "{{ profile_user.avatar_url }}",
         name: "{{ profile_user.name }}",
-        location: "{{ profile_user.location }}",
-        sharing: {% if profile_user.is_searchable %}true{% else %}false{% endif %},
-      }
+        location: "{{ profile_user.location }}"
+      };
     </script>
   </form>
 </div>

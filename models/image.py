@@ -19,6 +19,7 @@ class ImageInfo(db.Model):
 def store_image(image_data, extension, name=''):
     if name:
         file_name = name + '.' + extension
+        memcache.delete(file_name)
     else:
         file_name = str(uuid.uuid1()) + '.' + extension
 

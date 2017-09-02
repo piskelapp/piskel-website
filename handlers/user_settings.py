@@ -27,7 +27,6 @@ class UserSettingsHandler(BaseHandler):
     def update(self, user_id):
         user = self.auth.store.user_model.get_by_id(long(user_id))
         post_data = self.request.POST
-        user.is_searchable = bool(post_data.get('is_searchable'))
         user.name = str(post_data.get('name'))
         user.location = str(post_data.get('location'))
 
