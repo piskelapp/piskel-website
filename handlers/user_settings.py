@@ -5,7 +5,7 @@ import uuid
 
 PUBLIC_CATEGORIES = ['public']
 PRIVATE_CATEGORIES = ['all', 'public', 'private', 'deleted']
-
+DEFAULT_AVATAR_URL = '/static/resources/default-avatar.gif'
 
 class UserSettingsHandler(BaseHandler):
     def get(self, user_id):
@@ -17,6 +17,7 @@ class UserSettingsHandler(BaseHandler):
                     'user_id': user_id,
                     'profile_user': user,
                     'has_footer' : True,
+                    'DEFAULT_AVATAR_URL' : DEFAULT_AVATAR_URL,
                 }
                 self.render('user/user_settings.html', values)
             else:
@@ -32,8 +33,15 @@ class UserSettingsHandler(BaseHandler):
 
         avatar_url = str(post_data.get('avatar'))
         if avatar_url.startswith('data:image/'):
-            avatar_url = '/img/' + image_handler.create_link(avatar_url, user_id) + '?' + str(uuid.uuid1())
-        user.avatar_url = avatar_url
+            path = image_handler.create_link(avatar_url, user_id)
+            suffix = str(uuid.uuid1())
+            user.avatar_url = '/img/' + path + '?' + suffix
+        elif avatar_url == 'DEFAULT':
+            user.avatar_url = DEFAULT_AVATAR_URL
+        # elif avatar_url == 'CURRENT':
+            # Nothing to do
+        # else:
+            # Not accepted
 
         user.put()
         self.redirect('/user/' + user_id + '/settings')

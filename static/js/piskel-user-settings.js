@@ -1,5 +1,10 @@
 (function () {
-  var DEFAULT_AVATAR_URL = "http://piskel-imgstore-b.appspot.com/img/667b534c-85bf-11e7-9522-7feaef5d7e13.gif";
+
+  // Special values accepted for the avatar. Only base64 data uris allowed otherwise.
+  var AVATAR = {
+    CURRENT: "CURRENT",
+    DEFAULT: "DEFAULT"
+  };
 
   var onSaveButtonClick = function (e) {
     document.forms[0].submit();
@@ -9,7 +14,7 @@
   var onResetButtonClick = function (e) {
     document.querySelector(".user-settings-input[name='name']").value = __pageInfo.name;
     document.querySelector(".user-settings-input[name='location']").value = __pageInfo.location;
-    updateAvatar(__pageInfo.avatar);
+    updateAvatar(AVATAR.CURRENT);
 
     e.preventDefault();
   };
@@ -60,12 +65,20 @@
   }
 
   var onDefaultAvatarClick = function (e) {
-    updateAvatar(DEFAULT_AVATAR_URL);
+    updateAvatar(AVATAR.DEFAULT);
     e.preventDefault();
   };
 
-  var updateAvatar = function (url) {
-    document.querySelector(".user-settings-input[name='avatar']").value = url;
+  var updateAvatar = function (value) {
+    document.querySelector(".user-settings-input[name='avatar']").value = value;
+
+    var url = value;
+    if (url === AVATAR.DEFAULT) {
+      url = __pageInfo.DEFAULT_AVATAR_URL;
+    } else if (url === AVATAR.CURRENT) {
+      url = __pageInfo.avatar;
+    }
+
     document.querySelector(".user-settings-avatar-preview").setAttribute(
       "style",
       "background-image: url('" + url + "')");
