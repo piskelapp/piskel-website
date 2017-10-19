@@ -171,8 +171,38 @@
 }
 
 .user-info-details > li{
-  margin-top : 10px;
-  margin-left: 5px;
+  margin: 10px 40px 0 5px;
+}
+
+.user-info-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.user-info-icon::before {
+  content: "";
+  width: 20px;
+  background-size: 20px;
+  height: 20px;
+  position: absolute;
+}
+
+.user-info-location-icon::before {
+  background-image: url(/static/resources/iconmonstr-globe-4-icon.svg);
+}
+
+.user-info-joined-icon::before {
+  background-image: url(/static/resources/calendar-icon.svg);
+}
+
+.user-info-bio-icon::before {
+  background-image: url(/static/resources/bio-icon.svg);
+}
+
+.user-info-description {
+  line-height: 20px;
 }
 
 .user-piskels {
