@@ -30,6 +30,7 @@ class UserSettingsHandler(BaseHandler):
         post_data = self.request.POST
         user.name = str(post_data.get('name'))
         user.location = str(post_data.get('location'))
+        user.bio = str(post_data.get('bio'))
 
         avatar_url = str(post_data.get('avatar'))
         if avatar_url.startswith('data:image/'):

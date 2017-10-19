@@ -14,6 +14,7 @@
   var onResetButtonClick = function (e) {
     document.querySelector(".user-settings-input[name='name']").value = __pageInfo.name;
     document.querySelector(".user-settings-input[name='location']").value = __pageInfo.location;
+    document.querySelector(".user-settings-bio").value = __pageInfo.bio;
     updateAvatar(AVATAR.CURRENT);
 
     e.preventDefault();

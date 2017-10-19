@@ -22,7 +22,22 @@
     <div class="user-info-container">
       <h3 class="user-info-header background-title">{{ profile_user.name }}</h3>
       <ul class="user-info-details">
-        <li>joined on {{ profile_user.created.strftime("%B %d %Y") }}</li>
+				{% if profile_user.location %}
+          <li>
+            <div class="user-info-icon user-info-location-icon"></div>
+            <span class="user-info-description">{{ profile_user.location }}</span>
+          </li>
+        {% endif %}
+        {% if profile_user.location %}
+        <li>
+          <div class="user-info-icon user-info-bio-icon"></div>
+          <span class="user-info-description">{{ profile_user.bio }}</span>
+        </li>
+      {% endif %}
+        <li>
+          <div class="user-info-icon user-info-joined-icon"></div>
+          <span class="user-info-description">joined on {{ profile_user.created.strftime("%B %d %Y") }}</span>
+        </li>
         <li>
           <span class="user-info-counter  pskl-counter" id="piskels-count">&hellip;</span> piskels created
         </li>
