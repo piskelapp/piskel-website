@@ -3,6 +3,8 @@ version: beta
 runtime: python27
 api_version: 1
 threadsafe: yes
+automatic_scaling:
+  max_idle_instances: 2
 
 skip_files:
 - ^(.*/)?(\.git/.*)$
