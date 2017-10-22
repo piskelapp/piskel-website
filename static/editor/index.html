@@ -349,6 +349,77 @@
   </script>
 </div>
   <div style="display:none">
+  <script type="text/template" id="data-uri-export-partial">
+    <style>
+      html, body {
+        margin: 0;
+      }
+
+      body {
+        background: #444;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: monospace;
+      }
+
+      #image-wrapper {
+        flex-grow: 1;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      img {
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABlBMVEXf39////8zI3BgAAAAHklEQVR4AWNghAIGCMDgjwgFCDDSw2M0PSCD0fQAACRcAgF4ciGUAAAAAElFTkSuQmCC') repeat;
+      }
+
+      #bottom-wrapper {
+        width: 600px;
+        height: 300px;
+        margin-top: 20px;
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      textarea {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+        border-style: none;
+
+        background: black;
+        color: gold;
+        font-family: monospace;
+      }
+
+      span {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        font-size: 12px;
+        padding: 5px;
+        color: white;
+        background-color: #444;
+      }
+    </style>
+    <body>
+      <div id="image-wrapper">
+        <img src="{{src}}" alt="Exported image as data-uri">
+      </div>
+      <div id="bottom-wrapper">
+        <textarea spellcheck="false" onclick="this.select()">{{src}}</textarea>
+        <span>Data-uri for the exported framesheet</span>
+      </div>
+    </body>
+  </script>
+</div>
+
+  <div style="display:none">
   <script type="text/template" id="popup-preview-partial">
     <style>
       body,
@@ -419,6 +490,167 @@
        rel="tooltip" data-placement="left" title="Performance problem detected, learn more.">&nbsp;</div>
 
   <!-- dialogs partials -->
+  <script type="text/template" id="templates/dialogs/browse-backups.html">
+  <div class="dialog-wrapper">
+    <h3 class="dialog-head">
+      Browse backups
+      <span class="dialog-close">X</span>
+    </h3>
+    <div class="dialog-content backups-wizard-container"></div>
+  </div>
+</script>
+
+<script type="text/template" id="backups-select-session">
+<div class="backups-step-container">
+  <div class="backups-step-content">
+    <div class="browse-backups-disclaimer">
+      <div class="backups-icon icon-common-backup-white">&nbsp;</div>
+      <div class="browse-backups-disclaimer-content">
+        <!-- Keep in sync with MAX_SESSIONS in BackupService.js -->
+        If you forgot to save your work or if Piskel crashed, try to restore one of the automatically backed up sessions below (up to 10 sessions).
+        <br/>
+        <br/>
+        Backups may be erased without notice, so try to save your work to a file or to your gallery as soon as you can.
+      </div>
+    </div>
+    <div class="session-list">
+    </div>
+  </div>
+</div>
+</script>
+
+<script type="text/template" id="session-list-empty">
+<div class="centered-message session-list-empty">No session found ...</div>
+</script>
+
+<script type="text/template" id="session-list-error">
+<div class="centered-message session-list-error">Could not load backup sessions, something went wrong.</div>
+</script>
+
+<script type="text/template" id="session-list-item">
+<div class="session-item">
+  <div class="session-details">
+    <span class="session-details-title">{{name}} {{description}}</span>
+    <span class="session-details-info">Session recorded {{date}}</span>
+    <span class="session-details-info">{{count}} saved</span>
+  </div>
+  <div class="session-actions">
+    <button class="button" data-session-id="{{id}}" data-action="delete">Delete</button>
+    <button class="button button-primary" data-session-id="{{id}}" data-action="view">View</button>
+  </div>
+</div>
+</script>
+
+<script type="text/template" id="backups-session-details">
+<div class="backups-step-container">
+  <div class="backups-step-content">
+    <div class="snapshot-list"></div>
+  </div>
+  <div class="backups-step-actions">
+    <button class="button back-button">back</button>
+  </div>
+</div>
+</script>
+
+<script type="text/template" id="snapshot-list-empty">
+<div class="centered-message snapshot-list-empty">No snapshot found ...</div>
+</script>
+
+<script type="text/template" id="snapshot-list-error">
+<div class="centered-message snapshot-list-error">Could not load snapshots, something went wrong.</div>
+</script>
+
+<script type="text/template" id="snapshot-list-item">
+<div class="snapshot-item" data-snapshot-id={{id}}>
+  <div class="snapshot-preview lowcont-dark-picker-background"></div>
+  <div class="snapshot-details">
+    <span class="snapshot-details-title">{{name}} {{description}}</span>
+    <span class="snapshot-details-info">Snapshot recorded {{date}}</span>
+    <span class="snapshot-details-info">{{frames}}, size {{resolution}}, {{fps}}fps</span>
+  </div>
+  <div class="snapshot-actions">
+    <button class="button button-primary" data-action="load" data-snapshot-id="{{id}}">Load</button>
+  </div>
+</div>
+</script>
+  <script type="text/template" id="templates/dialogs/browse-local.html">
+  <div class="dialog-wrapper">
+    <h3 class="dialog-head">
+      Browse Local Piskels
+      <span class="dialog-close">X</span>
+    </h3>
+    <div class="dialog-content" style="padding:10px 20px; font-size:1.5em; overflow: auto;">
+      <table class="local-piskel-list">
+        <thead>
+          <tr class="local-piskel-list-head">
+            <td class="local-piskel-name">Name</td>
+            <td class="local-piskel-save-date">Date</td>
+            <td colspan=2>Actions</td>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</script>
+
+<script type="text/template" id="local-storage-item-template">
+  <tr class="local-piskel-item">
+    <td class="local-piskel-name">{{name}}</td>
+    <td class="local-piskel-save-date">{{date}}</td>
+    <td><button type="button" data-action="load" data-name="{{name}}" class="button button-primary local-piskel-load-button">Load</button></td>
+    <td><button type="button" data-action="delete" data-name="{{name}}" class="button local-piskel-delete-button">Delete</button></td>
+  </tr>
+</script>
+  <script type="text/template" id="templates/dialogs/cheatsheet.html">
+  <div id="cheatsheetContainer" class="dialog-wrapper">
+    <h3 class="dialog-head">
+      <span class="dialog-title">Keyboard shortcuts</span>
+      <span class="dialog-close">X</span>
+    </h3>
+    <div class="cheatsheet-container dialog-content">
+      <div class="cheatsheet-section">
+        <h3 class="cheatsheet-title">Tool shortcuts</h3>
+        <ul class="cheatsheet-tool-shortcuts"></ul>
+      </div>
+      <div class="cheatsheet-section">
+        <h3 class="cheatsheet-title">Misc shortcuts</h3>
+        <ul class="cheatsheet-misc-shortcuts"></ul>
+      </div>
+      <div class="cheatsheet-boxes">
+        <div class="cheatsheet-section">
+          <h3 class="cheatsheet-title">Selection shortcuts</h3>
+          <ul class="cheatsheet-selection-shortcuts"></ul>
+        </div>
+        <div class="cheatsheet-section">
+          <h3 class="cheatsheet-title">Color shortcuts</h3>
+          <ul class="cheatsheet-color-shortcuts"></ul>
+        </div>
+        <div class="cheatsheet-section">
+          <h3 class="cheatsheet-title">Storage shortcuts</h3>
+          <ul class="cheatsheet-storage-shortcuts"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="cheatsheet-actions">
+      <span class="cheatsheet-helptext" rel="tooltip" data-placement="top" title="!!!Set in CheatsheetController!!!"><b>Customize shortcuts ?</b></span>
+      <button type="button" name="cheatsheet-restore-defaults" data-action="restore-defaults" class="button cheatsheet-button cheatsheet-restore-defaults">Restore default shortcuts</button>
+    </div>
+
+    <!-- Event trap to capture keyboard remaps -->
+    <div style="position:relative; overflow:hidden; width:1px; height:1px;">
+      <input type="text" id="cheatsheetEventTrap" style="position:absolute; top:-1000px;" />
+    </div>
+  </div>
+</script>
+
+<script type="text/template" id="cheatsheet-shortcut-template">
+  <li class="cheatsheet-shortcut {{className}}" data-shortcut-id="{{id}}">
+    <div class="cheatsheet-icon {{icon}}"></div>
+    <span class="cheatsheet-key" rel="tooltip" data-placement="top" title="{{title}}">{{!key!}}</span>
+    <span class="cheatsheet-description">{{description}}</span>
+  </li>
+</script>
   <script type="text/template" id="templates/dialogs/create-palette.html">
   <div class="dialog-wrapper">
     <h3 class="dialog-head">
@@ -503,84 +735,6 @@
     <div class="create-palette-remove-color">X</div>
   </li>
 </script>
-  <script type="text/template" id="templates/dialogs/browse-local.html">
-  <div class="dialog-wrapper">
-    <h3 class="dialog-head">
-      Browse Local Piskels
-      <span class="dialog-close">X</span>
-    </h3>
-    <div class="dialog-content" style="padding:10px 20px; font-size:1.5em; overflow: auto;">
-      <table class="local-piskel-list">
-        <thead>
-          <tr class="local-piskel-list-head">
-            <td class="local-piskel-name">Name</td>
-            <td class="local-piskel-save-date">Date</td>
-            <td colspan=2>Actions</td>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</script>
-
-<script type="text/template" id="local-storage-item-template">
-  <tr class="local-piskel-item">
-    <td class="local-piskel-name">{{name}}</td>
-    <td class="local-piskel-save-date">{{date}}</td>
-    <td><button type="button" data-action="load" data-name="{{name}}" class="button button-primary local-piskel-load-button">Load</button></td>
-    <td><button type="button" data-action="delete" data-name="{{name}}" class="button local-piskel-delete-button">Delete</button></td>
-  </tr>
-</script>
-  <script type="text/template" id="templates/dialogs/cheatsheet.html">
-  <div id="cheatsheetContainer" class="dialog-wrapper">
-    <h3 class="dialog-head">
-      <span class="dialog-title">Keyboard shortcuts</span>
-      <span class="dialog-close">X</span>
-    </h3>
-    <div class="cheatsheet-container dialog-content">
-      <div class="cheatsheet-section">
-        <h3 class="cheatsheet-title">Tool shortcuts</h3>
-        <ul class="cheatsheet-tool-shortcuts"></ul>
-      </div>
-      <div class="cheatsheet-section">
-        <h3 class="cheatsheet-title">Misc shortcuts</h3>
-        <ul class="cheatsheet-misc-shortcuts"></ul>
-      </div>
-      <div class="cheatsheet-boxes">
-        <div class="cheatsheet-section">
-          <h3 class="cheatsheet-title">Selection shortcuts</h3>
-          <ul class="cheatsheet-selection-shortcuts"></ul>
-        </div>
-        <div class="cheatsheet-section">
-          <h3 class="cheatsheet-title">Color shortcuts</h3>
-          <ul class="cheatsheet-color-shortcuts"></ul>
-        </div>
-        <div class="cheatsheet-section">
-          <h3 class="cheatsheet-title">Storage shortcuts</h3>
-          <ul class="cheatsheet-storage-shortcuts"></ul>
-        </div>
-      </div>
-    </div>
-    <div class="cheatsheet-actions">
-      <span class="cheatsheet-helptext" rel="tooltip" data-placement="top" title="!!!Set in CheatsheetController!!!"><b>Customize shortcuts ?</b></span>
-      <button type="button" name="cheatsheet-restore-defaults" data-action="restore-defaults" class="button cheatsheet-button cheatsheet-restore-defaults">Restore default shortcuts</button>
-    </div>
-
-    <!-- Event trap to capture keyboard remaps -->
-    <div style="position:relative; overflow:hidden; width:1px; height:1px;">
-      <input type="text" id="cheatsheetEventTrap" style="position:absolute; top:-1000px;" />
-    </div>
-  </div>
-</script>
-
-<script type="text/template" id="cheatsheet-shortcut-template">
-  <li class="cheatsheet-shortcut {{className}}" data-shortcut-id="{{id}}">
-    <div class="cheatsheet-icon {{icon}}"></div>
-    <span class="cheatsheet-key" rel="tooltip" data-placement="top" title="{{title}}">{{!key!}}</span>
-    <span class="cheatsheet-description">{{description}}</span>
-  </li>
-</script>
   <script type="text/template" id="templates/dialogs/import.html">
   <div class="dialog-wrapper">
     <h3 class="dialog-head">
@@ -608,8 +762,8 @@
     </div>
     <div class="import-section import-subsection">
       <span class="dialog-section-title">Resize to</span>
-      <input type="text" class="textfield import-size-field" name="resize-width"/>x
-      <input type="text" class="textfield import-size-field" name="resize-height"/>
+      <input type="text" class="textfield import-size-field" autocomplete="off" name="resize-width"/>x
+      <input type="text" class="textfield import-size-field" autocomplete="off" name="resize-height"/>
     </div>
     <div class="import-section import-subsection">
       <span class="import-section-title">Smooth resize</span>
@@ -623,13 +777,13 @@
     </div>
     <div class="import-section import-subsection">
       <span class="dialog-section-title">Frame size</span>
-      <input type="text" class="textfield import-size-field" name="frame-size-x"/>x
-      <input type="text" class="textfield import-size-field" name="frame-size-y"/>
+      <input type="text" class="textfield import-size-field" autocomplete="off" name="frame-size-x"/>x
+      <input type="text" class="textfield import-size-field" autocomplete="off" name="frame-size-y"/>
     </div>
     <div class="import-section import-subsection">
       <span class="dialog-section-title">Offset</span>
-      <input type="text" class="textfield import-size-field" name="frame-offset-x"/>x
-      <input type="text" class="textfield import-size-field" name="frame-offset-y"/>
+      <input type="text" class="textfield import-size-field" autocomplete="off" name="frame-offset-x"/>x
+      <input type="text" class="textfield import-size-field" autocomplete="off" name="frame-offset-y"/>
     </div>
   </form>
   <div class="import-step-buttons">
@@ -650,11 +804,11 @@
     <div class="import-mode">
       <div class="import-mode-title">How do you want to import the new content?</div>
       <div class="import-mode-section">
-        <span class="import-mode-section-description">Combine the imported content and your sprite.</span>
-        <button class="import-mode-merge-button button-primary button">Merge</button>
+        <span class="import-mode-section-description">Combine with your sprite</span>
+        <button class="import-mode-merge-button button-primary button">Combine</button>
       </div>
       <div class="import-mode-section">
-        <span class="import-mode-section-description">Replace your current sprite by the imported content.</span>
+        <span class="import-mode-section-description">Replace your sprite</span>
         <button class="import-mode-replace-button button-primary button">Replace</button>
       </div>
     </div>
@@ -714,9 +868,6 @@
     The imported image is bigger than the current sprite.
   </div>
   <div class="import-resize-section">
-    <div class="import-resize-option-label">
-      How do you want to proceed?
-    </div>
     <label class="import-resize-option">
       <input type="radio" name="resize-mode" id="resize-option-expand" value="expand" {{expandChecked}}/>
       <span>Expand canvas to {{newSize}}</span>
@@ -745,35 +896,25 @@
   </div>
 
   <div class="import-step-content">
-    <div>Select a frame in your current sprite:</div>
+    <div>Select the insertion frame:</div>
     <div class="insert-frame-preview"></div>
     <div class="insert-mode-container">
       <div class="insert-mode-option-label">
-        How should the imported frames be inserted:
+        Insert imported frames:
       </div>
       <label class="insert-mode-option">
         <input type="radio" name="insert-mode" id="insert-mode-add" value="add" checked="checked"/>
-        <span>Add new frames</span>
+        <span>as new frames</span>
       </label>
       <label class="insert-mode-option">
         <input type="radio" name="insert-mode" id="insert-mode-insert" value="insert"/>
-        <span>Insert in existing frames</span>
+        <span>in existing frames</span>
       </label>
     </div>
     <div class="import-step-buttons">
       <button class="import-back-button button">back</button>
       <button class="import-next-button button button-primary">import</button>
     </div>
-  </div>
-</div>
-</script>
-
-<script type="text/template" id="import-invalid-file">
-<div class="import-step-container">
-  <div>THIS IS AN INVALID FILEZ</div>
-  <div class="import-step-buttons">
-    <button class="import-back-button button">back</button>
-    <button class="import-next-button button button-primary">next</button>
   </div>
 </div>
 </script>
@@ -795,10 +936,10 @@
       <p>If you ignore this warning, please save often!</p>
       <p>To fix the issue, try adjusting your sprite settings:</p>
        <ul>
-        <li>sprite resolution <sup title="recommended: lower than 256x256, max: 512x512" rel="tooltip" data-placement="top">?</sup></li>
-        <li>number of layers <sup title="recommended: lower than 5, max: 20" rel="tooltip" data-placement="top">?</sup></li>
-        <li>number of frames <sup title="recommended: lower than 25, max: 100" rel="tooltip" data-placement="top">?</sup></li>
-        <li>number of colors <sup title="max: 100" rel="tooltip" data-placement="top">?</sup></li>
+        <li>sprite resolution <sup title="recommended: lower than 512x512" rel="tooltip" data-placement="top">?</sup></li>
+        <li>number of layers <sup title="recommended: less than 10" rel="tooltip" data-placement="top">?</sup></li>
+        <li>number of frames <sup title="recommended: less than 50" rel="tooltip" data-placement="top">?</sup></li>
+        <li>number of colors <sup title="recommended: less than 256" rel="tooltip" data-placement="top">?</sup></li>
       </ul>
       <p>We strive to improve Piskel, its performance and stability, but this is a personal project with limited time and resources.
          We prefer to warn you early rather than having you lose your work.</p>
@@ -843,7 +984,7 @@
       Piskel
       <span rel="tooltip" data-placement="bottom" title="View release notes">
         <a  class="settings-version" target="_blank"
-            href="https://github.com/piskelapp/piskel/releases/tag/v0.12.0">v0.12.0</a>
+            href="https://github.com/piskelapp/piskel/releases/tag/v0.13.0">v0.13.0</a>
       </span>
     </div>
   </div>
@@ -960,13 +1101,13 @@
           <span>px</span>
         </div>
         <div class="resize-section">
-          <label>
+          <label class="checkbox-container">
             <input type="checkbox" class="resize-ratio-checkbox checkbox-fix" value="true"/>
             <span>Maintain aspect ratio</span>
           </label>
         </div>
         <div class="resize-section">
-          <label>
+          <label class="checkbox-container">
             <input type="checkbox" class="resize-content-checkbox checkbox-fix" value="true"/>
             <span>Resize canvas content</span>
           </label>
@@ -1041,7 +1182,7 @@
 <script type="text/template" id="save-gallery-unavailable-partial">
   <div class="settings-title">Save online</div>
   <div class="settings-item">
-    <div class="save-status">Login to <a href="http://piskelapp.com" target="_blank">piskelapp.com</a> to save and share your sprites online.</div>
+    <div class="save-status">Login to <a href="https://www.piskelapp.com" target="_blank">piskelapp.com</a> to save and share your sprites online.</div>
   </div>
 </script>
 
@@ -1112,16 +1253,11 @@
     <div class="settings-title">
       Recover recent sessions
     </div>
-    <div class="settings-item previous-session">
-    </div>
-  </div>
-</script>
-
-<script type="text/template" id="previous-session-info-template">
-  <div>
-    Restore a backup of <span class="highlight">{{name}}</span>, saved at <span style="color:white">{{date}}</span> ?
-    <div style="margin-top:10px;">
-      <button type="button" class="button  button-primary restore-session-button">Restore</button>
+    <div class="settings-item">
+      Browse backups of previous sessions.
+      <div style="margin-top:10px;">
+        <button type="button" class="button button-primary browse-backups-button">Browse backups</button>
+      </div>
     </div>
   </div>
 </script>
@@ -1193,7 +1329,20 @@
   <script type="text/html" id="templates/settings/export/gif.html">
   <div class="export-panel-gif">
     <div class="export-panel-header export-info">
-      Convert your sprite to an animated GIF. Opacity will not be preserved. Colors might be resampled.
+      Convert your sprite to an animated GIF.
+    </div>
+    <div class="gif-export-warning">
+      <div class="gif-export-warning-icon icon-common-warning-red">&nbsp;</div>
+      <div class="gif-export-warning-message">
+        Too many colors: can not preserve original colors or transparency.
+      </div>
+    </div>
+    <div class="export-panel-section export-panel-row">
+      <input id="gif-repeat-checkbox" class="gif-repeat-checkbox checkbox-fix" type="checkbox" />
+      <label for="gif-repeat-checkbox"
+             title="Uncheck to play the animation only one time."
+             rel="tooltip"
+             data-placement="top">Loop repeatedly</label>
     </div>
     <div class="export-panel-section export-panel-row">
       <button type="button" class="button button-primary gif-download-button">Download</button>
@@ -1218,7 +1367,7 @@
         <input type="text" style="flex: 1;" class="zip-prefix-name textfield"
                autocomplete="off" placeholder="PNG file prefix ...">
       </div>
-      <div style="margin: 5px 0;">
+      <div class="checkbox-container" style="margin: 5px 0;">
         <input id="zip-split-layers" class="zip-split-layers-checkbox checkbox-fix" type="checkbox" />
         <label for="zip-split-layers">Split by layers</label>
       </div>
@@ -1256,9 +1405,9 @@
     (function () {
 
   /**
-   * See @Gruntfile.js => after build, -2017-07-08-02-02 is replaced by the build version
+   * See @Gruntfile.js => after build, -2017-10-22-04-44 is replaced by the build version
    */
-  var version = '-2017-07-08-02-02';
+  var version = '-2017-10-22-04-44';
   var versionHasNotBeenReplaced = version.indexOf('@@') === 0;
   if (versionHasNotBeenReplaced)  {
     version = '';
@@ -1273,7 +1422,7 @@
     loadingMask.style.opacity = 0;
     window.setTimeout(function () {loadingMask.parentNode.removeChild(loadingMask);}, 600);
     pskl.app.init();
-    pskl._releaseVersion = '0.12.0';
+    pskl._releaseVersion = '0.13.0';
     // cleanup
     delete window.pskl_exports;
     delete window.loadDebugScripts;
@@ -1323,12 +1472,21 @@
     };
     loadScript('piskel-script-list.js', 'loadNextScript()');
 
+    var styles;
     window.loadStyles = function () {
-      var styles = window.pskl_exports.styles;
+      styles = window.pskl_exports.styles;
       for (var i = 0 ; i < styles.length ; i++) {
         loadStyle(styles[i]);
       }
     };
+
+    window.reloadStyles = function () {
+      for (var i = 0 ; i < styles.length ; i++) {
+        document.querySelector('link[href="' + styles[i] + '"]').remove();
+        loadStyle(styles[i]);
+      }
+    };
+
     loadScript('piskel-style-list.js', 'loadStyles()');
   } else {
     var script;
