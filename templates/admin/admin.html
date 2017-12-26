@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block bodyclass %}{% endblock %}
+{% block title %}Piskel - Admin{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-faq.css"/>
+{% endblock %}
+
+{% block main %}
+
+  <form method="POST" action="/admin/transfer" id="transfer">
+    <input type="text" name="from" placeholder="from...">
+    <input type="text" name="to" placeholder="to...">
+    <input type="submit" name="submit" value="Transfer">
+  </form>
+
+{% endblock %}

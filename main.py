@@ -57,6 +57,11 @@ routes = [
   Route('/user/<user_id>/<cat>/piskels/<offset>/<limit>', handler='handlers.user.UserHandler:get_piskels', name='user-piskels'),
   Route('/user/<user_id>/<cat>', handler=user.UserHandler, name='user-page-cat'),
   # ############# #
+  #  ADMIN ROUTES  #
+  # ############# #
+  Route('/admin', handler='handlers.admin.AdminHandler', name='admin'),
+  Route('/admin/transfer', handler='handlers.admin.AdminHandler:transfer', name='admin-transfer'),
+  # ############# #
   #  AUTH ROUTES  #
   # ############# #
   Route('/auth/<provider>', handler='handlers.oauth.AuthHandler:_simple_auth', name='auth_login'),

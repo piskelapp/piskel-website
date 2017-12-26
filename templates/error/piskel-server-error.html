@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Insufficient permissions!{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-piskel.css?20170502"/>
+{% endblock %}
+
+{% block main %}
+  <div class="piskel-error-container">
+    <h2 class="piskel-error-title pskl-important">Sorry!</h2>
+    <h3 class="piskel-error-details">Server error</h3>
+    <p>{{ error }}</p>
+  </div>
+{% endblock %}
