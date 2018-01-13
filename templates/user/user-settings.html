@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Piskel - {{ profile_user.name }}{% endblock %}
+
+{% block js %}
+  <script type="text/javascript" src="/static/js/piskel-user-settings.js"></script>
+{% endblock %}
+
+{% block css %}
+  <!-- CSS links go here -->
+  <link rel="stylesheet" type="text/css" href="/static/css/piskel-app-user-settings.css"/>
+{% endblock %}
+
+{% block main %}
+<div class="user-settings-container grow">
+  <form action="/user/{{profile_user.key.id()}}/update" method="POST">
+    <div class="user-settings-header">
+      <span class="user-settings-title">Edit your profile settings</span>
+      <button class="piskel-button" id="save-button">Save</button> or
+      <button class="piskel-button" id="reset-button">Reset</button>
+    </div>
+    <div class="user-settings-main">
+      <div class="user-settings-avatar">
+        <div
+          style="background-image: url('{{ profile_user.avatar_url }}');"
+          class="user-settings-avatar-preview">
+        </div>
+        <div class="user-settings-avatar-actions">
+          Update your avatar
+          <div class="user-settings-avatar-action">
+            <button id="upload-avatar-button" class="piskel-button">Upload a new avatar</button>
+          </div>
+          or
+          <div class="user-settings-avatar-action">
+            <button id="no-avatar-button" class="piskel-button">Use default avatar</button>
+          </div>
+        </div>
+        <input type="hidden" class="user-settings-input" name="avatar" value="{{ profile_user.avatar_url }}">
+        <input type="file" class="user-settings-input" name="file" value="file" accept="image/*" style="display:none" >
+      </div>
+      <div class="user-settings-sections">
+        <div class="user-settings-section user-settings-name">
+          <div class="user-settings-section-title">Your display name</div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Name</span>
+            <input type="text" name="name" placeholder="Your name" value="{{ profile_user.name }}">
+          </div>
+        </div>
+        <div class="user-settings-section user-settings-about" style="display: none">
+          <div class="user-settings-section-title">About you</div>
+          <div class="user-settings-section-description">Optional. Will be displayed on your user page.</div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Location</span>
+            <input type="text" name="location" placeholder="Your location" value="{{ profile_user.location }}">
+          </div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Your bio</span>
+            <textarea rows="5" maxlength="300" class="user-settings-bio" name="bio">{{ profile_user.bio }}</textarea>
+          </div>
+        </div>
+        <div class="user-settings-section user-settings-danger">
+          <div class="user-settings-section-title">Danger zone</div>
+          <div class="user-settings-section-description">Warning! All the actions here are non-reversible, proceed with caution.</div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Transfer sprites</span>
+            <button id="transfer-button" class="piskel-button">Transfer</button>
+          </div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Delete this account</span>
+            <button id="delete-button" class="piskel-button">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-settings-modal hidden" id="transfer-modal">
+      <div class="user-settings-modal-mask" data-action="close-modal"></div>
+      <div class="user-settings-modal-container">
+        <div class="modal-header">
+          Transfer sprites
+          <span class="modal-header-close" data-action="close-modal">X</span>
+        </div>
+        <div class="user-settings-modal-content">
+          <div class="user-settings-modal-description">
+            Transfer all the sprites from this account to another account.
+          </div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Target user id</span>
+            <input type="text" name="transfer-userid" placeholder="user id">
+          </div>
+          <div class="user-settings-input">
+            <span class="user-settings-label">Target secret key</span>
+            <input type="text" name="transfer-apikey" placeholder="secret key">
+          </div>
+          <div class="modal-actions user-settings-input">
+            <button id="modal-transfer-button" data-action="prepare-transfer" class="piskel-button danger-button">Transfer</button>
+          </div>
+
+          <div class="transfer-modal-target-info">
+            If you want to transfer sprites <span style="font-weight: bold">into</span> this account, use the information below:
+            <ul>
+              <li>user id: <span style="color: gold">{{ profile_user.key.id() }}</span></li>
+              <li>secret key: <span style="color: gold">{{ profile_user.apikey }}</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-settings-modal hidden" id="transfer-confirm-modal">
+      <div class="user-settings-modal-mask" data-action="close-modal"></div>
+      <div class="user-settings-modal-container">
+        <div class="modal-header">
+          Transfer sprites
+          <span class="modal-header-close" data-action="close-modal">X</span>
+        </div>
+        <div class="user-settings-modal-content">
+          <div class="user-settings-modal-description" id="transfer-confirm-description">
+            Ready to transfer ${sprites} to ${target_name}.
+          </div>
+          <div class="modal-description">
+            After clicking on confirm, all the sprites will permanently be removed from your account!
+          </div>
+          <div class="modal-actions user-settings-input">
+            <button data-action="confirm-transfer" class="piskel-button danger-button">Confirm</button>
+            <button data-action="close-modal" class="piskel-button">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-settings-modal hidden" id="transfer-completed-modal">
+      <div class="user-settings-modal-mask" data-action="close-modal"></div>
+      <div class="user-settings-modal-container">
+        <div class="modal-header">
+          Transfer sprites
+          <span class="modal-header-close" data-action="close-modal">X</span>
+        </div>
+        <div class="user-settings-modal-content">
+          <div class="user-settings-modal-description" id="transfer-completed-description">
+            Successfully transfered ${sprites} to ${target_name}.
+          </div>
+          <div class="modal-actions user-settings-input">
+            <button data-action="close-modal" class="piskel-button">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-settings-modal hidden" id="delete-modal">
+      <div class="user-settings-modal-mask" data-action="close-modal"></div>
+      <div class="user-settings-modal-container">
+        <div class="modal-header">
+          Delete account
+          <span class="modal-header-close" data-action="close-modal">X</span>
+        </div>
+        <div class="user-settings-modal-content">
+          <div class="user-settings-modal-description">
+            You are about to delete your Piskel account.
+          </div>
+          <div class="modal-description">
+            After clicking on the Delete button your userpage will no longer be accessible.
+            All your sprites will be deleted.
+          </div>
+          <div class="modal-actions user-settings-input">
+            <button data-action="delete" class="piskel-button danger-button">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="user-settings-modal hidden" id="delete-completed-modal">
+      <div class="user-settings-modal-mask" data-action="close-modal"></div>
+      <div class="user-settings-modal-container">
+        <div class="modal-header">
+          Delete account
+          <span class="modal-header-close" data-action="close-modal">X</span>
+        </div>
+        <div class="user-settings-modal-content">
+          <div class="user-settings-modal-description">
+            Your account was deleted.
+          </div>
+          <div class="modal-description">
+            You will be redirected to the home page in a few seconds.
+          </div>
+          <div class="modal-actions user-settings-input">
+            <button data-action="home" class="piskel-button">Go to home</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      window.__pageInfo = {
+        userid: "{{ profile_user.key.id() }}",
+        avatar: "{{ profile_user.avatar_url }}",
+        name: "{{ profile_user.name }}",
+        location: "{{ profile_user.location }}",
+        bio: "{{ profile_user.bio }}",
+        DEFAULT_AVATAR_URL: "{{ DEFAULT_AVATAR_URL }}"
+      };
+    </script>
+  </form>
+</div>
+{% endblock %}

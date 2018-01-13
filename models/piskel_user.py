@@ -6,3 +6,4 @@ class User(Webapp2User):
     is_searchable = ndb.BooleanProperty(default=False)
     location = ndb.StringProperty(default='')
     bio = ndb.StringProperty(default='')
+    apikey = ndb.StringProperty(default='')
