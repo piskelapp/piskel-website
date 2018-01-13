@@ -58,6 +58,9 @@ routes = [
   # ############# #
   Route('/user/<user_id>', handler='handlers.user.UserHandler:get_default', name='user-page'),
   Route('/user/<user_id>/settings', handler='handlers.user_settings.UserSettingsHandler', name='user-settings'),
+  Route('/user/transfer/prepare', handler='handlers.user_settings.UserSettingsHandler:prepare_transfer', name='user-transfer-prepare', methods=['POST']),
+  Route('/user/transfer/confirm', handler='handlers.user_settings.UserSettingsHandler:do_transfer', name='user-transfer-confirm', methods=['POST']),
+  Route('/user/settings/delete', handler='handlers.user_settings.UserSettingsHandler:do_delete', name='user-delete', methods=['POST']),
   Route('/user/<user_id>/update', handler='handlers.user_settings.UserSettingsHandler:update', name='user-update'),
   Route('/user/<user_id>/stats', handler=user_stats.UserStatsHandler, name='user-stats'),
   Route('/user/<user_id>/<cat>/piskels/<offset>/<limit>', handler='handlers.user.UserHandler:get_piskels', name='user-piskels'),

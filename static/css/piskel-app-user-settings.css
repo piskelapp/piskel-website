@@ -33,11 +33,14 @@
   align-items: center;
 }
 
-.user-settings-header .piskel-button {
+.user-settings-container .piskel-button {
   font-size: 16px;
   height: 50px;
   width: 150px;
   padding: 0 15px;
+}
+
+.user-settings-header .piskel-button {
   float: right;
 }
 
@@ -64,13 +67,6 @@
   text-align: center;
   margin-top: 30px;
   line-height: 30px;
-}
-
-.user-settings-avatar-actions .piskel-button {
-  font-size: 16px;
-  height: 50px;
-  width: 150px;
-  padding: 0 15px;
 }
 
 .user-settings-section {
@@ -122,4 +118,109 @@
 
 .user-settings-input input {
   font-weight: bold;
+}
+
+/* ************* */
+/* MODAL DIALOGS */
+/* ************* */
+
+body.has-modal {
+  overflow: hidden;
+}
+
+.user-settings-modal.hidden {
+  display: none;
+}
+
+.modal-header {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  background-color: gold;
+  color: black;
+  font-weight: bold;
+  padding-left: 5px;
+  box-sizing: border-box;
+}
+
+.modal-header-close {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+.user-settings-modal-mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.user-settings-modal-content {
+  padding: 40px 10px 10px 10px;
+}
+
+.user-settings-modal-description {
+  font-weight: bold;
+  margin: 0 0 20px 0;
+  color: white;
+}
+
+.user-settings-modal-container {
+  position: fixed;
+  z-index: 11;
+  width: 600px;
+  top: 50%;
+  left: 50%;
+  margin-left: -300px;
+  background: #444444;
+  border: 3px solid gold;
+  border-radius: 2px;
+}
+
+#transfer-modal .user-settings-modal-container {
+  height: 400px;
+  margin-top: -200px;
+}
+
+#delete-modal .user-settings-modal-container,
+#delete-completed-modal .user-settings-modal-container,
+#transfer-confirm-modal .user-settings-modal-container ,
+#transfer-completed-modal .user-settings-modal-container {
+  height: 200px;
+  margin-top: -100px;
+}
+
+.transfer-modal-target-info {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  color: white;
+  border: 1px solid gold;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.transfer-modal-target-info ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.transfer-modal-target-info li:not(:first-child) {
+  margin-top: 10px;
+}
+
+.modal-description {
+  margin-bottom: 10px;
+}
+
+.modal-actions button:not(:first-child) {
+  margin-left: 10px;
 }
