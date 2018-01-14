@@ -119,7 +119,7 @@
 
   var onDelegatedBodyClick = function (e) {
     var target = e.target;
-    if (target.dataset && target.dataset.action === "close-modal") {
+    if (target.dataset.action === "close-modal") {
       e.preventDefault();
       closeModal();
     } else if (target.dataset.action == "prepare-transfer") {
@@ -131,6 +131,9 @@
     } else if (target.dataset.action == "delete") {
       e.preventDefault();
       deleteUser();
+    } else if (target.dataset.action == "home") {
+      e.preventDefault();
+      window.location = "/";
     }
   };
 
