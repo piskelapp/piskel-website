@@ -906,7 +906,7 @@
     Piskel
     <span rel="tooltip" data-placement="bottom" title="View release notes">
       <a  class="settings-version" target="_blank"
-          href="https://github.com/piskelapp/piskel/releases/tag/v0.13.0">v0.13.0</a>
+          href="https://github.com/piskelapp/piskel/releases/tag/v0.14.0">v0.14.0</a>
     </span>
   </div>
 </div>
@@ -934,6 +934,25 @@
         title="4px" rel="tooltip" data-placement="top" data-size="4"></div>
     </div>
   </div>
+  <div class="settings-item settings-item-grid-spacing">
+    <label>Grid spacing</label>
+    <div class="grid-spacing-container size-picker-container">
+      <div class="size-picker-option"
+        title="1px" rel="tooltip" data-placement="top" data-size="1"></div>
+      <div class="size-picker-option"
+        title="2px" rel="tooltip" data-placement="top" data-size="2"></div>
+      <div class="size-picker-option"
+        title="4px" rel="tooltip" data-placement="top" data-size="4"></div>
+      <div class="size-picker-option"
+        title="8px" rel="tooltip" data-placement="top" data-size="8"></div>
+      <div class="size-picker-option"
+        title="16px" rel="tooltip" data-placement="top" data-size="16"></div>
+      <div class="size-picker-option"
+        title="32px" rel="tooltip" data-placement="top" data-size="32"></div>
+      <div class="size-picker-option"
+        title="64px" rel="tooltip" data-placement="top" data-size="64"></div>
+    </div>
+  </div>
   <div class="settings-item settings-item-grid-color">
     <label>Grid color</label>
     <div class="grid-colors-list"></div>
@@ -947,6 +966,7 @@
   </div>
 </div>
 </script>
+
 <script type="text/html" id="templates/settings/preferences/misc.html">
 <div class="preferences-panel-misc">
   <div class="settings-item">
@@ -1293,10 +1313,15 @@
       <input id="zip-split-layers" class="zip-split-layers-checkbox checkbox-fix" type="checkbox" />
       <label for="zip-split-layers">Split by layers</label>
     </div>
+    <div class="checkbox-container use-layer-names-container" style="margin: 5px 0;">
+      <input id="zip-use-layer-names" class="zip-use-layer-names-checkbox checkbox-fix" type="checkbox" />
+      <label for="zip-use-layer-names">Index by layer names</label>
+    </div>
     <button type="button" class="button button-primary zip-generate-button"/>Download ZIP</button>
   </div>
 </div>
 </script>
+
 <script type="text/html" id="templates/settings/export/misc.html">
 <div class="export-panel-misc">
   <div class="export-panel-header export-info">
@@ -1327,9 +1352,9 @@
   (function () {
 
 /**
- * See @Gruntfile.js => after build, -2017-10-22-04-44 is replaced by the build version
+ * See @Gruntfile.js => after build, -2018-03-04-12-53 is replaced by the build version
  */
-var version = '-2017-10-22-04-44';
+var version = '-2018-03-04-12-53';
 var versionHasNotBeenReplaced = version.indexOf('@@') === 0;
 if (versionHasNotBeenReplaced)  {
   version = '';
@@ -1344,7 +1369,7 @@ window._onPiskelReady = function () {
   loadingMask.style.opacity = 0;
   window.setTimeout(function () {loadingMask.parentNode.removeChild(loadingMask);}, 600);
   pskl.app.init();
-  pskl._releaseVersion = '0.13.0';
+  pskl._releaseVersion = '0.14.0';
   // cleanup
   delete window.pskl_exports;
   delete window.loadDebugScripts;
