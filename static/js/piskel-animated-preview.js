@@ -15,13 +15,16 @@
       img.onload = (function(id) {
         return function() {
           var imageInfo = images[id];
+          var width = imageInfo.width;
+          var height = imageInfo.height;
+          var zoom = imageInfo.zoom;
+
           var framesheet = [];
-          var frames = Math.floor(img.width / imageInfo.width);
+          var frames = Math.floor(img.width / width);
           for (var i = 0; i < frames; i++) {
-            var canvas = pskl.website.createCanvas(imageInfo.width, imageInfo.height);
-            var leftOffset = i * imageInfo.width;
-            canvas.getContext('2d').drawImage(img, leftOffset, 0, imageInfo.width, imageInfo.height, 0, 0, imageInfo.width, imageInfo.height);
-            framesheet.push(pskl.website.scale(canvas, imageInfo.zoom));
+            var canvas = pskl.website.createCanvas(width, height);
+            canvas.getContext('2d').drawImage(img, i * width, 0, width, height, 0, 0, width, height);
+            framesheet.push(pskl.website.scale(canvas, zoom));
           }
           imageInfo.framesheet = framesheet;
           if (imageInfo.hover) {
@@ -52,7 +55,7 @@
         h = imageInfo.height * imageInfo.zoom;
       var context = imageInfo.canvas.getContext('2d');
       context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
-      context.drawImage(imageInfo.framesheet[imageInfo.animationIndex], 0, 0, w, h);
+      context.drawImage(imageInfo.framesheet[imageInfo.animationIndex], imageInfo.xOffset, imageInfo.yOffset, w, h);
       startAnimationTimer(id);
       imageInfo.animationIndex = (imageInfo.animationIndex + 1) % imageInfo.framesheet.length;
     }, 1000 / imageInfo.fps);
@@ -65,7 +68,7 @@
     imageInfo.animationIndex = 0;
     var context = imageInfo.canvas.getContext('2d');
     context.clearRect(0, 0, imageInfo.canvas.width, imageInfo.canvas.height);
-    context.drawImage(imageInfo.preview_canvas, 0, 0);
+    context.drawImage(imageInfo.preview_canvas, imageInfo.xOffset, imageInfo.yOffset);
   };
 
   var __id = -1;
@@ -83,7 +86,9 @@
     var preview_canvas = pskl.website.scale(image, zoom);
 
     var canvas = pskl.website.createCanvas(targetSize, targetSize);
-    canvas.getContext('2d').drawImage(preview_canvas, 0, 0);
+    let xOffset = Math.floor((targetSize - preview_canvas.width) / 2);
+    let yOffset = Math.floor((targetSize - preview_canvas.height) / 2);
+    canvas.getContext('2d').drawImage(preview_canvas, xOffset, yOffset);
     canvas.className = "animated-preview-widget";
 
     __id++;
@@ -96,7 +101,9 @@
       canvas: canvas,
       zoom: zoom,
       animationIndex: 0,
-      hover: false
+      hover: false,
+      xOffset: xOffset,
+      yOffset: yOffset
     };
 
     image.parentNode.replaceChild(canvas, image);
