@@ -341,6 +341,10 @@ ul {
   background-image : url('/static/resources/animated-preview-checker-background.png');
 }
 
+.animated-preview-widget.dark {
+  background-image : url('/static/resources/animated-preview-checker-background-dark.png');
+}
+
 /******************/
 /******INSET*******/
 /******************/

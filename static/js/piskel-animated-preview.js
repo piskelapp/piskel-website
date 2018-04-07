@@ -72,12 +72,12 @@
   };
 
   var __id = -1;
-  window.pskl.website.createAnimatedPreview = function(piskelId, fps, event, animate) {
+  window.pskl.website.createAnimatedPreview = function(piskelId, fps, event, animate, dark) {
     var spritesheet_url = "/img/" + piskelId + "/framesheet";
-    window.pskl.website.createSpritesheetPreview(piskelId, spritesheet_url, fps, event, animate);
+    window.pskl.website.createSpritesheetPreview(piskelId, spritesheet_url, fps, event, animate, dark);
   };
 
-  window.pskl.website.createSpritesheetPreview = function(id, spritesheet_url, fps, event, animate) {
+  window.pskl.website.createSpritesheetPreview = function(id, spritesheet_url, fps, event, animate, dark) {
     var image = event.target || document.getElementById("image" + id);
 
     var targetSize = image.width;
@@ -89,7 +89,8 @@
     let xOffset = Math.floor((targetSize - preview_canvas.width) / 2);
     let yOffset = Math.floor((targetSize - preview_canvas.height) / 2);
     canvas.getContext('2d').drawImage(preview_canvas, xOffset, yOffset);
-    canvas.className = "animated-preview-widget";
+    canvas.classList.add("animated-preview-widget");
+    canvas.classList.toggle("dark", dark);
 
     __id++;
     images["key" + __id] = {

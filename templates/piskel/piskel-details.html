@@ -22,7 +22,7 @@
 	<div class="piskel-container">
 		<div class="piskel-preview-container inset-container">
 			{% if is_author %}{% include "piskel/piskel-details-edit.html" %}{% endif %}
-			{{ render_animated_preview(piskel.framesheet_key, 512, piskel.fps, 'true') }}
+			{{ render_animated_preview(piskel.framesheet_key, 512, piskel.fps, 'true', piskel.dark) }}
 
 		</div>
 		<div class="piskel-info-container">

@@ -11,6 +11,18 @@
 		<label for="name">Public</label>
 		<input type="checkbox" name="public" {% if not piskel.private %}checked{% endif %}/>
 	</div>
+	<div>
+		<label for="name">Background</label>
+		<div>
+			<input type="radio" id="backgroundLight" name="background" value="light"
+				{% if not piskel.dark %}checked{% endif %}>
+			<label for="backgroundLight">Light</label>
+
+			<input type="radio" id="backgroundDark" name="background" value="dark"
+				{% if piskel.dark %}checked{% endif %}>
+			<label for="backgroundDark">Dark</label>
+		</div>
+	</div>
 	<div class="piskel-edit-actions">
 		<input class="piskel-button" type="Submit" value="Save"/>
 		<button class="piskel-button" onclick="pskl.website.hideEditForm();return false;">Cancel</button>

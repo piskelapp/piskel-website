@@ -192,6 +192,7 @@ class PiskelHandler(BaseHandler):
       piskel.name = post_data.get('name')
       piskel.description = post_data.get('description')
       piskel.private = not bool(post_data.get('public'))
+      piskel.dark = bool(post_data.get('background') == 'dark')
       piskel.put()
 
       # consistency will be forced by get made on view(self)

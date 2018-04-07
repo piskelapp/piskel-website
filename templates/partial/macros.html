@@ -1,10 +1,10 @@
-{% macro render_animated_preview(framesheet_key, size, fps, animate='false') -%}
+{% macro render_animated_preview(framesheet_key, size, fps, animate='false', dark=false) -%}
 	<img
 		id="image{{framesheet_key}}"
 		style="display:block; width:{{size}}px; height:{{size}}px;"
 		width="{{size}}"
 		src="/img/{{framesheet_key}}/preview"
-		onload="window.pskl.website.createAnimatedPreview('{{framesheet_key}}', {{fps}}, event, {{animate}})"/>
+		onload="window.pskl.website.createAnimatedPreview('{{framesheet_key}}', {{fps}}, event, {{animate}}, {% if dark %}true{% else %}false{% endif %})"/>
 {% endmacro %}
 
 {% macro render_spritesheet(id, preview_url, spritesheet_url, size, fps) -%}

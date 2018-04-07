@@ -144,9 +144,15 @@ def get_stats_for_user(user_id):
 class Piskel(db.Model):
     owner = db.IntegerProperty()
     creation_date = db.DateTimeProperty(auto_now_add=True)
+    # true if the sprite should only be visible by the owner
     private = db.BooleanProperty(default=False)
+    # true if the sprite was deleted by the user
     deleted = db.BooleanProperty(default=False)
+    # true if the sprite was never explicitly saved
     garbage = db.BooleanProperty(default=False)
+    # true if the sprite be displayed on a dark background
+    dark = db.BooleanProperty(default=False)
+
     name = db.StringProperty(required=True, default='New piskel')
     description = db.TextProperty()
 
@@ -208,6 +214,7 @@ class Piskel(db.Model):
                 'description': self.description if self.description else None,
                 'private': self.private,
                 'deleted': self.deleted,
+                'dark': self.dark,
                 'date': self.creation_date.strftime('%A, %d. %B %Y %I:%M%p')
             }
             memcache.set(mem_key, view)
