@@ -17,7 +17,8 @@ npm-debug.log
 *.pyc
 
 # secret file !
-config/secrets.py
+# DO NOT IGNORE ON REFACTOR BRANCH (no sensitive info on this branch)
+# config/secrets.py
 
 # grunt generated files
 # DO NOT IGNORE ON RELEASE BRANCH
