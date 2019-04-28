@@ -1,5 +1,5 @@
-application: piskel-app
-version: alpha
+application: piskel-app-refactor
+version: legacy
 runtime: python27
 api_version: 1
 threadsafe: yes
