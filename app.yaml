@@ -10,6 +10,10 @@ skip_files:
 - ^(.*/)?(\.git/.*)$
 
 handlers:
+- url: /ads\.txt
+  static_files: ads.txt
+  upload: ads\.txt
+
 - url: /favicon\.ico
   static_files: static/resources/favicon.ico
   upload: static/resources/favicon\.ico
