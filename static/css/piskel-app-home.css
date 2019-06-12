@@ -135,7 +135,7 @@
   }
 }
 
-@media (max-width: 870px) {
+@media (max-width: 1050px) {
   .home-main {
     flex-direction: column;
     align-items: center;
@@ -191,7 +191,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 780px) {
   .home-tagline {
     width: 400px;
   }
@@ -305,7 +305,7 @@
   font-size: 14px;
 }
 
-@media (max-width: 870px) {
+@media (max-width: 1050px) {
   .asset-item:nth-child(odd) {
     padding-left: 10px;
   }
@@ -382,14 +382,14 @@
   overflow: hidden;
 }
 
-@media (max-width: 870px) {
+@media (max-width: 1050px) {
   .piskels-container,
   .picked-piskels-promo {
     width: 400px;
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 580px) {
   .piskels-container,
   .picked-piskels-promo {
     width: 270px;

@@ -10,21 +10,24 @@
 
 	<title>{% block title %} title {% endblock %}</title>
 	<link rel="shortcut icon" type="image/png" href="/static/resources/favicon.png"/>
-	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app.css?20170601"/>
+	<link rel="stylesheet" type="text/css" href="/static/css/piskel-app.css?20190421"/>
 	{% include "analytics.html" %}
 	{% block css %}{% endblock %}
 	{% block head_end %}{% endblock %}
 </head>
-<body class="checkered-bg  {% block bodyclass %}{% endblock %}">
+<body class="checkered-bg  {% block bodyclass %}{% endblock %}" st>
 	<script type="text/javascript" src="/static/js/piskel-utils.js"></script>
 	<script type="text/javascript" src="/static/js/piskel-image-scale.js"></script>
 	<script type="text/javascript" src="/static/js/piskel-animated-preview.js?20181124"></script>
 	<script type="text/javascript" src="/static/js/piskel-nav.js"></script>
 	{% block js %}{% endblock %}
-	<div class="wrap">
-		{% include "nav.html" %}
-		{% block main %} main {% endblock %}
-		{% if has_footer %}{% include "footer.html" %}{% endif %}
+	{% include "nav.html" %}
+	<div style="display: flex; min-height:100%;">
+		<div class="wrap">
+			{% block main %} main {% endblock %}
+		</div>
+		{% include "ads/piskel_skyscraper.html" %}
 	</div>
+	{% if has_footer %}{% include "footer.html" %}{% endif %}
 </body>
 </html>

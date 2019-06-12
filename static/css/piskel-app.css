@@ -57,8 +57,10 @@ ul {
   /* overflow-x hidden to avoid overflowing from the ad */
   overflow-x: hidden;
   overflow-y: auto;
+  position: relative;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 /* Set this class on the children of .wrap that are
@@ -151,7 +153,7 @@ ul {
   display: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 780px) {
   .nav-buttons-default {
     display: none;
   }
@@ -560,4 +562,10 @@ ul {
   display: flex;
   justify-content: center;
   padding: 30px 0;
+}
+
+.ad-skyscraper-container {
+  box-sizing: border-box;
+  padding: 10px;
+  width: 180px;
 }

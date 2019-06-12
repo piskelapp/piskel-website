@@ -92,6 +92,39 @@
 
 .main-wrapper {
   margin-top: 40px;
+  transition: margin 200ms ease-out;
+}
+
+.with-ads .main-wrapper,
+.with-ads .editor-header-wrap .link,
+.with-ads .cheatsheet-link {
+  margin-left: 170px;
+}
+
+.with-ads .navigation {
+  border-bottom-width: 0;
+}
+
+.editor-ad-container {
+  width: 160px;
+  position: fixed;
+  top: 0px;
+  background: #2D2D2D;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.editor-ad-message {
+  padding: 10px;
+  line-height: 1.6;
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.sticky-section {
+  position: absolute !important;
 }
 
 .navigation .logout-link {
