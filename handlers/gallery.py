@@ -1,6 +1,5 @@
 from base import BaseHandler
-from models import Piskel
-from models import user_details as user_details_model
+from models.piskel import Piskel
 import models
 
 class BrowseHandler(BaseHandler):
