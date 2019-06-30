@@ -1,4 +1,5 @@
-from models import Framesheet, Piskel
+from models.framesheet import Framesheet
+from models.piskel import Piskel
 from google.appengine.ext import db
 from base import BaseHandler
 from handlers import image as image_handler

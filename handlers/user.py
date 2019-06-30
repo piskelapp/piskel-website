@@ -1,5 +1,6 @@
 from base import BaseHandler
-from models import Piskel, get_piskels
+from models import get_piskels
+from models.piskel import Piskel
 
 import json
 
