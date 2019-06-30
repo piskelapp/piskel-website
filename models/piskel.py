@@ -33,12 +33,14 @@ class Piskel(db.Model):
         memcache.delete('user_stats_' + str(self.owner))
 
         current = self.get_current_framesheet()
-        if current:
-            current.active = False
-            current.put()
 
         framesheet.active = True
         framesheet.put()
+
+        # Only flip current.active if framesheet put completed successfully.
+        if current:
+            current.active = False
+            current.put()
 
         if force_consistency:
             db.get(current.key())
