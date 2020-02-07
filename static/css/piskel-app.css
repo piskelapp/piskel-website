@@ -478,6 +478,7 @@ ul {
   }
 
   .user-menu-settings {
+    background-size: 16px;
     background-image:url('/static/resources/settings-icon@2x.png');
   }
 
